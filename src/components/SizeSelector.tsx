@@ -1,4 +1,4 @@
-import { SIZES, type SizeId } from '@/utils/constants';
+import { type SizeId } from '@/utils/constants';
 import { useStore } from '@/store';
 import { calculateNoboriPrice } from '@/utils/priceCalculator';
 import type { NoboriSpecs } from '@/types/nobori.types';

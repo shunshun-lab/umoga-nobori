@@ -1,5 +1,5 @@
 import { useStore } from '@/store';
-import { useState } from 'react';
+
 
 interface Props {
     onContinueShopping: () => void;

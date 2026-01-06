@@ -1,4 +1,4 @@
-import { QUANTITY_DISCOUNTS } from '@/utils/constants';
+
 
 interface Props {
   value: number;
