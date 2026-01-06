@@ -21,7 +21,7 @@ export function Header({ onCartClick, onHomeClick }: Props) {
                     </div>
                     <div>
                         <h1 className="text-xl font-black text-gray-900 tracking-tight leading-none">
-                            Nobori Factory
+                            のぼりのウモガ
                         </h1>
                         <p className="text-[10px] text-gray-500 font-medium leading-none mt-0.5">
                             見積もり・注文システム
