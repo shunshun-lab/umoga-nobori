@@ -1,0 +1,459 @@
+<!-- のぼり製作 見積もり・注文システム -->
+<!-- Shopify商品データから動的に生成 -->
+
+<div class="nobori-estimator-container">
+
+  <!-- ヘッダー -->
+  <header class="nobori-header">
+    <div class="header-content">
+      <div class="header-title">
+        <h1>のぼり製作</h1>
+        <p class="header-subtitle">オンライン見積もり・注文システム</p>
+      </div>
+      <div class="header-help">
+        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span>お気軽にお見積もりください</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ステップインジケーター -->
+  <div class="step-indicator">
+    <div class="step-track">
+      <div class="step active" data-step="1">
+        <div class="step-circle">1</div>
+        <span class="step-label">仕様選択</span>
+      </div>
+      <div class="step-line"></div>
+      <div class="step" data-step="2">
+        <div class="step-circle">2</div>
+        <span class="step-label">デザインデータ</span>
+      </div>
+      <div class="step-line"></div>
+      <div class="step" data-step="3">
+        <div class="step-circle">3</div>
+        <span class="step-label">確認・注文</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="nobori-main">
+    <!-- 左側: フォーム -->
+    <div class="nobori-form-area">
+
+      <!-- Step 1: 仕様選択 -->
+      <div class="step-content" data-step-content="1">
+
+        <!-- サイズ選択 -->
+        <section class="nobori-section">
+          <div class="section-header">
+            <div class="section-icon purple">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+              </svg>
+            </div>
+            <h2>サイズを選択</h2>
+          </div>
+
+          <div class="size-grid">
+            {% for product in collections['nobori'].products %}
+              <label class="size-option">
+                <input
+                  type="radio"
+                  name="size"
+                  value="{{ product.handle }}"
+                  data-product-id="{{ product.id }}"
+                  {% if forloop.first %}checked{% endif %}
+                >
+                <div class="option-card">
+                  <div class="card-header">
+                    <h3>{{ product.title | remove: 'のぼり製作（' | remove: '）' }}</h3>
+                    <svg class="check-icon" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                  </div>
+                  <p class="card-description">{{ product.description }}</p>
+                  <p class="card-price">¥{{ product.variants.first.price | money_without_currency }}〜</p>
+                </div>
+              </label>
+            {% endfor %}
+          </div>
+        </section>
+
+        <!-- 生地選択 -->
+        <section class="nobori-section">
+          <div class="section-header">
+            <div class="section-icon orange">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+              </svg>
+            </div>
+            <h2>生地を選択</h2>
+          </div>
+
+          <div class="fabric-list" id="fabric-list">
+            <!-- JavaScriptで動的に生成 -->
+          </div>
+        </section>
+
+        <!-- 数量入力 -->
+        <section class="nobori-section">
+          <div class="section-header">
+            <div class="section-icon green">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+              </svg>
+            </div>
+            <h2>数量</h2>
+          </div>
+
+          <div class="quantity-section">
+            <div class="quantity-quick">
+              <label class="quick-label">クイック選択</label>
+              <div class="quick-buttons">
+                {% for qty in (1..5) %}
+                  {% assign values = "1,10,30,50,100" | split: "," %}
+                  <button type="button" class="quick-btn" data-quantity="{{ values[forloop.index0] }}">
+                    {{ values[forloop.index0] }}枚
+                  </button>
+                {% endfor %}
+              </div>
+            </div>
+
+            <div class="quantity-input-wrapper">
+              <label for="quantity">カスタム数量を入力</label>
+              <input
+                type="number"
+                id="quantity"
+                name="quantity"
+                min="1"
+                max="10000"
+                value="1"
+                class="quantity-input"
+              >
+            </div>
+
+            <div class="discount-info">
+              <div class="discount-header">
+                <svg fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+                <strong>数量割引</strong>
+              </div>
+              <div class="discount-list">
+                <div class="discount-item">
+                  <svg fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                  </svg>
+                  <span>10〜29枚: <strong>10%OFF</strong></span>
+                </div>
+                <div class="discount-item">
+                  <svg fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                  </svg>
+                  <span>30〜49枚: <strong>15%OFF</strong></span>
+                </div>
+                <div class="discount-item">
+                  <svg fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                  </svg>
+                  <span>50〜99枚: <strong>20%OFF</strong></span>
+                </div>
+                <div class="discount-item">
+                  <svg fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                  </svg>
+                  <span>100枚〜: <strong>25%OFF</strong></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- オプション選択 -->
+        <section class="nobori-section">
+          <div class="section-header">
+            <div class="section-icon pink">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+              </svg>
+            </div>
+            <h2>オプション加工</h2>
+          </div>
+
+          <div class="options-and-image">
+            <div class="options-list">
+            <label class="option-item">
+              <input type="checkbox" name="option" value="pole_pocket">
+              <div class="option-card">
+                <div class="option-header">
+                  <h3>棒袋縫製加工</h3>
+                  <svg class="check-icon" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                  </svg>
+                </div>
+                <p class="option-description">のぼり竿を通す袋を縫製します</p>
+              </div>
+              <div class="option-price">+¥200</div>
+            </label>
+
+            <label class="option-item">
+              <input type="checkbox" name="option" value="chichi">
+              <div class="option-card">
+                <div class="option-header">
+                  <h3>チチ加工</h3>
+                  <svg class="check-icon" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                  </svg>
+                </div>
+                <p class="option-description">上下にロープを通すための輪を付けます</p>
+              </div>
+              <div class="option-price">+¥100</div>
+            </label>
+
+            <label class="option-item">
+              <input type="checkbox" name="option" value="heat_cut">
+              <div class="option-card">
+                <div class="option-header">
+                  <h3>ヒートカット加工</h3>
+                  <svg class="check-icon" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                  </svg>
+                </div>
+                <p class="option-description">生地のほつれを防ぎます</p>
+              </div>
+              <div class="option-price">+¥150</div>
+            </label>
+
+            <label class="option-item">
+              <input type="checkbox" name="option" value="waterproof">
+              <div class="option-card">
+                <div class="option-header">
+                  <h3>防水加工</h3>
+                  <svg class="check-icon" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                  </svg>
+                </div>
+                <p class="option-description">雨に強い防水加工を施します</p>
+              </div>
+              <div class="option-price">+¥300</div>
+            </label>
+            </div>
+            <figure class="option-reference">
+              <img src="{{ 'option-sample.jpg' | asset_url }}" alt="オプション加工イメージ">
+              <figcaption>棒袋縫製の仕上がり例</figcaption>
+            </figure>
+          </div>
+        </section>
+
+        <div class="form-actions">
+          <button type="button" class="btn-next" id="btn-next-1">
+            <span>次へ：デザインデータ</span>
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 2: デザインデータ -->
+      <div class="step-content hidden" data-step-content="2">
+        <section class="nobori-section">
+          <div class="section-header">
+            <div class="section-icon indigo">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+            </div>
+            <h2>デザインデータ</h2>
+          </div>
+
+          <div class="file-upload-area" id="file-upload">
+            <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+            <p class="upload-text"><strong>ファイルをドラッグ&ドロップ</strong></p>
+            <p class="upload-subtext">または クリックしてファイルを選択</p>
+            <div class="upload-formats">
+              <span class="format-tag">PDF</span>
+              <span class="format-tag">AI</span>
+              <span class="format-tag">EPS</span>
+              <span class="format-tag">PNG</span>
+              <span class="format-tag">JPG</span>
+            </div>
+            <input type="file" id="file-input" multiple accept=".pdf,.ai,.eps,.png,.jpg,.jpeg" hidden>
+          </div>
+
+          <div class="file-list" id="file-list"></div>
+
+          <div class="later-submit-info">
+            <svg fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+            </svg>
+            <div>
+              <strong>後日入稿も可能です</strong>
+              <p>デザインデータは後日ご入稿いただくことも可能です。注文時に「後日入稿」を選択してください。</p>
+            </div>
+          </div>
+        </section>
+
+        <div class="form-actions-between">
+          <button type="button" class="btn-back" id="btn-back-2">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+            </svg>
+            <span>戻る</span>
+          </button>
+          <button type="button" class="btn-next" id="btn-next-2">
+            <span>次へ：確認</span>
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 3: 確認 -->
+      <div class="step-content hidden" data-step-content="3">
+        <section class="nobori-section">
+          <div class="section-header">
+            <div class="section-icon blue">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+              </svg>
+            </div>
+            <h2>ご注文内容</h2>
+          </div>
+
+          <div class="order-summary" id="order-summary">
+            <!-- JavaScriptで動的生成 -->
+          </div>
+        </section>
+
+        <div class="form-actions-between">
+          <button type="button" class="btn-back" id="btn-back-3">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+            </svg>
+            <span>戻る</span>
+          </button>
+          <button type="button" class="btn-submit" id="btn-submit">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>注文を確定する</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 右側: 価格表示 -->
+    <div class="nobori-price-area">
+      <div class="price-card">
+        <div class="section-header">
+          <div class="section-icon blue">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <h3>お見積もり</h3>
+        </div>
+
+        <div class="price-breakdown" id="price-breakdown">
+          <div class="price-item">
+            <span>基本料金</span>
+            <span id="price-base">¥0</span>
+          </div>
+          <div class="price-item" id="price-options-wrapper" style="display:none">
+            <span>オプション</span>
+            <span id="price-options">¥0</span>
+          </div>
+          <div class="price-item discount" id="price-discount-wrapper" style="display:none">
+            <span id="discount-label">数量割引</span>
+            <span id="price-discount">-¥0</span>
+          </div>
+        </div>
+
+        <div class="price-total">
+          <div class="total-label">合計金額（税込）</div>
+          <div class="total-amount" id="price-total">¥0</div>
+          <div class="unit-price">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>1枚あたり <span id="price-unit">¥0</span></span>
+          </div>
+        </div>
+
+        <div class="delivery-info">
+          <div class="delivery-header">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <strong>お届け予定</strong>
+          </div>
+          <p class="delivery-time">ご注文から7〜10営業日</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Shopify商品データをJavaScriptに渡す -->
+<script>
+  window.NOBORI_DATA = {
+    products: {
+      {% for product in collections['nobori'].products %}
+        '{{ product.handle }}': {
+          id: '{{ product.id }}',
+          title: '{{ product.title }}',
+          description: '{{ product.description | escape }}',
+
+          variants: {
+            {% for variant in product.variants %}
+              '{{ variant.sku }}': {
+                id: '{{ variant.id }}',
+                title: '{{ variant.title }}',
+                price: {{ variant.price | money_without_currency | remove: ',' | times: 1 }},
+                sku: '{{ variant.sku }}',
+                available: {{ variant.available | json }}
+              }{% unless forloop.last %},{% endunless %}
+            {% endfor %}
+          }
+        }{% unless forloop.last %},{% endunless %}
+      {% endfor %}
+    },
+
+    options: {
+      pole_pocket: 200,
+      chichi: 100,
+      heat_cut: 150,
+      waterproof: 300
+    },
+
+    optionNames: {
+      pole_pocket: '棒袋縫製加工',
+      chichi: 'チチ加工',
+      heat_cut: 'ヒートカット加工',
+      waterproof: '防水加工'
+    },
+
+    discounts: [
+      { min: 1, max: 9, rate: 0, label: '割引なし' },
+      { min: 10, max: 29, rate: 0.10, label: '10%OFF' },
+      { min: 30, max: 49, rate: 0.15, label: '15%OFF' },
+      { min: 50, max: 99, rate: 0.20, label: '20%OFF' },
+      { min: 100, max: Infinity, rate: 0.25, label: '25%OFF' }
+    ]
+  };
+</script>
+
+<!-- JavaScript読み込み -->
+{{ 'nobori-estimator.js' | asset_url | script_tag }}
+
+<!-- CSS読み込み -->
+{{ 'nobori-styles.css' | asset_url | stylesheet_tag }}

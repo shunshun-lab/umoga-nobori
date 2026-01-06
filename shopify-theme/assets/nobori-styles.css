@@ -1,0 +1,44 @@
+/* Layout for options and reference image */
+.options-and-image {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.option-reference {
+  max-width: 320px;
+}
+
+.option-reference img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 8px;
+}
+
+.option-reference figcaption {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #666;
+}
+
+@media (max-width: 768px) {
+  .options-and-image {
+    flex-direction: column;
+  }
+  .option-reference {
+    max-width: 100%;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
