@@ -2,6 +2,8 @@
 
 React + Vite + TypeScript + Shopify で構築した、のぼり製作の自動見積もり・注文管理システムです。
 
+**現在稼働中のデモ環境**: [https://app-shopify-inky.vercel.app/](https://app-shopify-inky.vercel.app/)
+
 > [!IMPORTANT]
 > **現在のデモ環境（Vercel/Google Cloud）の提供期限について**<br>
 > 現在稼働しているデモ環境および連携サービスの髙木から行う管理は、**2026年1月末** をもって終了いたします。<br>

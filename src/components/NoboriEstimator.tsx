@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { SizeSelector } from './SizeSelector';
 import { FabricSelector } from './FabricSelector';
 import { QuantityInput } from './QuantityInput';
@@ -14,13 +14,6 @@ interface Props {
 }
 
 export function NoboriEstimator({ onAddToCart }: Props) {
-  // We keep 'activeStep' for the indicator logic and scroll spying
-  const [activeStep, setActiveStep] = useState(1);
-
-  const step1Ref = useRef<HTMLDivElement>(null);
-  const step2Ref = useRef<HTMLDivElement>(null);
-  const step3Ref = useRef<HTMLDivElement>(null);
-
   const [specs, setSpecs] = useState<NoboriSpecs>({
     size: 'standard', // Default is standard, but can be 'custom'
     fabric: 'polyester',
@@ -37,18 +30,6 @@ export function NoboriEstimator({ onAddToCart }: Props) {
   const addToCart = useStore(state => state.addToCart);
   const sizes = useStore(state => state.sizes);
 
-  // Scroll to section handler
-  const scrollToStep = (stepNumber: number) => {
-    let targetRef = step1Ref;
-    if (stepNumber === 2) targetRef = step2Ref;
-    if (stepNumber === 3) targetRef = step3Ref;
-
-    if (targetRef.current) {
-      targetRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      setActiveStep(stepNumber);
-    }
-  };
-
   const handleAddToCart = () => {
     // Cartに追加
     addToCart({
@@ -60,45 +41,8 @@ export function NoboriEstimator({ onAddToCart }: Props) {
     onAddToCart();
   };
 
-  const stepLabels = ['仕様選択', 'デザインデータ', '確認・注文'];
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-gray-50">
-
-      {/* ステップインジケーター (Sticky Header) */}
-      <div className="sticky top-0 z-20 bg-white/90 backdrop-blur-md border-b border-gray-200 shadow-sm transition-all duration-300">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-center space-x-4 md:space-x-12">
-            {[1, 2, 3].map((s, idx) => (
-              <div
-                key={s}
-                onClick={() => scrollToStep(s)}
-                className={`flex items-center cursor-pointer group ${activeStep === s ? 'opacity-100' : 'opacity-60 hover:opacity-100'}`}
-              >
-                <div className="flex items-center">
-                  <div
-                    className={`
-                        w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border-2 transition-all duration-200
-                        ${activeStep >= s
-                        ? 'bg-blue-600 text-white border-blue-600'
-                        : 'bg-white text-gray-400 border-gray-300'
-                      }
-                      `}
-                  >
-                    {s}
-                  </div>
-                  <span className={`ml-2 text-sm font-bold ${activeStep >= s ? 'text-blue-900' : 'text-gray-500'}`}>
-                    {stepLabels[idx]}
-                  </span>
-                </div>
-                {s < 3 && (
-                  <div className="hidden md:block w-12 h-0.5 bg-gray-200 mx-4" />
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="grid lg:grid-cols-3 gap-8 items-start">
@@ -106,9 +50,8 @@ export function NoboriEstimator({ onAddToCart }: Props) {
           <div className="lg:col-span-2 space-y-12 pb-24">
 
             {/* Step 1: 仕様選択 */}
-            <section ref={step1Ref} id="step1" className="scroll-mt-28">
+            <section id="specs">
               <div className="flex items-center space-x-3 mb-6 border-b pb-2">
-                <span className="bg-blue-600 text-white font-bold px-3 py-1 rounded-full text-sm">STEP 1</span>
                 <h2 className="text-2xl font-bold text-gray-900">仕様を選択</h2>
               </div>
 
@@ -138,23 +81,12 @@ export function NoboriEstimator({ onAddToCart }: Props) {
                   specs={specs}
                   onChange={(options) => setSpecs({ ...specs, options })}
                 />
-
-                <div className="flex justify-end pt-4">
-                  <button
-                    onClick={() => scrollToStep(2)}
-                    className="bg-blue-50 text-blue-700 px-6 py-3 rounded-xl font-bold hover:bg-blue-100 transition-colors flex items-center space-x-2"
-                  >
-                    <span>次へ進む</span>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                  </button>
-                </div>
               </div>
             </section>
 
             {/* Step 2: データ入稿・デザイン */}
-            <section ref={step2Ref} id="step2" className="scroll-mt-28 border-t pt-12">
+            <section id="design" className="border-t pt-12">
               <div className="flex items-center space-x-3 mb-6 border-b pb-2">
-                <span className="bg-blue-600 text-white font-bold px-3 py-1 rounded-full text-sm">STEP 2</span>
                 <h2 className="text-2xl font-bold text-gray-900">データ・デザイン選択</h2>
               </div>
 
@@ -231,23 +163,12 @@ export function NoboriEstimator({ onAddToCart }: Props) {
                     </div>
                   </div>
                 </div>
-
-                <div className="flex justify-end pt-4">
-                  <button
-                    onClick={() => scrollToStep(3)}
-                    className="bg-blue-50 text-blue-700 px-6 py-3 rounded-xl font-bold hover:bg-blue-100 transition-colors flex items-center space-x-2"
-                  >
-                    <span>確認画面へ</span>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                  </button>
-                </div>
               </div>
             </section>
 
             {/* Step 3: 確認 */}
-            <section ref={step3Ref} id="step3" className="scroll-mt-28 border-t pt-12">
+            <section id="confirm" className="border-t pt-12">
               <div className="flex items-center space-x-3 mb-6 border-b pb-2">
-                <span className="bg-blue-600 text-white font-bold px-3 py-1 rounded-full text-sm">STEP 3</span>
                 <h2 className="text-2xl font-bold text-gray-900">注文内容の確認</h2>
               </div>
 
@@ -349,10 +270,8 @@ export function NoboriEstimator({ onAddToCart }: Props) {
 
           {/* 右側: 価格表示 (Sticky) */}
           <div className="lg:col-span-1">
-            <div className="sticky top-24">
+            <div className="sticky top-6">
               <PriceDisplay price={price} specs={specs} />
-
-              {/* Mobile FAB or similar could be better, but sticky sidebar works for desktop/tablet */}
             </div>
           </div>
         </div>
