@@ -7,6 +7,7 @@ import { PriceDisplay } from './PriceDisplay';
 import { DesignQuantitySelector } from './DesignQuantitySelector';
 import { useNoboriPrice } from '@/hooks/useNoboriPrice';
 import { useStore } from '@/store';
+import { StickyEstimateFooter } from './StickyEstimateFooter';
 import type { NoboriSpecs } from '@/types/nobori.types';
 
 interface Props {
@@ -60,7 +61,7 @@ export function NoboriEstimator({ onAddToCart }: Props) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content Column */}
-          <div className="lg:col-span-2 space-y-12 pb-24">
+          <div className="lg:col-span-2 space-y-12 pb-40 lg:pb-24">
 
             {/* Step 1: 仕様選択 */}
             <section id="specs">
@@ -72,11 +73,11 @@ export function NoboriEstimator({ onAddToCart }: Props) {
                 <SizeSelector
                   value={specs.size}
                   specs={specs}
-                  onChange={(size, dimensions) => setSpecs({
-                    ...specs,
+                  onChange={(size, dimensions) => setSpecs(prev => ({
+                    ...prev,
                     size,
-                    customDimensions: dimensions
-                  })}
+                    customDimensions: dimensions !== undefined ? dimensions : prev.customDimensions
+                  }))}
                 />
 
                 <FabricSelector
@@ -85,14 +86,16 @@ export function NoboriEstimator({ onAddToCart }: Props) {
                 />
 
                 {/* 完全データ入稿の場合は個別の枚数指定を使うため、ここでは合計を表示（または非表示） */}
-                {specs.designDataMethod !== 'self' && (
+                {/* 完全データ入稿の場合は個別の枚数指定を使うため、ここでは合計を表示（または非表示） */
+                /* ただし、外部URL利用等でファイルがない場合は手入力できるようにする */}
+                {(specs.designDataMethod !== 'self' || (specs.designs && specs.designs.length === 0)) && (
                   <QuantityInput
                     value={specs.quantity}
                     onChange={(quantity) => setSpecs({ ...specs, quantity })}
                   />
                 )}
 
-                {specs.designDataMethod === 'self' && (
+                {specs.designDataMethod === 'self' && specs.designs && specs.designs.length > 0 && (
                   <div className="bg-blue-50 p-4 rounded-xl border border-blue-200 flex items-center justify-between">
                     <div className="font-bold text-blue-900">合計数量</div>
                     <div className="text-2xl font-bold text-blue-600">{specs.quantity}枚</div>
@@ -147,11 +150,40 @@ export function NoboriEstimator({ onAddToCart }: Props) {
                 {/* Dynamic Content */}
                 <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                   {specs.designDataMethod === 'self' ? (
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                       <DesignQuantitySelector
                         designs={specs.designs || []}
                         onDesignsChange={(designs) => setSpecs({ ...specs, designs })}
                       />
+
+                      <div className="bg-gray-50 rounded-xl p-5 border border-gray-200">
+                        <h4 className="font-bold text-gray-900 mb-2 flex items-center">
+                          <svg className="w-5 h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                          </svg>
+                          ファイルサイズが大きい場合
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-4">
+                          200MBを超えるファイルや、ファイル数が10を超える場合は、外部ストレージサービス（ギガファイル便など）をご利用ください。
+                        </p>
+
+                        <div>
+                          <label className="block text-sm font-bold text-gray-700 mb-1">ダウンロードURL</label>
+                          <input
+                            type="url"
+                            value={specs.externalDataUrl || ''}
+                            onChange={(e) => setSpecs({ ...specs, externalDataUrl: e.target.value })}
+                            placeholder="https://gigafile.nu/..."
+                            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-50"
+                          />
+                          {specs.externalDataUrl && (
+                            <p className="mt-2 text-xs text-green-600 font-bold flex items-center">
+                              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                              外部URLが入力されました
+                            </p>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   ) : (
                     <div className="space-y-4">
@@ -264,7 +296,14 @@ export function NoboriEstimator({ onAddToCart }: Props) {
                               ))}
                             </div>
                           ) : (
-                            <span className="text-orange-500">※デザインデータを選択してください</span>
+                            !specs.externalDataUrl && <span className="text-orange-500">※デザインデータを選択してください</span>
+                          )}
+
+                          {specs.externalDataUrl && (
+                            <div className="mt-2 p-2 bg-blue-50 border border-blue-100 rounded text-blue-800">
+                              <span className="font-bold mr-2">[外部URL]</span>
+                              <a href={specs.externalDataUrl} target="_blank" rel="noreferrer" className="underline truncate block">{specs.externalDataUrl}</a>
+                            </div>
                           )}
                         </div>
                       </dd>
@@ -286,9 +325,9 @@ export function NoboriEstimator({ onAddToCart }: Props) {
               <div className="mt-8 flex justify-end">
                 <button
                   onClick={handleAddToCart}
-                  disabled={(specs.designDataMethod === 'self' && (!specs.designs || specs.designs.length === 0))}
+                  disabled={(specs.designDataMethod === 'self' && (!specs.designs || specs.designs.length === 0) && !specs.externalDataUrl)}
                   className={`px-8 py-4 text-white rounded-xl font-bold shadow-lg flex items-center space-x-2 text-lg transform transition-all duration-200 
-                    ${(specs.designDataMethod === 'self' && (!specs.designs || specs.designs.length === 0))
+                    ${(specs.designDataMethod === 'self' && (!specs.designs || specs.designs.length === 0) && !specs.externalDataUrl)
                       ? 'bg-gray-400 cursor-not-allowed'
                       : 'bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 hover:-translate-y-1 hover:shadow-xl'}`}
                 >
@@ -311,18 +350,7 @@ export function NoboriEstimator({ onAddToCart }: Props) {
         </div>
       </div>
 
-      {/* Mobile Right Edge Trigger (Calculator) */}
-      <div
-        onClick={() => setShowMobileQuote(true)}
-        className="fixed right-0 top-1/2 transform -translate-y-1/2 z-40 bg-blue-600 text-white p-3 rounded-l-xl shadow-xl cursor-pointer hover:bg-blue-700 transition-all lg:hidden"
-      >
-        <div className="flex flex-col items-center space-y-1">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-          </svg>
-          <span className="text-xs font-bold writing-mode-vertical">お見積もり</span>
-        </div>
-      </div>
+      {/* Mobile Right Edge Trigger (Calculator) - REMOVED in favor of StickyFooter */}
 
       {/* Mobile Drawer (Overlay) */}
       {showMobileQuote && (
@@ -366,6 +394,13 @@ export function NoboriEstimator({ onAddToCart }: Props) {
           </div>
         </div>
       )}
+
+      <StickyEstimateFooter
+        price={price}
+        onOpenDetail={() => setShowMobileQuote(true)}
+        onAddToCart={handleAddToCart}
+        disabled={(specs.designDataMethod === 'self' && (!specs.designs || specs.designs.length === 0) && !specs.externalDataUrl)}
+      />
     </div>
   );
 }

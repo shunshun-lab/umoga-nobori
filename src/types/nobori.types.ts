@@ -22,6 +22,7 @@ export interface NoboriSpecs {
   orderName?: string; // Optional: Reference name
   designDataMethod: 'self' | 'request'; // 'self' = AI/Upload, 'request' = Professional Design
   designRequestDetails?: string; // Text for design request
+  externalDataUrl?: string; // URL for external file service (e.g. GigaFile)
 }
 
 export interface PriceBreakdown {

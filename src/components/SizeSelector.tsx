@@ -89,18 +89,10 @@ export function SizeSelector({ value, specs, onChange }: Props) {
                       横幅 (W) <span className="text-red-500">Max: {limits.maxWidth}</span>
                     </label>
                     <input
-                      id="custom-width"
-                      type="number"
-                      max={limits.maxWidth}
-                      placeholder={`Max ${limits.maxWidth}`}
-                      className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                      value={specs.customDimensions?.width || ''}
                       onChange={(e) => {
-                        let w = parseInt(e.target.value) || 0;
-                        // Removed clamping to allow "Quote Required" flow for oversized items
-                        // if (w > limits.maxWidth) w = limits.maxWidth;
-
-                        const hInput = document.getElementById('custom-height') as HTMLInputElement;
-                        const h = parseInt(hInput?.value) || 0;
+                        const w = parseInt(e.target.value) || 0;
+                        const h = specs.customDimensions?.height || 0;
                         onChange('custom', { width: w, height: h });
                       }}
                     />
@@ -116,13 +108,10 @@ export function SizeSelector({ value, specs, onChange }: Props) {
                       max={limits.maxHeight}
                       placeholder={`Max ${limits.maxHeight}`}
                       className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                      value={specs.customDimensions?.height || ''}
                       onChange={(e) => {
-                        let h = parseInt(e.target.value) || 0;
-                        // Removed clamping to allow "Quote Required" flow
-                        // if (h > limits.maxHeight) h = limits.maxHeight;
-
-                        const wInput = document.getElementById('custom-width') as HTMLInputElement;
-                        const w = parseInt(wInput?.value) || 0;
+                        const h = parseInt(e.target.value) || 0;
+                        const w = specs.customDimensions?.width || 0;
                         onChange('custom', { width: w, height: h });
                       }}
                     />

@@ -8,7 +8,24 @@ interface Props {
 }
 
 export function DesignQuantitySelector({ designs, onDesignsChange }: Props) {
+    const MAX_FILE_SIZE_MB = 200;
+    const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+    const MAX_FILES = 10;
+
     const onDrop = useCallback((acceptedFiles: File[]) => {
+        // Check total file count
+        if (designs.length + acceptedFiles.length > MAX_FILES) {
+            alert(`一度にアップロードできるのは${MAX_FILES}ファイルまでです。\n多い場合は、複数回に分けてカートに入れるか、ギガファイル便などの外部ストレージをご利用ください。`);
+            return;
+        }
+
+        // Check file sizes
+        const oversizedFiles = acceptedFiles.filter(f => f.size > MAX_FILE_SIZE_BYTES);
+        if (oversizedFiles.length > 0) {
+            alert(`${MAX_FILE_SIZE_MB}MBを超えるファイルが含まれています。\nギガファイル便などの外部ストレージにアップロードし、そのURLを入力してください。\n\n対象ファイル:\n${oversizedFiles.map(f => f.name).join('\n')}`);
+            return;
+        }
+
         const newDesigns: DesignItem[] = acceptedFiles.map((file) => ({
             id: Math.random().toString(36).substr(2, 9),
             file,
@@ -24,7 +41,8 @@ export function DesignQuantitySelector({ designs, onDesignsChange }: Props) {
             'application/pdf': ['.pdf'],
             'application/postscript': ['.ai', '.eps'],
             'image/*': ['.png', '.jpg', '.jpeg']
-        }
+        },
+        maxSize: MAX_FILE_SIZE_BYTES
     });
 
     const updateQuantity = (id: string, newQuantity: number) => {
