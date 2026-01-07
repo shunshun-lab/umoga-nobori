@@ -79,3 +79,25 @@ sequenceDiagram
 
 ### Shopify上での価格不整合
 - **注意**: 本システムは価格を**明示的に**指定してShopifyに送信するため、Shopify側での再計算は行われません。`src/utils/priceCalculator.ts` の計算ロジックが正しいことを常に確認してください。
+
+## 現在の実装状況と未実装部分
+
+現状（2026年1月時点）では、バックエンドAPIの実装は完了していますが、**フロントエンドからの呼び出し処理が未実装**の状態です。
+
+### 1. 実装済みの部分 ( Backend )
+- `api/checkout.ts`: カート情報を受け取り、Shopify APIを叩いて下書き注文を作成し、決済URLを発行する処理は実装完了しています。
+
+### 2. 未実装の部分 ( Frontend )
+- `src/components/DeliveryEntry.tsx`: 現在は「注文を確定する」ボタンを押しても `onComplete` (デモ用の完了アラート) を呼ぶだけで、**実際のAPI呼び出しを行っていません**。
+
+### 3. 実装手順 (Next Steps)
+実際の決済を有効にするには、`src/components/DeliveryEntry.tsx` を以下のように改修する必要があります。
+
+1. **API呼び出し処理の追加**:
+   ボタンクリック時に `axios.post('/api/checkout', { cart, ... })` を実行する処理を追加します。
+
+2. **リダイレクト処理**:
+   APIから返却された `checkoutUrl` (Shopifyの決済画面URL) にユーザーをリダイレクト (`window.location.href = ...`) させます。
+
+3. **環境変数の本番設定**:
+   Vercel上で本番用のShopifyアクセストークンを設定します。
