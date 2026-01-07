@@ -64,7 +64,7 @@ export function ProductList({ onSelectProduct }: Props) {
                 </div>
 
                 <div className="mt-24 pt-8 border-t border-gray-200 text-center">
-                    <p className="text-gray-400 text-sm mb-4">© 2025 umoga</p>
+                    <p className="text-gray-400 text-sm mb-4">© 2026 UMOGA</p>
                     <button
                         onClick={() => onSelectProduct('admin' as any)}
                         className="text-xs text-gray-300 hover:text-gray-500 transition-colors"

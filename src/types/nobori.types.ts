@@ -1,5 +1,12 @@
 import type { SizeId, FabricId, PrintMethodId, OptionId } from '@/utils/constants';
 
+export interface DesignItem {
+  id: string;
+  file: File | string;
+  previewUrl?: string;
+  quantity: number;
+}
+
 export interface NoboriSpecs {
   size: SizeId | 'custom';
   customDimensions?: {
@@ -9,6 +16,7 @@ export interface NoboriSpecs {
   fabric: FabricId;
   printMethod: PrintMethodId;
   quantity: number;
+  designs?: DesignItem[];
   options: OptionId[];
   segments?: number; // 2, 3, or 4
   orderName?: string; // Optional: Reference name

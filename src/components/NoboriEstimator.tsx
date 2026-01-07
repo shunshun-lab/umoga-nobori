@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SizeSelector } from './SizeSelector';
 import { FabricSelector } from './FabricSelector';
 import { QuantityInput } from './QuantityInput';
 import { OptionsSelector } from './OptionsSelector';
 import { PriceDisplay } from './PriceDisplay';
-import { FileUploader } from './FileUploader';
+import { DesignQuantitySelector } from './DesignQuantitySelector';
 import { useNoboriPrice } from '@/hooks/useNoboriPrice';
 import { useStore } from '@/store';
 import type { NoboriSpecs } from '@/types/nobori.types';
@@ -19,17 +19,27 @@ export function NoboriEstimator({ onAddToCart }: Props) {
     fabric: 'polyester',
     printMethod: 'full_color',
     quantity: 1,
+    designs: [],
     options: [],
     customDimensions: undefined,
     designDataMethod: 'self',
   });
 
-  const [files, setFiles] = useState<string[]>([]);
   const [showMobileQuote, setShowMobileQuote] = useState(false);
 
   const price = useNoboriPrice(specs);
   const addToCart = useStore(state => state.addToCart);
   const sizes = useStore(state => state.sizes);
+
+  // designsの変更を検知して合計数量を更新
+  useEffect(() => {
+    if (specs.designDataMethod === 'self' && specs.designs && specs.designs.length > 0) {
+      const totalQuantity = specs.designs.reduce((sum, d) => sum + d.quantity, 0);
+      if (totalQuantity !== specs.quantity) {
+        setSpecs(prev => ({ ...prev, quantity: totalQuantity }));
+      }
+    }
+  }, [specs.designs, specs.designDataMethod]);
 
   const handleAddToCart = () => {
     // Cartに追加
@@ -74,10 +84,21 @@ export function NoboriEstimator({ onAddToCart }: Props) {
                   onChange={(fabric) => setSpecs({ ...specs, fabric })}
                 />
 
-                <QuantityInput
-                  value={specs.quantity}
-                  onChange={(quantity) => setSpecs({ ...specs, quantity })}
-                />
+                {/* 完全データ入稿の場合は個別の枚数指定を使うため、ここでは合計を表示（または非表示） */}
+                {specs.designDataMethod !== 'self' && (
+                  <QuantityInput
+                    value={specs.quantity}
+                    onChange={(quantity) => setSpecs({ ...specs, quantity })}
+                  />
+                )}
+
+                {specs.designDataMethod === 'self' && (
+                  <div className="bg-blue-50 p-4 rounded-xl border border-blue-200 flex items-center justify-between">
+                    <div className="font-bold text-blue-900">合計数量</div>
+                    <div className="text-2xl font-bold text-blue-600">{specs.quantity}枚</div>
+                  </div>
+                )}
+
 
                 <OptionsSelector
                   value={specs.options}
@@ -97,7 +118,7 @@ export function NoboriEstimator({ onAddToCart }: Props) {
                 {/* Method Selection */}
                 <div className="grid md:grid-cols-2 gap-4">
                   <div
-                    onClick={() => setSpecs({ ...specs, designDataMethod: 'self' })}
+                    onClick={() => setSpecs({ ...specs, designDataMethod: 'self', quantity: specs.designs?.reduce((s, d) => s + d.quantity, 0) || 1 })}
                     className={`cursor-pointer rounded-xl p-6 border-2 transition-all ${specs.designDataMethod === 'self' ? 'border-blue-600 bg-blue-50/50 shadow-md ring-2 ring-blue-100' : 'border-gray-200 hover:border-blue-300'}`}
                   >
                     <div className="flex items-center justify-between mb-2">
@@ -110,7 +131,7 @@ export function NoboriEstimator({ onAddToCart }: Props) {
                   </div>
 
                   <div
-                    onClick={() => setSpecs({ ...specs, designDataMethod: 'request' })}
+                    onClick={() => setSpecs({ ...specs, designDataMethod: 'request', quantity: 1 })}
                     className={`cursor-pointer rounded-xl p-6 border-2 transition-all ${specs.designDataMethod === 'request' ? 'border-blue-600 bg-blue-50/50 shadow-md ring-2 ring-blue-100' : 'border-gray-200 hover:border-blue-300'}`}
                   >
                     <div className="flex items-center justify-between mb-2">
@@ -127,10 +148,9 @@ export function NoboriEstimator({ onAddToCart }: Props) {
                 <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                   {specs.designDataMethod === 'self' ? (
                     <div className="space-y-4">
-                      <h4 className="font-bold text-gray-900">データアップロード</h4>
-                      <FileUploader
-                        files={files}
-                        onFilesChange={setFiles}
+                      <DesignQuantitySelector
+                        designs={specs.designs || []}
+                        onDesignsChange={(designs) => setSpecs({ ...specs, designs })}
                       />
                     </div>
                   ) : (
@@ -230,14 +250,21 @@ export function NoboriEstimator({ onAddToCart }: Props) {
                     {specs.designDataMethod === 'self' ? (
                       <dd className="font-bold text-gray-900">
                         完全データ入稿
-                        <div className="mt-1 text-sm font-normal text-gray-600 flex items-center">
-                          {files.length > 0 ? (
-                            <>
-                              <svg className="w-4 h-4 text-green-500 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                              {files.length}ファイル アップロード済み
-                            </>
+                        <div className="mt-2 text-sm font-normal text-gray-600">
+                          {specs.designs && specs.designs.length > 0 ? (
+                            <div className="space-y-1">
+                              {specs.designs.map((design, idx) => (
+                                <div key={idx} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+                                  <div className="flex items-center">
+                                    <span className="mr-2">📁</span>
+                                    <span className="truncate max-w-[150px]">{typeof design.file === 'string' ? design.file : design.file.name}</span>
+                                  </div>
+                                  <span className="font-bold">{design.quantity}枚</span>
+                                </div>
+                              ))}
+                            </div>
                           ) : (
-                            <span className="text-orange-500">※後日メール等で入稿してください</span>
+                            <span className="text-orange-500">※デザインデータを選択してください</span>
                           )}
                         </div>
                       </dd>
@@ -259,7 +286,11 @@ export function NoboriEstimator({ onAddToCart }: Props) {
               <div className="mt-8 flex justify-end">
                 <button
                   onClick={handleAddToCart}
-                  className="px-8 py-4 text-white rounded-xl font-bold shadow-lg flex items-center space-x-2 text-lg transform transition-all duration-200 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 hover:-translate-y-1 hover:shadow-xl"
+                  disabled={(specs.designDataMethod === 'self' && (!specs.designs || specs.designs.length === 0))}
+                  className={`px-8 py-4 text-white rounded-xl font-bold shadow-lg flex items-center space-x-2 text-lg transform transition-all duration-200 
+                    ${(specs.designDataMethod === 'self' && (!specs.designs || specs.designs.length === 0))
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 hover:-translate-y-1 hover:shadow-xl'}`}
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />

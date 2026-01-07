@@ -115,4 +115,4 @@ vercel --prod
 
 ## 🔒 ライセンス・権利表記
 
-Copyright (c) 2026 Nobori Online System. All Rights Reserved.
+Copyright (c) 2026 UMOGA. All Rights Reserved.
