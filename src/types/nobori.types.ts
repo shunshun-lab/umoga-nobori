@@ -49,3 +49,15 @@ export interface PriceBreakdown {
   wholesalePrice: number;
   quoteRequired: boolean;
 }
+
+export interface ShippingAddress {
+  id: string; // Unique ID
+  name: string;
+  postalCode: string;
+  prefecture: string;
+  city: string;
+  address1: string;
+  address2: string;
+  phone: string;
+  companyName?: string;
+}

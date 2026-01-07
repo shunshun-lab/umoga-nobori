@@ -25,6 +25,7 @@ export function NoboriEstimator({ onAddToCart }: Props) {
   });
 
   const [files, setFiles] = useState<string[]>([]);
+  const [showMobileQuote, setShowMobileQuote] = useState(false);
 
   const price = useNoboriPrice(specs);
   const addToCart = useStore(state => state.addToCart);
@@ -41,11 +42,13 @@ export function NoboriEstimator({ onAddToCart }: Props) {
     onAddToCart();
   };
 
+
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-gray-50">
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="grid lg:grid-cols-3 gap-8 items-start">
+        <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content Column */}
           <div className="lg:col-span-2 space-y-12 pb-24">
 
@@ -268,14 +271,70 @@ export function NoboriEstimator({ onAddToCart }: Props) {
 
           </div>
 
-          {/* 右側: 価格表示 (Sticky) */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-6">
+          {/* Desktop Right Column: Sticky Price Display */}
+          <div className="hidden lg:block lg:col-span-1">
+            <div className="sticky top-24">
               <PriceDisplay price={price} specs={specs} />
             </div>
           </div>
         </div>
       </div>
+
+      {/* Mobile Right Edge Trigger (Calculator) */}
+      <div
+        onClick={() => setShowMobileQuote(true)}
+        className="fixed right-0 top-1/2 transform -translate-y-1/2 z-40 bg-blue-600 text-white p-3 rounded-l-xl shadow-xl cursor-pointer hover:bg-blue-700 transition-all lg:hidden"
+      >
+        <div className="flex flex-col items-center space-y-1">
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+          </svg>
+          <span className="text-xs font-bold writing-mode-vertical">お見積もり</span>
+        </div>
+      </div>
+
+      {/* Mobile Drawer (Overlay) */}
+      {showMobileQuote && (
+        <div className="fixed inset-0 z-50 lg:hidden font-sans">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+            onClick={() => setShowMobileQuote(false)}
+          />
+
+          {/* Drawer Pane */}
+          <div className="absolute top-0 right-0 h-full w-[85vw] max-w-sm bg-white shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col">
+            <div className="p-4 border-b flex items-center justify-between bg-gray-50">
+              <h3 className="font-bold text-lg text-gray-900 flex items-center">
+                <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+                お見積もり詳細
+              </h3>
+              <button
+                onClick={() => setShowMobileQuote(false)}
+                className="p-2 text-gray-500 hover:bg-gray-200 rounded-full"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+
+            <div className="p-4 overflow-y-auto flex-1 bg-gray-50">
+              <PriceDisplay price={price} specs={specs} />
+
+              <div className="mt-8 pb-8">
+                <button
+                  onClick={() => {
+                    setShowMobileQuote(false);
+                    document.getElementById('confirm')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-blue-700"
+                >
+                  注文確認へ進む
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useStore } from '@/store';
 
 interface Props {
     onBack: () => void;
@@ -6,18 +7,22 @@ interface Props {
 }
 
 export function DeliveryEntry({ onBack, onComplete }: Props) {
+    // We can pre-fill this with the first shipping address for convenience if available
+    const shippingAddresses = useStore(state => state.shippingAddresses);
+    const cart = useStore(state => state.cart);
+
+    // Find first used address to prefill
+    const firstUsedAddressId = cart[0]?.shipping?.addressId;
+    const initialAddress = firstUsedAddressId ? shippingAddresses[firstUsedAddressId] : null;
+
     const [formData, setFormData] = useState({
-        name: '',
-        postalCode: '',
-        prefecture: '',
-        city: '',
-        address1: '',
-        address2: '',
-        phone: '',
-        email: ''
+        name: initialAddress?.name || '',
+        phone: initialAddress?.phone || '',
+        email: '',
+        companyName: initialAddress?.companyName || '',
     });
 
-    const isFormValid = formData.name && formData.phone && formData.email; // Simplified validation
+    const isFormValid = formData.name && formData.phone && formData.email;
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -33,20 +38,39 @@ export function DeliveryEntry({ onBack, onComplete }: Props) {
                 ← カートに戻る
             </button>
 
-            <h1 className="text-2xl font-bold mb-8">お届け先の入力</h1>
+            <h1 className="text-2xl font-bold mb-8">注文者情報・決済（デモ）</h1>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
+                <p className="text-sm text-blue-800">
+                    ※ 商品の配送先はカート画面で指定済みです。<br />
+                    ここでは、<strong>ご注文者様（請求先）のご連絡先</strong>を入力してください。
+                </p>
+            </div>
 
             <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                 <div className="space-y-6">
-                    <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-1">お名前 <span className="text-red-500">*</span></label>
-                        <input
-                            type="text"
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            placeholder="山田 太郎"
-                            value={formData.name}
-                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            required
-                        />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-sm font-bold text-gray-700 mb-1">お名前 (ご担当者様) <span className="text-red-500">*</span></label>
+                            <input
+                                type="text"
+                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                placeholder="山田 太郎"
+                                value={formData.name}
+                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-bold text-gray-700 mb-1">会社名 (任意)</label>
+                            <input
+                                type="text"
+                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                placeholder="株式会社サンプル"
+                                value={formData.companyName}
+                                onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+                            />
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -74,55 +98,17 @@ export function DeliveryEntry({ onBack, onComplete }: Props) {
                         </div>
                     </div>
 
-                    <div className="border-t border-gray-100 pt-6">
-                        <h3 className="text-lg font-bold mb-4">住所</h3>
-
-                        <div className="grid grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">郵便番号</label>
-                                <input
-                                    type="text"
-                                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                    placeholder="123-4567"
-                                    value={formData.postalCode}
-                                    onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">都道府県</label>
-                                <select
-                                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                    value={formData.prefecture}
-                                    onChange={(e) => setFormData({ ...formData, prefecture: e.target.value })}
-                                >
-                                    <option value="">選択してください</option>
-                                    <option value="東京都">東京都</option>
-                                    <option value="大阪府">大阪府</option>
-                                    {/* Mock list */}
-                                </select>
-                            </div>
-                        </div>
-
-                        <div className="mb-4">
-                            <label className="block text-sm font-bold text-gray-700 mb-1">市区町村・番地</label>
-                            <input
-                                type="text"
-                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                placeholder="千代田区1-1-1"
-                                value={formData.address1}
-                                onChange={(e) => setFormData({ ...formData, address1: e.target.value })}
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-1">建物名・部屋番号</label>
-                            <input
-                                type="text"
-                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                placeholder="メゾン千代田 101"
-                                value={formData.address2}
-                                onChange={(e) => setFormData({ ...formData, address2: e.target.value })}
-                            />
+                    <div className="pt-6 border-t border-gray-100">
+                        <label className="block text-sm font-bold text-gray-700 mb-4">お支払い方法</label>
+                        <div className="space-y-3">
+                            <label className="flex items-center p-4 border rounded-lg cursor-pointer bg-blue-50 border-blue-200">
+                                <input type="radio" name="payment" className="w-5 h-5 text-blue-600" checked readOnly />
+                                <span className="ml-3 font-bold text-gray-900">クレジットカード (デモ動作)</span>
+                            </label>
+                            <label className="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                                <input type="radio" name="payment" className="w-5 h-5 text-blue-600" disabled />
+                                <span className="ml-3 text-gray-500">銀行振込 (準備中)</span>
+                            </label>
                         </div>
                     </div>
 
@@ -134,10 +120,10 @@ export function DeliveryEntry({ onBack, onComplete }: Props) {
                                 ${isFormValid ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'}
                             `}
                         >
-                            注文内容を確認する（決済へ）
+                            注文を確定する
                         </button>
                         <p className="text-center text-sm text-gray-500 mt-2">
-                            ※次の画面で決済は行われません（本日ここまで）
+                            ※これはデモシステムです。実際の注文・決済は行われません。
                         </p>
                     </div>
                 </div>
