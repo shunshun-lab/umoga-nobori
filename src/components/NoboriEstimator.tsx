@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { SizeSelector } from './SizeSelector';
 import { FabricSelector } from './FabricSelector';
@@ -8,6 +9,10 @@ import { DesignQuantitySelector } from './DesignQuantitySelector';
 import { useNoboriPrice } from '@/hooks/useNoboriPrice';
 import { useStore } from '@/store';
 import { StickyEstimateFooter } from './StickyEstimateFooter';
+import { BannerSlider } from './BannerSlider';
+import { ScheduleSelector } from './ScheduleSelector';
+import { AccessoriesSelector } from './AccessoriesSelector';
+import { TemplateDownload } from './TemplateDownload';
 import type { NoboriSpecs } from '@/types/nobori.types';
 
 interface Props {
@@ -24,13 +29,14 @@ export function NoboriEstimator({ onAddToCart }: Props) {
     options: [],
     customDimensions: undefined,
     designDataMethod: 'self',
+    rushSchedule: false,
+    accessories: [],
   });
 
   const [showMobileQuote, setShowMobileQuote] = useState(false);
 
   const price = useNoboriPrice(specs);
   const addToCart = useStore(state => state.addToCart);
-  const sizes = useStore(state => state.sizes);
 
   // designsの変更を検知して合計数量を更新
   useEffect(() => {
@@ -43,20 +49,20 @@ export function NoboriEstimator({ onAddToCart }: Props) {
   }, [specs.designs, specs.designDataMethod]);
 
   const handleAddToCart = () => {
-    // Cartに追加
     addToCart({
       specs,
       price,
     });
-
-    // 親コンポーネントに通知（画面遷移など）
     onAddToCart();
   };
 
-
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-gray-50">
+
+      {/* Top Banner Area */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <BannerSlider />
+      </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="grid lg:grid-cols-3 gap-8">
@@ -64,12 +70,12 @@ export function NoboriEstimator({ onAddToCart }: Props) {
           <div className="lg:col-span-2 space-y-12 pb-40 lg:pb-24">
 
             {/* Step 1: 仕様選択 */}
-            <section id="specs">
+            <section id="specs" className="space-y-12">
               <div className="flex items-center space-x-3 mb-6 border-b pb-2">
                 <h2 className="text-2xl font-bold text-gray-900">仕様を選択</h2>
               </div>
 
-              <div className="space-y-8">
+              <div id="size">
                 <SizeSelector
                   value={specs.size}
                   specs={specs}
@@ -79,34 +85,51 @@ export function NoboriEstimator({ onAddToCart }: Props) {
                     customDimensions: dimensions !== undefined ? dimensions : prev.customDimensions
                   }))}
                 />
+              </div>
 
+              <div id="fabric">
                 <FabricSelector
                   value={specs.fabric}
                   onChange={(fabric) => setSpecs({ ...specs, fabric })}
                 />
+              </div>
 
-                {/* 完全データ入稿の場合は個別の枚数指定を使うため、ここでは合計を表示（または非表示） */}
-                {/* 完全データ入稿の場合は個別の枚数指定を使うため、ここでは合計を表示（または非表示） */
-                /* ただし、外部URL利用等でファイルがない場合は手入力できるようにする */}
+              <div id="options">
+                <OptionsSelector
+                  value={specs.options}
+                  specs={specs}
+                  onChange={(options) => setSpecs({ ...specs, options })}
+                />
+              </div>
+
+              <div id="schedule">
+                <ScheduleSelector
+                  value={specs.rushSchedule || false}
+                  onChange={(rush) => setSpecs({ ...specs, rushSchedule: rush })}
+                />
+              </div>
+
+              {/* 完全データ入稿の場合は個別の枚数指定を使うため、ここでは合計を表示（または非表示） */
+              /* ただし、外部URL利用等でファイルがない場合は手入力できるようにする */}
+              <div id="quantity">
                 {(specs.designDataMethod !== 'self' || (specs.designs && specs.designs.length === 0)) && (
                   <QuantityInput
                     value={specs.quantity}
                     onChange={(quantity) => setSpecs({ ...specs, quantity })}
                   />
                 )}
-
                 {specs.designDataMethod === 'self' && specs.designs && specs.designs.length > 0 && (
                   <div className="bg-blue-50 p-4 rounded-xl border border-blue-200 flex items-center justify-between">
                     <div className="font-bold text-blue-900">合計数量</div>
                     <div className="text-2xl font-bold text-blue-600">{specs.quantity}枚</div>
                   </div>
                 )}
+              </div>
 
-
-                <OptionsSelector
-                  value={specs.options}
-                  specs={specs}
-                  onChange={(options) => setSpecs({ ...specs, options })}
+              <div id="accessories">
+                <AccessoriesSelector
+                  value={specs.accessories || []}
+                  onChange={(acc) => setSpecs({ ...specs, accessories: acc })}
                 />
               </div>
             </section>
@@ -117,7 +140,9 @@ export function NoboriEstimator({ onAddToCart }: Props) {
                 <h2 className="text-2xl font-bold text-gray-900">データ・デザイン選択</h2>
               </div>
 
-              <div className="space-y-8">
+              <TemplateDownload />
+
+              <div className="space-y-8 mt-6">
                 {/* Method Selection */}
                 <div className="grid md:grid-cols-2 gap-4">
                   <div
@@ -130,7 +155,13 @@ export function NoboriEstimator({ onAddToCart }: Props) {
                       {specs.designDataMethod !== 'self' && <div className="w-4 h-4 rounded-full border-2 border-gray-300"></div>}
                     </div>
                     <p className="text-sm text-gray-500 mb-2">Illustrator(.ai)等の完成データをアップロード</p>
-                    <span className="inline-block bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded font-bold">無料</span>
+                    <div className="flex justify-between items-center">
+                      <span className="inline-block bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded font-bold">無料</span>
+                      <a href="/data-guide" target="_blank" className="text-xs text-blue-600 hover:underline flex items-center" onClick={(e) => e.stopPropagation()}>
+                        入稿ガイドはこちら
+                        <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                      </a>
+                    </div>
                   </div>
 
                   <div
@@ -221,120 +252,56 @@ export function NoboriEstimator({ onAddToCart }: Props) {
               </div>
             </section>
 
-            {/* Step 3: 確認 */}
-            <section id="confirm" className="border-t pt-12">
-              <div className="flex items-center space-x-3 mb-6 border-b pb-2">
-                <h2 className="text-2xl font-bold text-gray-900">注文内容の確認</h2>
+            {/* Customer Voice Section */}
+            <section id="voice" className="border-t pt-12">
+              <div className="flex items-center space-x-3 mb-8">
+                <div className="p-2 bg-yellow-100 rounded-full">
+                  <svg className="w-6 h-6 text-yellow-600" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900">お客様の声</h2>
               </div>
 
-              <div className="bg-white rounded-2xl shadow-md p-6">
-                {/* Print Header */}
-                <div className="hidden print:block mb-8 border-b-2 border-gray-800 pb-4">
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">御見積書</h1>
-                  <div className="flex justify-between text-sm text-gray-600">
-                    <span>発行日: {new Date().toLocaleDateString()}</span>
-                    <span>株式会社サンプル</span>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                  <div className="flex items-center mb-4">
+                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold mr-3">A</div>
+                    <div>
+                      <div className="font-bold text-gray-900">イベント企画 A社様</div>
+                      <div className="text-xs text-gray-500">2023年6月 ご利用</div>
+                    </div>
                   </div>
+                  <p className="text-gray-600 text-sm leading-relaxed">
+                    「急なイベントで納期が心配でしたが、特急対応で間に合わせていただき大変助かりました。印刷も綺麗でクライアントにも喜ばれました。」
+                  </p>
                 </div>
-
-                <div className="flex items-center space-x-3 mb-6">
-                  <div className="p-3 bg-blue-100 rounded-xl">
-                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                    </svg>
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                  <div className="flex items-center mb-4">
+                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold mr-3">K</div>
+                    <div>
+                      <div className="font-bold text-gray-900">飲食店 K店長様</div>
+                      <div className="text-xs text-gray-500">2023年8月 ご利用</div>
+                    </div>
                   </div>
-                  <h2 className="text-2xl font-bold">ご入力内容</h2>
+                  <p className="text-gray-600 text-sm leading-relaxed">
+                    「デザインデータ作成からお願いしましたが、こちらの要望を汲み取っていただき素晴らしいのぼりが完成しました。また利用したいです。」
+                  </p>
                 </div>
-
-                <dl className="space-y-4">
-                  <div className="flex justify-between items-center py-3 border-b border-gray-100">
-                    <dt className="text-gray-600 font-medium">案件名・データ名</dt>
-                    <dd className="font-bold text-gray-900">{specs.orderName || '（未入力）'}</dd>
-                  </div>
-                  <div className="flex justify-between items-center py-3 border-b border-gray-100">
-                    <dt className="text-gray-600 font-medium">サイズ</dt>
-                    <dd className="font-bold text-gray-900">
-                      {specs.size === 'custom'
-                        ? `サイズ指定 ${specs.customDimensions?.width || '?'}x${specs.customDimensions?.height || '?'}cm`
-                        : (sizes[specs.size]?.displayName || sizes[specs.size]?.name || specs.size)}
-                    </dd>
-                  </div>
-                  <div className="flex justify-between items-center py-3 border-b border-gray-100">
-                    <dt className="text-gray-600 font-medium">生地</dt>
-                    <dd className="font-bold text-gray-900">{specs.fabric}</dd>
-                  </div>
-                  <div className="flex justify-between items-center py-3 border-b border-gray-100">
-                    <dt className="text-gray-600 font-medium">数量</dt>
-                    <dd className="font-bold text-gray-900">{specs.quantity}枚</dd>
-                  </div>
-                  <div className="flex justify-between items-center py-3 border-b border-gray-100">
-                    <dt className="text-gray-600 font-medium">オプション</dt>
-                    <dd className="font-bold text-gray-900">
-                      {specs.options.length > 0
-                        ? specs.options.join(', ')
-                        : 'なし'}
-                    </dd>
-                  </div>
-
-                  {/* Design / Data Section */}
-                  <div className="py-3">
-                    <dt className="text-gray-600 font-medium mb-1">入稿・デザイン</dt>
-                    {specs.designDataMethod === 'self' ? (
-                      <dd className="font-bold text-gray-900">
-                        完全データ入稿
-                        <div className="mt-2 text-sm font-normal text-gray-600">
-                          {specs.designs && specs.designs.length > 0 ? (
-                            <div className="space-y-1">
-                              {specs.designs.map((design, idx) => (
-                                <div key={idx} className="flex items-center justify-between bg-gray-50 p-2 rounded">
-                                  <div className="flex items-center">
-                                    <span className="mr-2">📁</span>
-                                    <span className="truncate max-w-[150px]">{typeof design.file === 'string' ? design.file : design.file.name}</span>
-                                  </div>
-                                  <span className="font-bold">{design.quantity}枚</span>
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            !specs.externalDataUrl && <span className="text-orange-500">※デザインデータを選択してください</span>
-                          )}
-
-                          {specs.externalDataUrl && (
-                            <div className="mt-2 p-2 bg-blue-50 border border-blue-100 rounded text-blue-800">
-                              <span className="font-bold mr-2">[外部URL]</span>
-                              <a href={specs.externalDataUrl} target="_blank" rel="noreferrer" className="underline truncate block">{specs.externalDataUrl}</a>
-                            </div>
-                          )}
-                        </div>
-                      </dd>
-                    ) : (
-                      <dd>
-                        <div className="font-bold text-blue-600">デザイン制作依頼 (+¥5,500)</div>
-                        {specs.designRequestDetails && (
-                          <div className="mt-2 p-3 bg-gray-50 rounded-lg text-sm text-gray-700 whitespace-pre-wrap">
-                            {specs.designRequestDetails}
-                          </div>
-                        )}
-                        <div className="mt-1 text-xs text-gray-500">※詳細なヒアリングは注文後にメールで行います</div>
-                      </dd>
-                    )}
-                  </div>
-                </dl>
               </div>
+            </section>
 
-              <div className="mt-8 flex justify-end">
+            {/* Step 3: 確認 (Hidden, since PriceDisplay is sticky) */}
+            <section id="confirm" className="pt-12">
+              {/* Mobile Action Area */}
+              <div className="lg:hidden">
                 <button
                   onClick={handleAddToCart}
                   disabled={(specs.designDataMethod === 'self' && (!specs.designs || specs.designs.length === 0) && !specs.externalDataUrl)}
-                  className={`px-8 py-4 text-white rounded-xl font-bold shadow-lg flex items-center space-x-2 text-lg transform transition-all duration-200 
-                    ${(specs.designDataMethod === 'self' && (!specs.designs || specs.designs.length === 0) && !specs.externalDataUrl)
+                  className={`w-full py-4 text-white rounded-xl font-bold shadow-lg text-lg 
+                        ${(specs.designDataMethod === 'self' && (!specs.designs || specs.designs.length === 0) && !specs.externalDataUrl)
                       ? 'bg-gray-400 cursor-not-allowed'
-                      : 'bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 hover:-translate-y-1 hover:shadow-xl'}`}
+                      : 'bg-gradient-to-r from-blue-600 to-blue-500'}`}
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                  <span>カートに入れる</span>
+                  カートに入れる
                 </button>
               </div>
             </section>
@@ -345,12 +312,26 @@ export function NoboriEstimator({ onAddToCart }: Props) {
           <div className="hidden lg:block lg:col-span-1">
             <div className="sticky top-24">
               <PriceDisplay price={price} specs={specs} />
+
+              <div className="mt-6">
+                <button
+                  onClick={handleAddToCart}
+                  disabled={(specs.designDataMethod === 'self' && (!specs.designs || specs.designs.length === 0) && !specs.externalDataUrl)}
+                  className={`w-full py-4 text-white rounded-xl font-bold shadow-lg flex justify-center items-center space-x-2 text-lg transform transition-all duration-200 
+                    ${(specs.designDataMethod === 'self' && (!specs.designs || specs.designs.length === 0) && !specs.externalDataUrl)
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 hover:-translate-y-1 hover:shadow-xl'}`}
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                  <span>カートに入れる</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Mobile Right Edge Trigger (Calculator) - REMOVED in favor of StickyFooter */}
 
       {/* Mobile Drawer (Overlay) */}
       {showMobileQuote && (
@@ -381,13 +362,11 @@ export function NoboriEstimator({ onAddToCart }: Props) {
 
               <div className="mt-8 pb-8">
                 <button
-                  onClick={() => {
-                    setShowMobileQuote(false);
-                    document.getElementById('confirm')?.scrollIntoView({ behavior: 'smooth' });
-                  }}
+                  onClick={handleAddToCart}
+                  disabled={(specs.designDataMethod === 'self' && (!specs.designs || specs.designs.length === 0) && !specs.externalDataUrl)}
                   className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-blue-700"
                 >
-                  注文確認へ進む
+                  カートに入れる
                 </button>
               </div>
             </div>

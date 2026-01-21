@@ -62,6 +62,9 @@ export function SizeSelector({ value, specs, onChange }: Props) {
                 }
               `}
             >
+              <div className="mb-3 rounded-lg overflow-hidden h-32 bg-gray-100">
+                <img src="https://placehold.co/400x300?text=Size+Image" alt={size.displayName} className="w-full h-full object-cover" />
+              </div>
               {value === id && (
                 <div className="absolute top-4 right-4">
                   <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">

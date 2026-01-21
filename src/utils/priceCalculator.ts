@@ -1,4 +1,4 @@
-import { SIZES, FABRICS } from './constants';
+import { SIZES, FABRICS, ACCESSORIES } from './constants';
 import type { NoboriSpecs, PriceBreakdown } from '@/types/nobori.types';
 import type { PricingTables, DiscountRule } from '@/store';
 
@@ -10,6 +10,7 @@ export interface CalculatorContext {
   sizes: typeof SIZES | Record<string, any>;
   fabrics: typeof FABRICS | Record<string, any>;
   options: Record<string, any>;
+  accessories?: typeof ACCESSORIES | Record<string, any>; // Added
   pricingTables: PricingTables;
   discountRules: DiscountRule[];
 }
@@ -129,13 +130,26 @@ export function calculateNoboriPrice(
     optionsTotal += optCost;
   });
 
+  // 5. Accessories
+  let accessoriesTotal = 0;
+  if (specs.accessories) {
+    specs.accessories.forEach(acc => {
+      // Use imported constant directly
+      // @ts-ignore
+      const item = ACCESSORIES[acc.id];
+      if (item) {
+        accessoriesTotal += item.price * acc.quantity;
+      }
+    });
+  }
+
   // Final Sum
   const unitPriceTotal = quoteRequired ? 0 : (bodyPrice + optionsTotal);
 
   // Design Fee (One-time, Per Order)
   const designFee = specs.designDataMethod === 'request' ? 5500 : 0;
 
-  const totalPrice = (unitPriceTotal * quantity) + designFee;
+  const totalPrice = (unitPriceTotal * quantity) + designFee + accessoriesTotal;
   const wholesalePrice = Math.floor(totalPrice * 0.8);
 
   return {

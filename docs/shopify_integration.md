@@ -53,19 +53,41 @@ sequenceDiagram
     4. メタデータ（生地、サイズ、オプション）を `properties` として付与します。
     5. ユーザーをShopifyの決済画面に誘導するための `invoice_url` を返します。
 
+### 3. 自動注文同期 (Webhooks)
+- **ファイル**: `api/webhooks/order-paid.ts`
+- **目的**: 決済完了（支払い済み）時に自動的に注文詳細をGoogleスプレッドシートに記録します。
+- **認証**: **SHOPIFY_WEBHOOK_SECRET** を使用したHMAC検証。
+- **仕組み**:
+    1. Shopifyから `orders/paid` Webhookを受け取ります。
+    2. 注文情報から、カスタム属性（生地、サイズ、オプション）や顧客情報を抽出します。
+    3. Google Sheets APIを使用して、指定されたスプレッドシートの末尾に新しい行を追加（Append）します。
+
 ## セットアップ要件
 
 本システムを動作させるには、Vercel側で以下の環境変数が必要です。
 
 | 変数名 | 説明 | 設定例 |
 |---|---|---|
-| `SHOPIFY_SHOP_DOMAIN` | 対象の myshopify.com ドメイン | `example.myshopify.com` |
+| `SHOPIFY_SHOP_DOMAIN` | 対象 of myshopify.com ドメイン | `example.myshopify.com` |
 | `SHOPIFY_ACCESS_TOKEN` | Admin API トークン (`shpat_` で始まるもの) | `shpat_xxxxxxxx` |
+| `SHOPIFY_WEBHOOK_SECRET` | WebhookのHMAC検証用シークレット | `xxxxxxxxxxxxxx` |
+| `GOOGLE_SERVICE_ACCOUNT_EMAIL` | Google Sheets操作用のサービスアカウント | `order-sync@...gserviceaccount.com` |
+| `GOOGLE_PRIVATE_KEY` | Googleサービスアカウントの秘密鍵 | `-----BEGIN PRIVATE KEY----- ...` |
 
 ### Adminトークンに必要な権限 (Scope)
 カスタムアプリの設定にて、Adminトークンには以下のスコープが必要です。
 - `write_draft_orders`
 - `read_draft_orders`
+- `read_orders` (Webhookで注文情報を詳細に取得する場合)
+
+### Webhookの登録方法
+1. Shopify管理画面 > 設定 > 通知 > Webhooks (最下部) へ移動。
+2. 「Webhookを作成」をクリック。
+3. イベント: `支払い済みの注文` (orders/paid)
+4. 形式: `JSON`
+5. URL: `https://your-domain.vercel.app/api/webhooks/order-paid`
+6. APIバージョン: `最新`
+7. 本番環境以外（プレビュー等）でテストする場合は、適宜URLを変更してください。
 
 ## トラブルシューティング
 

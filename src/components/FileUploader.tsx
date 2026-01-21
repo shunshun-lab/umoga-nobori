@@ -19,7 +19,8 @@ export function FileUploader({ files, onFilesChange }: Props) {
     accept: {
       'application/pdf': ['.pdf'],
       'application/postscript': ['.ai', '.eps'],
-      'image/*': ['.png', '.jpg', '.jpeg']
+      'image/*': ['.png', '.jpg', '.jpeg'],
+      'application/zip': ['.zip', '.lzh', '.rar'],
     }
   });
 

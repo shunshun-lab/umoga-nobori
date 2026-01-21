@@ -168,6 +168,24 @@ export const QUANTITY_DISCOUNTS = [
   { min: 400, max: Infinity, rate: 0.8115, label: '81.15%OFF' },
 ] as const;
 
+// 付属品
+export const ACCESSORIES = {
+  pole_3m: {
+    id: 'pole_3m',
+    name: '3mポール（白）',
+    price: 500,
+    image: 'https://placehold.co/100x100?text=Pole',
+  },
+  stand_water: {
+    id: 'stand_water',
+    name: '注水台（10L）',
+    price: 1500,
+    image: 'https://placehold.co/100x100?text=Stand',
+  },
+} as const;
+
+export type AccessoryId = keyof typeof ACCESSORIES;
+
 // 割引適用の判定
 export function getDiscountRate(quantity: number): number {
   const bracket = QUANTITY_DISCOUNTS.find(

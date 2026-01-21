@@ -5,6 +5,8 @@ interface Props {
   onChange: (quantity: number) => void;
 }
 
+import { QuantityInputField } from './QuantityInputField';
+
 export function QuantityInput({ value, onChange }: Props) {
   return (
     <div className="bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
@@ -39,20 +41,11 @@ export function QuantityInput({ value, onChange }: Props) {
         </div>
       </div>
 
-      {/* 数値入力 */}
       <div className="mb-5">
         <label className="block text-sm font-medium text-gray-700 mb-3">
           カスタム数量を入力
         </label>
-        <input
-          type="number"
-          min="1"
-          max="10000"
-          value={value}
-          onChange={(e) => onChange(parseInt(e.target.value) || 1)}
-          className="w-full px-4 py-3 rounded-xl border-2 border-gray-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 text-gray-900 placeholder-gray-400 text-lg font-semibold"
-          placeholder="数量を入力"
-        />
+        <QuantityInputField value={value} onChange={onChange} />
       </div>
 
       {/* 数量割引案内 */}

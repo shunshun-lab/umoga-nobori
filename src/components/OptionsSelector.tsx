@@ -99,7 +99,11 @@ export function OptionsSelector({ value, specs, onChange }: Props) {
                   />
                 </div>
 
-                <div className="flex-1 ml-4">
+                <div className="ml-4 mr-4 w-24 h-24 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden hidden sm:block">
+                  <img src="https://placehold.co/200x200?text=Option" alt="Option" className="w-full h-full object-cover" />
+                </div>
+
+                <div className="flex-1">
                   <div className="flex items-center justify-between mb-2">
                     <div className="font-bold text-xl text-gray-900">{option.displayName}</div>
                     {value.includes(id as OptionId) && (

@@ -23,6 +23,9 @@ export interface NoboriSpecs {
   designDataMethod: 'self' | 'request'; // 'self' = AI/Upload, 'request' = Professional Design
   designRequestDetails?: string; // Text for design request
   externalDataUrl?: string; // URL for external file service (e.g. GigaFile)
+  rushSchedule?: boolean; // お急ぎ便
+  sewingMethod?: 'standard' | 'pole_sewing'; // 縫製方法 (distinct from options if needed, but pole_pocket is an option)
+  accessories?: { id: string; quantity: number }[]; // 付属品
 }
 
 export interface PriceBreakdown {
