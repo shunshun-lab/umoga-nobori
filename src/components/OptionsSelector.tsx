@@ -1,8 +1,10 @@
 import optionReferenceImage from '@/../shopify-theme/assets/option-sample.jpg';
+import { useEffect, useState } from 'react';
 import { type OptionId } from '@/utils/constants';
 import { useStore } from '@/store';
 import { calculateNoboriPrice } from '@/utils/priceCalculator';
 import type { NoboriSpecs } from '@/types/nobori.types';
+import { uiConfigService } from '@/utils/uiConfigService';
 
 interface Props {
   value: OptionId[];
@@ -20,6 +22,35 @@ export function OptionsSelector({ value, specs, onChange }: Props) {
   const fabrics = useStore(state => state.fabrics);
   const pricingTables = useStore(state => state.pricingTables);
   const discountRules = useStore(state => state.discountRules);
+
+  // UI設定からオプション画像（最大3件のうち先頭1件）を取得
+  const [optionImageMap, setOptionImageMap] = useState<Record<string, string | undefined>>({});
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const config = await uiConfigService.loadUiConfig();
+        if (!mounted) return;
+        const map: Record<string, string | undefined> = {};
+        const byOptionId = config.optionImages?.byOptionId || {};
+        Object.entries(byOptionId).forEach(([optionId, payload]) => {
+          const images = (payload.images || [])
+            .filter(img => img.active)
+            .sort((a, b) => a.sortOrder - b.sortOrder);
+          if (images[0]) {
+            map[optionId] = images[0].imageUrl;
+          }
+        });
+        setOptionImageMap(map);
+      } catch {
+        // 読み込み失敗時はプレースホルダーにフォールバック
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const toggleOption = (optionId: OptionId) => {
     if (value.includes(optionId)) {
@@ -60,6 +91,15 @@ export function OptionsSelector({ value, specs, onChange }: Props) {
     return Math.round(diffTotal / specs.quantity);
   };
 
+  // 棒通しの仕立てオプション（棒袋 / チチ）を専用ブロックとして抽出
+  const finishingOptionIds: OptionId[] = ['pole_pocket', 'chichi'].filter(
+    (id) => !!optionsMaster[id]
+  ) as OptionId[];
+
+  const otherOptionsEntries = Object.entries(optionsMaster).filter(
+    ([id]) => !finishingOptionIds.includes(id as OptionId)
+  );
+
   return (
     <div className="bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
       <div className="flex items-center space-x-3 mb-6">
@@ -72,8 +112,64 @@ export function OptionsSelector({ value, specs, onChange }: Props) {
       </div>
 
       <div className="flex flex-col xl:flex-row gap-8">
-        <div className="space-y-3 flex-1">
-          {Object.entries(optionsMaster).map(([id, option]) => {
+        <div className="space-y-6 flex-1">
+          {/* ③ 棒通しの仕立て（棒袋 / チチ） */}
+          {finishingOptionIds.length > 0 && (
+            <div className="border border-blue-100 rounded-2xl p-4 bg-blue-50/40">
+              <h3 className="text-lg font-bold text-gray-900 mb-2">棒通しの仕立て</h3>
+              <p className="text-xs text-gray-600 mb-3">
+                ポールの通し方を選択してください。「棒袋」は袋状に縫製、「チチ」は輪っかを縫い付ける一般的なのぼり仕様です。
+              </p>
+              <div className="space-y-2">
+                {finishingOptionIds.map((id) => {
+                  const option = optionsMaster[id];
+                  if (!option || (optionVisibility && optionVisibility[id] === false)) return null;
+
+                  const price = getOptionPrice(id);
+                  const sign = price > 0 ? '+' : '';
+
+                  return (
+                    <label
+                      key={id}
+                      className={`
+                        flex items-start p-4 rounded-2xl border-2 cursor-pointer transition-all duration-200
+                        ${value.includes(id)
+                          ? 'border-blue-600 bg-white shadow-md ring-2 ring-blue-100'
+                          : 'border-gray-200 hover:border-blue-400 bg-white'
+                        }
+                      `}
+                    >
+                      <div className="mt-1">
+                        <input
+                          type="radio"
+                          name="finishing"
+                          checked={value.includes(id)}
+                          onChange={() => {
+                            // 他方の仕立てオプションを外してから選択
+                            const othersRemoved = value.filter(v => !finishingOptionIds.includes(v));
+                            onChange([...othersRemoved, id]);
+                          }}
+                          className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 cursor-pointer"
+                        />
+                      </div>
+                      <div className="ml-3 flex-1">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="font-bold text-gray-900">{option.displayName}</span>
+                          <span className={`px-2 py-0.5 rounded text-xs font-bold ${price < 0 ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>
+                            {sign}¥{price.toLocaleString()}
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-600">{option.description}</p>
+                      </div>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* その他のオプション */}
+          {otherOptionsEntries.map(([id, option]) => {
             if (optionVisibility && optionVisibility[id] === false) return null;
 
             const price = getOptionPrice(id);
@@ -100,7 +196,11 @@ export function OptionsSelector({ value, specs, onChange }: Props) {
                 </div>
 
                 <div className="ml-4 mr-4 w-24 h-24 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden hidden sm:block">
-                  <img src="https://placehold.co/200x200?text=Option" alt="Option" className="w-full h-full object-cover" />
+                  <img
+                    src={optionImageMap[id] || (option as any).imageUrl || 'https://placehold.co/200x200?text=Option'}
+                    alt={option.displayName}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
 
                 <div className="flex-1">

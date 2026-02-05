@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useStore } from '@/store';
+import { useShopify } from '@/hooks/useShopify';
+import { ACCESSORIES } from '@/utils/constants';
 
 interface Props {
     onBack: () => void;
@@ -10,6 +12,11 @@ export function DeliveryEntry({ onBack, onComplete }: Props) {
     // We can pre-fill this with the first shipping address for convenience if available
     const shippingAddresses = useStore(state => state.shippingAddresses);
     const cart = useStore(state => state.cart);
+    const sizes = useStore(state => state.sizes);
+    const fabrics = useStore(state => state.fabrics);
+    const options = useStore(state => state.options);
+
+    const { addToCart } = useShopify();
 
     // Find first used address to prefill
     const firstUsedAddressId = cart[0]?.shipping?.addressId;
@@ -24,9 +31,87 @@ export function DeliveryEntry({ onBack, onComplete }: Props) {
 
     const isFormValid = formData.name && formData.phone && formData.email;
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        onComplete();
+
+        if (cart.length === 0) {
+            alert('カートに商品がありません。');
+            return;
+        }
+
+        const shopifyVariantId = import.meta.env.VITE_SHOPIFY_NOBORI_VARIANT_ID;
+        if (!shopifyVariantId) {
+            alert('ShopifyのバリアントIDが設定されていません。\n環境変数 VITE_SHOPIFY_NOBORI_VARIANT_ID を設定してください。');
+            return;
+        }
+
+        const item = cart[0];
+        const specs = item.specs;
+        const shipping = item.shipping;
+        const address = shipping?.addressId ? shippingAddresses[shipping.addressId] : undefined;
+
+        const sizeName = specs.size === 'custom'
+            ? `カスタム ${specs.customDimensions?.width}x${specs.customDimensions?.height}cm`
+            : (sizes[specs.size]?.displayName || specs.size);
+
+        const fabricName = fabrics[specs.fabric]?.displayName || specs.fabric;
+
+        const optionsText =
+            specs.options.length > 0
+                ? specs.options.map(id => options[id]?.displayName || id).join(', ')
+                : 'なし';
+
+        const accessoriesText =
+            (specs.accessories || []).length > 0
+                ? (specs.accessories || [])
+                    .map(acc => {
+                        const def = (ACCESSORIES as any)[acc.id];
+                        return `${def?.name || acc.id} x${acc.quantity}`;
+                    })
+                    .join(', ')
+                : 'なし';
+
+        const customAttributes = [
+            { key: 'サイズ', value: sizeName },
+            { key: '生地', value: fabricName },
+            { key: '印刷方法', value: specs.printMethod },
+            { key: '数量', value: specs.quantity.toString() },
+            { key: 'オプション', value: optionsText },
+            { key: '付属品', value: accessoriesText },
+            { key: '希望出荷日', value: specs.desiredShipDate || '指定なし' },
+            { key: 'お急ぎ便', value: shipping?.deliveryMode === 'rush' ? 'はい' : 'いいえ' },
+            {
+                key: '配送先',
+                value: address
+                    ? `〒${address.postalCode} ${address.prefecture}${address.city}${address.address1} ${address.address2 || ''}`
+                    : '未指定',
+            },
+            { key: '案件名・データ名', value: specs.orderName || '' },
+            { key: 'デザイン区分', value: specs.designDataMethod === 'self' ? '完全データ入稿' : 'デザイン制作依頼' },
+            { key: 'デザイン依頼メモ', value: specs.designRequestDetails || '' },
+            { key: '外部データURL', value: specs.externalDataUrl || '' },
+            { key: '見積金額(税込)', value: item.price.totalPrice.toString() },
+            { key: '1枚あたり単価', value: item.price.unitPrice.toString() },
+            { key: 'Rush設定', value: specs.rushSchedule ? 'true' : 'false' },
+            {
+                key: '注文者情報',
+                value: `${formData.companyName ? formData.companyName + ' / ' : ''}${formData.name} / ${formData.phone} / ${formData.email}`,
+            },
+        ];
+
+        try {
+            const checkoutUrl = await addToCart(
+                shopifyVariantId,
+                specs.quantity || 1,
+                customAttributes,
+            );
+
+            onComplete();
+            window.location.href = checkoutUrl;
+        } catch (error) {
+            console.error('Failed to add to Shopify cart:', error);
+            alert('Shopifyカートへの追加に失敗しました。時間をおいて再度お試しください。');
+        }
     };
 
     return (

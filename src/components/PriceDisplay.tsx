@@ -12,7 +12,7 @@ export function PriceDisplay({ price, specs }: Props) {
   const options = useStore((state) => state.options);
 
   const selectedSize = sizes[specs.size] || sizes.standard;
-  const selectedFabric = fabrics[specs.fabric] || fabrics.polリエステル;
+  const selectedFabric = fabrics[specs.fabric] || fabrics.polyester;
   const selectedOptions = specs.options.map(id => options[id]).filter(Boolean);
 
   const handleScroll = (id: string) => {
@@ -80,9 +80,30 @@ export function PriceDisplay({ price, specs }: Props) {
           )}
         </div>
         {!price.quoteRequired && (
-          <div className="flex items-center space-x-2 text-sm text-gray-700">
-            <span className="font-bold">1枚あたり ¥{price.unitPrice.toLocaleString()}</span>
-          </div>
+          <>
+            <div className="flex items-center space-x-2 text-sm text-gray-700 mb-2">
+              <span className="font-bold">1枚あたり ¥{price.unitPrice.toLocaleString()}</span>
+            </div>
+            <div className="text-xs text-gray-600 space-y-1">
+              <div className="font-semibold text-gray-700">内訳</div>
+              <div className="flex justify-between">
+                <span>本体・オプション等</span>
+                <span>¥{price.subtotal.toLocaleString()}</span>
+              </div>
+              {price.designFee > 0 && (
+                <div className="flex justify-between">
+                  <span>デザイン費</span>
+                  <span>¥{price.designFee.toLocaleString()}</span>
+                </div>
+              )}
+              {price.accessoriesCost > 0 && (
+                <div className="flex justify-between">
+                  <span>器具・付属品</span>
+                  <span>¥{price.accessoriesCost.toLocaleString()}</span>
+                </div>
+              )}
+            </div>
+          </>
         )}
       </div>
 

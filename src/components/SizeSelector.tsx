@@ -1,7 +1,9 @@
+import { useEffect, useState } from 'react';
 import { type SizeId } from '@/utils/constants';
 import { useStore } from '@/store';
 import { calculateNoboriPrice } from '@/utils/priceCalculator';
 import type { NoboriSpecs } from '@/types/nobori.types';
+import { uiConfigService } from '@/utils/uiConfigService';
 
 interface Props {
   value: SizeId | 'custom';
@@ -17,6 +19,35 @@ export function SizeSelector({ value, specs, onChange }: Props) {
   const pricingTables = useStore(state => state.pricingTables);
   const discountRules = useStore(state => state.discountRules);
   const fabricLimits = useStore(state => state.fabricLimits); // New
+
+  // UI設定からサイズ画像（最大3件のうち先頭1件）を取得
+  const [sizeImageMap, setSizeImageMap] = useState<Record<string, string | undefined>>({});
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const config = await uiConfigService.loadUiConfig();
+        if (!mounted) return;
+        const map: Record<string, string | undefined> = {};
+        const bySizeId = config.sizeImages?.bySizeId || {};
+        Object.entries(bySizeId).forEach(([sizeId, payload]) => {
+          const images = (payload.images || [])
+            .filter(img => img.active)
+            .sort((a, b) => a.sortOrder - b.sortOrder);
+          if (images[0]) {
+            map[sizeId] = images[0].imageUrl;
+          }
+        });
+        setSizeImageMap(map);
+      } catch {
+        // 読み込み失敗時はプレースホルダーにフォールバック
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   // Get current limits
   const currentFabricId = specs.fabric || 'polyester';
@@ -63,7 +94,11 @@ export function SizeSelector({ value, specs, onChange }: Props) {
               `}
             >
               <div className="mb-3 rounded-lg overflow-hidden h-32 bg-gray-100">
-                <img src="https://placehold.co/400x300?text=Size+Image" alt={size.displayName} className="w-full h-full object-cover" />
+                <img
+                  src={sizeImageMap[id] || (size as any).imageUrl || 'https://placehold.co/400x300?text=Size+Image'}
+                  alt={size.displayName}
+                  className="w-full h-full object-cover"
+                />
               </div>
               {value === id && (
                 <div className="absolute top-4 right-4">

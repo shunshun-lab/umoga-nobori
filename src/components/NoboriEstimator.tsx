@@ -13,7 +13,9 @@ import { BannerSlider } from './BannerSlider';
 import { ScheduleSelector } from './ScheduleSelector';
 import { AccessoriesSelector } from './AccessoriesSelector';
 import { TemplateDownload } from './TemplateDownload';
+import { uiConfigService } from '@/utils/uiConfigService';
 import type { NoboriSpecs } from '@/types/nobori.types';
+import type { NoboriTextSettings } from '@/utils/uiConfigTypes';
 
 interface Props {
   onAddToCart: () => void;
@@ -34,6 +36,25 @@ export function NoboriEstimator({ onAddToCart }: Props) {
   });
 
   const [showMobileQuote, setShowMobileQuote] = useState(false);
+  const [noboriText, setNoboriText] = useState<NoboriTextSettings | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const config = await uiConfigService.loadUiConfig();
+        if (!mounted) return;
+        if (config.noboriText) {
+          setNoboriText(config.noboriText);
+        }
+      } catch {
+        // 読み込み失敗時はデフォルト文言のまま
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const price = useNoboriPrice(specs);
   const addToCart = useStore(state => state.addToCart);
@@ -49,6 +70,12 @@ export function NoboriEstimator({ onAddToCart }: Props) {
   }, [specs.designs, specs.designDataMethod]);
 
   const handleAddToCart = () => {
+    // デザイン1種に対して1会計・1品番に制限
+    if (specs.designDataMethod === 'self' && specs.designs && specs.designs.length > 1) {
+      alert('完全データ入稿では、1回のご注文につき1デザインまでとしています。\nデザインごとに見積もり・注文を分けてください。');
+      return;
+    }
+
     addToCart({
       specs,
       price,
@@ -59,12 +86,20 @@ export function NoboriEstimator({ onAddToCart }: Props) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-gray-50">
 
-      {/* Top Banner Area */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-        <BannerSlider />
-      </div>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        {/* ページヘッダー（商品ごとの見出し）＋バナー */}
+        <div className="mb-8">
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold text-gray-900">
+              {noboriText?.title || 'のぼり製作 オンライン見積もり'}
+            </h1>
+            <p className="mt-2 text-sm text-gray-600">
+              {noboriText?.subtitle || 'サイズ・生地・枚数を選ぶだけでその場で金額がわかります'}
+            </p>
+          </div>
+          <BannerSlider />
+        </div>
+
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content Column */}
           <div className="lg:col-span-2 space-y-12 pb-40 lg:pb-24">
@@ -107,6 +142,54 @@ export function NoboriEstimator({ onAddToCart }: Props) {
                   value={specs.rushSchedule || false}
                   onChange={(rush) => setSpecs({ ...specs, rushSchedule: rush })}
                 />
+                {/* ⑨ 出荷日の目安表示（簡易カレンダー） */}
+                <div className="mt-4 bg-gray-50 border border-dashed border-gray-300 rounded-xl p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <div className="text-xs font-bold text-gray-600">出荷予定日の目安</div>
+                      <div className="text-sm text-gray-700">
+                        {(() => {
+                          const base = new Date();
+                          const days = specs.rushSchedule ? 3 : 7;
+                          base.setDate(base.getDate() + days);
+                          return `${base.getMonth() + 1}/${base.getDate()} 頃`;
+                        })()}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      className="text-xs text-blue-600 hover:underline"
+                      onClick={() => {
+                        const today = new Date();
+                        const iso = today.toISOString().slice(0, 10);
+                        setSpecs(prev => ({
+                          ...prev,
+                          desiredShipDate: prev.desiredShipDate || iso,
+                        }));
+                      }}
+                    >
+                      希望出荷日を指定
+                    </button>
+                  </div>
+                  {specs.desiredShipDate && (
+                    <div className="mt-2 flex items-center space-x-2">
+                      <input
+                        type="date"
+                        className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm"
+                        value={specs.desiredShipDate}
+                        onChange={(e) =>
+                          setSpecs(prev => ({
+                            ...prev,
+                            desiredShipDate: e.target.value,
+                          }))
+                        }
+                      />
+                      <span className="text-xs text-gray-500">
+                        ※ 実際の出荷可否はご注文後にご連絡します
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* 完全データ入稿の場合は個別の枚数指定を使うため、ここでは合計を表示（または非表示） */
@@ -264,26 +347,26 @@ export function NoboriEstimator({ onAddToCart }: Props) {
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                   <div className="flex items-center mb-4">
-                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold mr-3">A</div>
+                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold mr-3">E</div>
                     <div>
-                      <div className="font-bold text-gray-900">イベント企画 A社様</div>
-                      <div className="text-xs text-gray-500">2023年6月 ご利用</div>
+                      <div className="font-bold text-gray-900">イベント運営会社 ご担当者様</div>
+                      <div className="text-xs text-gray-500">2024年 春 ご利用</div>
                     </div>
                   </div>
                   <p className="text-gray-600 text-sm leading-relaxed">
-                    「急なイベントで納期が心配でしたが、特急対応で間に合わせていただき大変助かりました。印刷も綺麗でクライアントにも喜ばれました。」
+                    「オンラインでその場ですぐに金額と納期がわかるので、社内承認もスムーズでした。枚数やサイズを変えても自動で再計算されるので、最適な条件をその場で相談できたのが良かったです。」
                   </p>
                 </div>
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                   <div className="flex items-center mb-4">
-                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold mr-3">K</div>
+                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold mr-3">S</div>
                     <div>
-                      <div className="font-bold text-gray-900">飲食店 K店長様</div>
-                      <div className="text-xs text-gray-500">2023年8月 ご利用</div>
+                      <div className="font-bold text-gray-900">小売店 オーナー様</div>
+                      <div className="text-xs text-gray-500">2024年 夏 ご利用</div>
                     </div>
                   </div>
                   <p className="text-gray-600 text-sm leading-relaxed">
-                    「デザインデータ作成からお願いしましたが、こちらの要望を汲み取っていただき素晴らしいのぼりが完成しました。また利用したいです。」
+                    「初めてのぼりを注文しましたが、サイズや生地の違いが画面でわかりやすく説明されていて安心して選べました。付属品も一緒に選べるので、届いてすぐに設置できました。」
                   </p>
                 </div>
               </div>

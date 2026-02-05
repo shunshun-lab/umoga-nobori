@@ -26,6 +26,7 @@ export interface NoboriSpecs {
   rushSchedule?: boolean; // お急ぎ便
   sewingMethod?: 'standard' | 'pole_sewing'; // 縫製方法 (distinct from options if needed, but pole_pocket is an option)
   accessories?: { id: string; quantity: number }[]; // 付属品
+  desiredShipDate?: string; // 希望出荷日 (YYYY-MM-DD)
 }
 
 export interface PriceBreakdown {
@@ -38,10 +39,13 @@ export interface PriceBreakdown {
   // オプション料金合計
   optionsCost: number;
 
+  // 器具・付属品の合計
+  accessoriesCost: number;
+
   // デザイン作成費
   designFee: number;
 
-  // 小計（割引前）
+  // 小計（割引前・付属品を含まない本体側の合計）
   subtotal: number;
 
   // 数量割引額

@@ -231,8 +231,9 @@ export const useStore = create<StoreState>()(
 
             updateCustomUnitPrice: (price) => set({ customSizeUnitPrice: price }),
 
-            addToCart: (item) => set((state) => ({
-                cart: [...state.cart, {
+            // 1会計あたり1品番（1商品）に制限するため、常にカートを単一アイテムに置き換える
+            addToCart: (item) => set(() => ({
+                cart: [{
                     ...item,
                     id: Math.random().toString(36).substring(2, 9),
                     addedAt: Date.now(),

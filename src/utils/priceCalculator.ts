@@ -143,19 +143,21 @@ export function calculateNoboriPrice(
     });
   }
 
-  // Final Sum
+  // Final Sum（本体＋オプションは 1枚あたり、付属品は別枠で扱う）
   const unitPriceTotal = quoteRequired ? 0 : (bodyPrice + optionsTotal);
 
   // Design Fee (One-time, Per Order)
   const designFee = specs.designDataMethod === 'request' ? 5500 : 0;
 
-  const totalPrice = (unitPriceTotal * quantity) + designFee + accessoriesTotal;
+  const subtotal = (unitPriceTotal * quantity) + designFee;
+  const totalPrice = subtotal + accessoriesTotal;
   const wholesalePrice = Math.floor(totalPrice * 0.8);
 
   return {
     basePrice,
     fabricCost: 0,
     optionsCost: optionsTotal * quantity,
+    accessoriesCost: accessoriesTotal,
     designFee,
     discount: 0,
     discountLabel: applicableRule?.label || '',
@@ -163,7 +165,7 @@ export function calculateNoboriPrice(
     totalPrice,
     wholesalePrice,
     // Legacy fields for compatibility
-    subtotal: totalPrice,
+    subtotal,
     discountRate: multiplier,
     quoteRequired
   };

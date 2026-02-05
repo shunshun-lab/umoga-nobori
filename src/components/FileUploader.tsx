@@ -69,7 +69,7 @@ export function FileUploader({ files, onFilesChange }: Props) {
                 <p className="text-sm text-gray-500">または クリックしてファイルを選択</p>
               </div>
               <div className="flex flex-wrap justify-center gap-2 mt-2">
-                {['PDF', 'AI', 'EPS', 'PNG', 'JPG'].map((format) => (
+                {['PDF', 'AI', 'EPS', 'PNG', 'JPG', 'ZIP'].map((format) => (
                   <span key={format} className="px-3 py-1 bg-gray-100 text-gray-600 rounded-lg text-xs font-semibold">
                     {format}
                   </span>
