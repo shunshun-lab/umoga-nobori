@@ -29,7 +29,7 @@ const OPTION_NAMES: Record<string, string> = {
 const SHOPIFY_SHOP_DOMAIN = process.env.SHOPIFY_SHOP_DOMAIN;
 const SHOPIFY_ADMIN_ACCESS_TOKEN = process.env.SHOPIFY_ACCESS_TOKEN;
 const SHOPIFY_API_VERSION = process.env.SHOPIFY_API_VERSION || '2025-01';
-const VARIANT_ID = process.env.VITE_SHOPIFY_NOBORI_VARIANT_ID;
+const VARIANT_ID = process.env.VITE_SHOPIFY_NOBORI_VARIANT_ID?.trim();
 
 interface CartItem {
     id: string;
