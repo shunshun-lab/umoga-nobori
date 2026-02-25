@@ -1,12 +1,5 @@
 import type { SizeId, FabricId, PrintMethodId, OptionId } from '@/utils/constants';
 
-export interface DesignItem {
-  id: string;
-  file: File | string;
-  previewUrl?: string;
-  quantity: number;
-}
-
 export interface NoboriSpecs {
   size: SizeId | 'custom';
   customDimensions?: {
@@ -16,17 +9,17 @@ export interface NoboriSpecs {
   fabric: FabricId;
   printMethod: PrintMethodId;
   quantity: number;
-  designs?: DesignItem[];
   options: OptionId[];
   segments?: number; // 2, 3, or 4
   orderName?: string; // Optional: Reference name
   designDataMethod: 'self' | 'request'; // 'self' = AI/Upload, 'request' = Professional Design
   designRequestDetails?: string; // Text for design request
-  externalDataUrl?: string; // URL for external file service (e.g. GigaFile)
-  rushSchedule?: boolean; // お急ぎ便
-  sewingMethod?: 'standard' | 'pole_sewing'; // 縫製方法 (distinct from options if needed, but pole_pocket is an option)
-  accessories?: { id: string; quantity: number }[]; // 付属品
-  desiredShipDate?: string; // 希望出荷日 (YYYY-MM-DD)
+}
+
+export interface DeliveryInfo {
+  name: string;
+  phone: string;
+  email: string;
 }
 
 export interface PriceBreakdown {
@@ -39,13 +32,10 @@ export interface PriceBreakdown {
   // オプション料金合計
   optionsCost: number;
 
-  // 器具・付属品の合計
-  accessoriesCost: number;
-
   // デザイン作成費
   designFee: number;
 
-  // 小計（割引前・付属品を含まない本体側の合計）
+  // 小計（割引前）
   subtotal: number;
 
   // 数量割引額
@@ -64,16 +54,4 @@ export interface PriceBreakdown {
   discountLabel: string;
   wholesalePrice: number;
   quoteRequired: boolean;
-}
-
-export interface ShippingAddress {
-  id: string; // Unique ID
-  name: string;
-  postalCode: string;
-  prefecture: string;
-  city: string;
-  address1: string;
-  address2: string;
-  phone: string;
-  companyName?: string;
 }

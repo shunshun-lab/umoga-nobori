@@ -58,17 +58,13 @@ export interface PricingTables {
     segmentFactors: Record<number, number>;
 }
 
-import type { NoboriSpecs, PriceBreakdown, ShippingAddress } from '@/types/nobori.types';
+import type { NoboriSpecs, PriceBreakdown } from '@/types/nobori.types';
 
 export interface CartItem {
     id: string;
     specs: NoboriSpecs;
     price: PriceBreakdown;
     addedAt: number;
-    shipping?: {
-        addressId?: string; // Reference to stored address
-        deliveryMode: 'standard' | 'rush';
-    };
 }
 
 export interface DiscountRule {
@@ -88,12 +84,6 @@ interface StoreState {
     exclusions: Record<string, string[]>;
     inventory: Record<string, number>;
     cart: CartItem[];
-
-    // Shipping Management
-    shippingAddresses: Record<string, ShippingAddress>;
-    addShippingAddress: (address: ShippingAddress) => void;
-    removeShippingAddress: (addressId: string) => void;
-    updateCartItemShipping: (itemId: string, shipping: CartItem['shipping']) => void;
 
     // Visibility Settings (Admin Config)
     optionVisibility: Record<string, boolean>;
@@ -117,7 +107,9 @@ interface StoreState {
         rushDays: number;
         rushSurchargeRate: number;
     };
+    cartDeliveryMode: 'standard' | 'rush';
     updateDeliverySettings: (settings: Partial<StoreState['deliverySettings']>) => void;
+    setCartDeliveryMode: (mode: 'standard' | 'rush') => void;
 
     // Logic Editing
     updateDiscountRule: (index: number, newRule: DiscountRule) => void;
@@ -169,24 +161,7 @@ export const useStore = create<StoreState>()(
             optionVisibility: initialOptionVisibility,
 
             deliverySettings: initialDeliverySettings,
-
-            // Shipping
-            shippingAddresses: {},
-            addShippingAddress: (address) => set((state) => ({
-                shippingAddresses: { ...state.shippingAddresses, [address.id]: address }
-            })),
-            removeShippingAddress: (addressId) => set((state) => {
-                const { [addressId]: _, ...rest } = state.shippingAddresses;
-                return { shippingAddresses: rest };
-            }),
-            updateCartItemShipping: (itemId, shipping) => set((state) => ({
-                cart: state.cart.map(item =>
-                    item.id === itemId
-                        ? { ...item, shipping }
-                        : item
-                )
-            })),
-
+            cartDeliveryMode: 'standard',
 
             updateBasePrice: (sizeId, newPrice) => set((state) => ({
                 sizes: { ...state.sizes, [sizeId]: { ...state.sizes[sizeId], basePrice: newPrice } }
@@ -231,13 +206,11 @@ export const useStore = create<StoreState>()(
 
             updateCustomUnitPrice: (price) => set({ customSizeUnitPrice: price }),
 
-            // 1会計あたり1品番（1商品）に制限するため、常にカートを単一アイテムに置き換える
-            addToCart: (item) => set(() => ({
-                cart: [{
+            addToCart: (item) => set((state) => ({
+                cart: [...state.cart, {
                     ...item,
                     id: Math.random().toString(36).substring(2, 9),
-                    addedAt: Date.now(),
-                    shipping: { deliveryMode: 'standard' } // Default
+                    addedAt: Date.now()
                 }]
             })),
 
@@ -254,6 +227,8 @@ export const useStore = create<StoreState>()(
             updateDeliverySettings: (settings) => set((state) => ({
                 deliverySettings: { ...state.deliverySettings, ...settings }
             })),
+
+            setCartDeliveryMode: (mode) => set({ cartDeliveryMode: mode }),
 
             updateDiscountRule: (index, newRule) => set((state) => {
                 const newRules = [...state.discountRules];
@@ -296,8 +271,8 @@ export const useStore = create<StoreState>()(
                 exclusions: state.exclusions,
                 discountRules: state.discountRules,
                 pricingTables: state.pricingTables, // Persist segment factors etc
-                shippingAddresses: state.shippingAddresses, // Persist Address Book
-                // Note: Cart could be persisted too, but keeping it simple.
+                cart: state.cart,
+                cartDeliveryMode: state.cartDeliveryMode,
             }),
         }
     )

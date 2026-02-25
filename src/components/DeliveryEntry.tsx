@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { useStore } from '@/store';
 import { useShopify } from '@/hooks/useShopify';
-import { ACCESSORIES } from '@/utils/constants';
+import { useStore } from '@/store';
 
 interface Props {
     onBack: () => void;
@@ -9,108 +8,42 @@ interface Props {
 }
 
 export function DeliveryEntry({ onBack, onComplete }: Props) {
-    // We can pre-fill this with the first shipping address for convenience if available
-    const shippingAddresses = useStore(state => state.shippingAddresses);
-    const cart = useStore(state => state.cart);
-    const sizes = useStore(state => state.sizes);
-    const fabrics = useStore(state => state.fabrics);
-    const options = useStore(state => state.options);
-
-    const { addToCart } = useShopify();
-
-    // Find first used address to prefill
-    const firstUsedAddressId = cart[0]?.shipping?.addressId;
-    const initialAddress = firstUsedAddressId ? shippingAddresses[firstUsedAddressId] : null;
-
     const [formData, setFormData] = useState({
-        name: initialAddress?.name || '',
-        phone: initialAddress?.phone || '',
-        email: '',
-        companyName: initialAddress?.companyName || '',
+        name: '',
+        phone: '',
+        email: ''
     });
+    const [devSuccess, setDevSuccess] = useState(false);
 
-    const isFormValid = formData.name && formData.phone && formData.email;
+    const cart = useStore(state => state.cart);
+    const cartDeliveryMode = useStore(state => state.cartDeliveryMode);
+    const deliverySettings = useStore(state => state.deliverySettings);
+    const clearCart = useStore(state => state.clearCart);
+
+    const { submitOrder, isSubmitting, error } = useShopify();
+
+    const isFormValid = formData.name.trim() && formData.phone.trim() && formData.email.trim();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!isFormValid || isSubmitting) return;
 
-        if (cart.length === 0) {
-            alert('カートに商品がありません。');
-            return;
-        }
+        const result = await submitOrder(
+            cart,
+            { name: formData.name, phone: formData.phone, email: formData.email },
+            cartDeliveryMode,
+            deliverySettings.rushSurchargeRate
+        );
 
-        const shopifyVariantId = import.meta.env.VITE_SHOPIFY_NOBORI_VARIANT_ID;
-        if (!shopifyVariantId) {
-            alert('ShopifyのバリアントIDが設定されていません。\n環境変数 VITE_SHOPIFY_NOBORI_VARIANT_ID を設定してください。');
-            return;
-        }
-
-        const item = cart[0];
-        const specs = item.specs;
-        const shipping = item.shipping;
-        const address = shipping?.addressId ? shippingAddresses[shipping.addressId] : undefined;
-
-        const sizeName = specs.size === 'custom'
-            ? `カスタム ${specs.customDimensions?.width}x${specs.customDimensions?.height}cm`
-            : (sizes[specs.size]?.displayName || specs.size);
-
-        const fabricName = fabrics[specs.fabric]?.displayName || specs.fabric;
-
-        const optionsText =
-            specs.options.length > 0
-                ? specs.options.map(id => options[id]?.displayName || id).join(', ')
-                : 'なし';
-
-        const accessoriesText =
-            (specs.accessories || []).length > 0
-                ? (specs.accessories || [])
-                    .map(acc => {
-                        const def = (ACCESSORIES as any)[acc.id];
-                        return `${def?.name || acc.id} x${acc.quantity}`;
-                    })
-                    .join(', ')
-                : 'なし';
-
-        const customAttributes = [
-            { key: 'サイズ', value: sizeName },
-            { key: '生地', value: fabricName },
-            { key: '印刷方法', value: specs.printMethod },
-            { key: '数量', value: specs.quantity.toString() },
-            { key: 'オプション', value: optionsText },
-            { key: '付属品', value: accessoriesText },
-            { key: '希望出荷日', value: specs.desiredShipDate || '指定なし' },
-            { key: 'お急ぎ便', value: shipping?.deliveryMode === 'rush' ? 'はい' : 'いいえ' },
-            {
-                key: '配送先',
-                value: address
-                    ? `〒${address.postalCode} ${address.prefecture}${address.city}${address.address1} ${address.address2 || ''}`
-                    : '未指定',
-            },
-            { key: '案件名・データ名', value: specs.orderName || '' },
-            { key: 'デザイン区分', value: specs.designDataMethod === 'self' ? '完全データ入稿' : 'デザイン制作依頼' },
-            { key: 'デザイン依頼メモ', value: specs.designRequestDetails || '' },
-            { key: '外部データURL', value: specs.externalDataUrl || '' },
-            { key: '見積金額(税込)', value: item.price.totalPrice.toString() },
-            { key: '1枚あたり単価', value: item.price.unitPrice.toString() },
-            { key: 'Rush設定', value: specs.rushSchedule ? 'true' : 'false' },
-            {
-                key: '注文者情報',
-                value: `${formData.companyName ? formData.companyName + ' / ' : ''}${formData.name} / ${formData.phone} / ${formData.email}`,
-            },
-        ];
-
-        try {
-            const checkoutUrl = await addToCart(
-                shopifyVariantId,
-                specs.quantity || 1,
-                customAttributes,
-            );
-
-            onComplete();
-            window.location.href = checkoutUrl;
-        } catch (error) {
-            console.error('Failed to add to Shopify cart:', error);
-            alert('Shopifyカートへの追加に失敗しました。時間をおいて再度お試しください。');
+        if (result.success) {
+            if (result.devMode) {
+                // DEV_MODE: show success panel
+                setDevSuccess(true);
+            } else if (result.invoiceUrl) {
+                // Production: redirect to Shopify invoice
+                clearCart();
+                window.location.href = result.invoiceUrl;
+            }
         }
     };
 
@@ -123,39 +56,39 @@ export function DeliveryEntry({ onBack, onComplete }: Props) {
                 ← カートに戻る
             </button>
 
-            <h1 className="text-2xl font-bold mb-8">注文者情報・決済（デモ）</h1>
+            <h1 className="text-2xl font-bold mb-8">お客様情報の入力</h1>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
-                <p className="text-sm text-blue-800">
-                    ※ 商品の配送先はカート画面で指定済みです。<br />
-                    ここでは、<strong>ご注文者様（請求先）のご連絡先</strong>を入力してください。
-                </p>
-            </div>
+            {error && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                    {error}
+                </div>
+            )}
+
+            {devSuccess && (
+                <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
+                    <p className="font-bold">DEV MODE: 送信成功</p>
+                    <p className="text-sm mt-1">Draft Order ペイロードはコンソールを確認してください。</p>
+                    <button
+                        onClick={onComplete}
+                        className="mt-3 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-bold hover:bg-green-700"
+                    >
+                        商品一覧に戻る
+                    </button>
+                </div>
+            )}
 
             <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                 <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-1">お名前 (ご担当者様) <span className="text-red-500">*</span></label>
-                            <input
-                                type="text"
-                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                placeholder="山田 太郎"
-                                value={formData.name}
-                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                required
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-1">会社名 (任意)</label>
-                            <input
-                                type="text"
-                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                placeholder="株式会社サンプル"
-                                value={formData.companyName}
-                                onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                            />
-                        </div>
+                    <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-1">お名前 <span className="text-red-500">*</span></label>
+                        <input
+                            type="text"
+                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            placeholder="山田 太郎"
+                            value={formData.name}
+                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            required
+                        />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -183,33 +116,26 @@ export function DeliveryEntry({ onBack, onComplete }: Props) {
                         </div>
                     </div>
 
-                    <div className="pt-6 border-t border-gray-100">
-                        <label className="block text-sm font-bold text-gray-700 mb-4">お支払い方法</label>
-                        <div className="space-y-3">
-                            <label className="flex items-center p-4 border rounded-lg cursor-pointer bg-blue-50 border-blue-200">
-                                <input type="radio" name="payment" className="w-5 h-5 text-blue-600" checked readOnly />
-                                <span className="ml-3 font-bold text-gray-900">クレジットカード (デモ動作)</span>
-                            </label>
-                            <label className="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
-                                <input type="radio" name="payment" className="w-5 h-5 text-blue-600" disabled />
-                                <span className="ml-3 text-gray-500">銀行振込 (準備中)</span>
-                            </label>
-                        </div>
-                    </div>
-
                     <div className="pt-6">
                         <button
                             type="submit"
-                            disabled={!isFormValid}
-                            className={`w-full py-4 rounded-xl font-bold text-white shadow-lg transition
-                                ${isFormValid ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'}
+                            disabled={!isFormValid || isSubmitting}
+                            className={`w-full py-4 rounded-xl font-bold text-white shadow-lg transition flex items-center justify-center
+                                ${isFormValid && !isSubmitting ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'}
                             `}
                         >
-                            注文を確定する
+                            {isSubmitting ? (
+                                <>
+                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    送信中...
+                                </>
+                            ) : (
+                                'Shopify決済へ進む'
+                            )}
                         </button>
-                        <p className="text-center text-sm text-gray-500 mt-2">
-                            ※これはデモシステムです。実際の注文・決済は行われません。
-                        </p>
                     </div>
                 </div>
             </form>

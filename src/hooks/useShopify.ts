@@ -1,65 +1,76 @@
+import { useState } from 'react';
+import type { DeliveryInfo } from '@/types/nobori.types';
+import type { CartItem } from '@/store';
+
+const DEV_MODE = import.meta.env.VITE_DEV_MODE === 'true';
+
+interface SubmitResult {
+  success: boolean;
+  invoiceUrl?: string;
+  devMode?: boolean;
+  error?: string;
+}
+
 export function useShopify() {
-  const addToCart = async (
-    variantId: string,
-    quantity: number,
-    customAttributes: Array<{ key: string; value: string }>
-  ): Promise<string> => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const submitOrder = async (
+    cartItems: CartItem[],
+    deliveryInfo: DeliveryInfo,
+    deliveryMode: 'standard' | 'rush',
+    rushSurchargeRate: number
+  ): Promise<SubmitResult> => {
+    setError(null);
+    setIsSubmitting(true);
+
     try {
-      // 1. グローバルID(gid://...)の場合は数値ID部分だけ取り出す
-      const numericVariantId =
-        variantId.startsWith('gid://')
-          ? variantId.split('/').pop() || ''
-          : variantId;
+      // Calculate surcharge
+      const subtotal = cartItems.reduce((sum, item) => sum + item.price.totalPrice, 0);
+      const surcharge = deliveryMode === 'rush'
+        ? Math.floor(subtotal * rushSurchargeRate)
+        : 0;
 
-      if (!numericVariantId) {
-        throw new Error('バリアントIDが不正です');
+      const payload = {
+        cart: cartItems,
+        deliveryInfo,
+        deliveryMode,
+        surcharge,
+      };
+
+      // DEV_MODE: skip API call
+      if (DEV_MODE) {
+        console.log('=== DEV MODE: Draft Order Payload ===');
+        console.log(JSON.stringify(payload, null, 2));
+        return { success: true, devMode: true };
       }
 
-      // 2. line item properties 形式に変換
-      const properties: Record<string, string> = {};
-      for (const attr of customAttributes) {
-        if (attr.key) {
-          properties[attr.key] = attr.value ?? '';
-        }
-      }
-
-      const shopDomain = import.meta.env.VITE_SHOPIFY_DOMAIN;
-      if (!shopDomain) {
-        throw new Error('VITE_SHOPIFY_DOMAIN が設定されていません');
-      }
-
-      // 3. Shopify ストア本番ドメインの /cart/add.js を叩く
-      const response = await fetch(`https://${shopDomain}/cart/add.js`, {
+      // Production: call backend
+      const response = await fetch('/api/checkout', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify({
-          items: [
-            {
-              id: numericVariantId,
-              quantity,
-              properties,
-            },
-          ],
-        }),
-        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
-        const text = await response.text();
-        throw new Error(`Shopify cart error (${response.status}): ${text}`);
+        const err = await response.json();
+        throw new Error(err.error || 'Checkout failed');
       }
 
-      // 4. 成功したらチェックアウト画面へのURLを返す
-      //    Shopify のオンラインストア上で動いている前提なので、相対パスでOK。
-      return '/checkout';
-    } catch (error) {
-      console.error('Failed to add to cart:', error);
-      throw error;
+      const data = await response.json();
+      if (!data.invoiceUrl) {
+        throw new Error('No invoice URL returned');
+      }
+
+      return { success: true, invoiceUrl: data.invoiceUrl };
+    } catch (err: any) {
+      const message = err.message || '注文の送信に失敗しました';
+      setError(message);
+      return { success: false, error: message };
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  return { addToCart };
+  return { submitOrder, isSubmitting, error };
 }

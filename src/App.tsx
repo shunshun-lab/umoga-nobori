@@ -44,7 +44,7 @@ function App() {
       {view === 'delivery_info' && (
         <DeliveryEntry
           onBack={() => setView('cart')}
-          onComplete={() => alert('注文受け付け完了：本日はここまでとなります。')}
+          onComplete={() => setView('list')}
         />
       )}
     </div>
