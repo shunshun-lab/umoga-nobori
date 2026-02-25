@@ -217,7 +217,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             tags: ['nobori-app', deliveryMode],
         };
 
-        // Attach customer contact info as note + shipping address name/email
+        // Attach customer contact info
         if (deliveryInfo) {
             input.note = [
                 `お名前: ${deliveryInfo.name}`,
@@ -225,7 +225,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 `メール: ${deliveryInfo.email}`,
             ].join('\n');
             input.email = deliveryInfo.email;
-            input.phone = deliveryInfo.phone;
+            // Shopify requires E.164 phone format — only set if it looks like a real phone number
+            const cleanPhone = deliveryInfo.phone.replace(/[-\s()]/g, '');
+            if (/^\+?\d{10,15}$/.test(cleanPhone)) {
+                input.phone = cleanPhone.startsWith('+') ? cleanPhone : `+81${cleanPhone.replace(/^0/, '')}`;
+            }
         }
 
         console.log('Creating draft order with input:', JSON.stringify(input, null, 2));
