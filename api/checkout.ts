@@ -1,7 +1,29 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import axios from 'axios';
-import { SIZES, FABRICS, PRINT_METHODS, OPTIONS } from '../src/utils/constants';
+
+// Display name maps (inlined to avoid importing from src/ which Vercel Functions can't resolve)
+const SIZE_NAMES: Record<string, string> = {
+    standard: '60×180cm（レギュラー）',
+    slim: '45×180cm（スリム）',
+    short: '60×150cm（ショート）',
+    mini: '45×150cm（ミニ）',
+};
+const FABRIC_NAMES: Record<string, string> = {
+    polyester: 'ポンジ（標準）',
+    tropical: 'トロピカル',
+};
+const PRINT_METHOD_NAMES: Record<string, string> = {
+    full_color: 'フルカラー印刷',
+    single_color: '単色印刷',
+};
+const OPTION_NAMES: Record<string, string> = {
+    pole_pocket: '棒袋加工',
+    chichi: 'チチ加工',
+    heat_cut: 'ヒートカット',
+    reinforcement: '両面遮光材',
+    waterproof: '防水加工',
+};
 
 // Environment variables
 const SHOPIFY_SHOP_DOMAIN = process.env.SHOPIFY_SHOP_DOMAIN;
@@ -79,21 +101,21 @@ function resolveSizeName(specs: CartItem['specs']): string {
     if (specs.size === 'custom') {
         return `カスタム ${specs.customDimensions?.width}×${specs.customDimensions?.height}cm`;
     }
-    return SIZES[specs.size as keyof typeof SIZES]?.displayName ?? specs.size;
+    return SIZE_NAMES[specs.size] ?? specs.size;
 }
 
 function resolveFabricName(fabricId: string): string {
-    return FABRICS[fabricId as keyof typeof FABRICS]?.displayName ?? fabricId;
+    return FABRIC_NAMES[fabricId] ?? fabricId;
 }
 
 function resolvePrintMethodName(printMethodId: string): string {
-    return PRINT_METHODS[printMethodId as keyof typeof PRINT_METHODS]?.name ?? printMethodId;
+    return PRINT_METHOD_NAMES[printMethodId] ?? printMethodId;
 }
 
 function resolveOptionNames(optionIds: string[]): string {
     if (optionIds.length === 0) return 'なし';
     return optionIds
-        .map(oid => OPTIONS[oid as keyof typeof OPTIONS]?.name ?? oid)
+        .map(oid => OPTION_NAMES[oid] ?? oid)
         .join(', ');
 }
 
