@@ -1,4 +1,5 @@
 import optionReferenceImage from '@/lib/150x150.png';
+import noboriImage from '@/../shopify-theme/assets/option-sample.jpg';
 interface Props {
     onSelectProduct: (productId: 'nobori' | 'admin') => void;
 }
@@ -24,7 +25,7 @@ export function ProductList({ onSelectProduct }: Props) {
                     >
                         <div className="aspect-w-3 aspect-h-2 bg-gray-200 group-hover:opacity-75 relative h-48 bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center overflow-hidden">
                             <img
-                                src={optionReferenceImage}
+                                src={noboriImage}
                                 alt="のぼり旗 サンプル画像"
                                 className="w-full h-full object-contain"
                             />

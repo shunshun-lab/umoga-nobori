@@ -1,4 +1,5 @@
 import optionReferenceImage from '@/lib/150x150.png';
+import noboriImage from '@/../shopify-theme/assets/option-sample.jpg';
 import { type OptionId } from '@/utils/constants';
 import { useStore } from '@/store';
 import { calculateNoboriPrice } from '@/utils/priceCalculator';
@@ -132,7 +133,7 @@ export function OptionsSelector({ value, specs, onChange }: Props) {
 
         <figure className="flex-shrink-0 w-full xl:w-80">
           <img
-            src={optionReferenceImage}
+            src={noboriImage}
             alt="オプション加工イメージ"
             className="w-full h-auto rounded-2xl shadow-md"
           />
