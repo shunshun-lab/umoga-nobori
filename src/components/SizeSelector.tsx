@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react';
-import { type SizeId } from '@/utils/constants';
+import optionReferenceImage from '@/../shopify-theme/assets/option-sample.jpg';
+import { SIZES, type SizeId } from '@/utils/constants';
 import { useStore } from '@/store';
 import { calculateNoboriPrice } from '@/utils/priceCalculator';
 import type { NoboriSpecs } from '@/types/nobori.types';
-import { uiConfigService } from '@/utils/uiConfigService';
 
 interface Props {
   value: SizeId | 'custom';
@@ -19,35 +18,6 @@ export function SizeSelector({ value, specs, onChange }: Props) {
   const pricingTables = useStore(state => state.pricingTables);
   const discountRules = useStore(state => state.discountRules);
   const fabricLimits = useStore(state => state.fabricLimits); // New
-
-  // UI設定からサイズ画像（最大3件のうち先頭1件）を取得
-  const [sizeImageMap, setSizeImageMap] = useState<Record<string, string | undefined>>({});
-
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const config = await uiConfigService.loadUiConfig();
-        if (!mounted) return;
-        const map: Record<string, string | undefined> = {};
-        const bySizeId = config.sizeImages?.bySizeId || {};
-        Object.entries(bySizeId).forEach(([sizeId, payload]) => {
-          const images = (payload.images || [])
-            .filter(img => img.active)
-            .sort((a, b) => a.sortOrder - b.sortOrder);
-          if (images[0]) {
-            map[sizeId] = images[0].imageUrl;
-          }
-        });
-        setSizeImageMap(map);
-      } catch {
-        // 読み込み失敗時はプレースホルダーにフォールバック
-      }
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, []);
 
   // Get current limits
   const currentFabricId = specs.fabric || 'polyester';
@@ -92,14 +62,7 @@ export function SizeSelector({ value, specs, onChange }: Props) {
                   : 'border-gray-200 hover:border-blue-400 hover:shadow-md bg-white'
                 }
               `}
-            >
-              <div className="mb-3 rounded-lg overflow-hidden h-32 bg-gray-100">
-                <img
-                  src={sizeImageMap[id] || (size as any).imageUrl || 'https://placehold.co/400x300?text=Size+Image'}
-                  alt={size.displayName}
-                  className="w-full h-full object-cover"
-                />
-              </div>
+              >
               {value === id && (
                 <div className="absolute top-4 right-4">
                   <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
@@ -108,12 +71,21 @@ export function SizeSelector({ value, specs, onChange }: Props) {
                 </div>
               )}
               <div className="font-bold text-xl mb-2 text-gray-900">{size.displayName}</div>
-              <div className="text-sm text-gray-600 mb-4 leading-relaxed">{size.description}</div>
-              <div className="flex items-baseline space-x-1">
-                <span className="text-blue-600 font-black text-2xl">
-                  {getDynamicPrice(id)}
-                </span>
-                <span className="text-gray-500 text-sm">〜</span>
+              <div className="mt-2 flex items-start gap-4">
+                <img
+                  src={optionReferenceImage}
+                  alt={`${size.displayName} の仕上がりイメージ`}
+                  className="w-20 h-20 object-contain rounded-lg border border-gray-100 shadow-sm bg-gray-50"
+                />
+                <div>
+                  <div className="text-sm text-gray-600 mb-3 leading-relaxed">{size.description}</div>
+                  <div className="flex items-baseline space-x-1">
+                    <span className="text-blue-600 font-black text-2xl">
+                      {getDynamicPrice(id)}
+                    </span>
+                    <span className="text-gray-500 text-sm">〜</span>
+                  </div>
+                </div>
               </div>
             </button>
 
@@ -127,10 +99,18 @@ export function SizeSelector({ value, specs, onChange }: Props) {
                       横幅 (W) <span className="text-red-500">Max: {limits.maxWidth}</span>
                     </label>
                     <input
-                      value={specs.customDimensions?.width || ''}
+                      id="custom-width"
+                      type="number"
+                      max={limits.maxWidth}
+                      placeholder={`Max ${limits.maxWidth}`}
+                      className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                       onChange={(e) => {
-                        const w = parseInt(e.target.value) || 0;
-                        const h = specs.customDimensions?.height || 0;
+                        let w = parseInt(e.target.value) || 0;
+                        // Removed clamping to allow "Quote Required" flow for oversized items
+                        // if (w > limits.maxWidth) w = limits.maxWidth;
+
+                        const hInput = document.getElementById('custom-height') as HTMLInputElement;
+                        const h = parseInt(hInput?.value) || 0;
                         onChange('custom', { width: w, height: h });
                       }}
                     />
@@ -146,10 +126,13 @@ export function SizeSelector({ value, specs, onChange }: Props) {
                       max={limits.maxHeight}
                       placeholder={`Max ${limits.maxHeight}`}
                       className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                      value={specs.customDimensions?.height || ''}
                       onChange={(e) => {
-                        const h = parseInt(e.target.value) || 0;
-                        const w = specs.customDimensions?.width || 0;
+                        let h = parseInt(e.target.value) || 0;
+                        // Removed clamping to allow "Quote Required" flow
+                        // if (h > limits.maxHeight) h = limits.maxHeight;
+
+                        const wInput = document.getElementById('custom-width') as HTMLInputElement;
+                        const w = parseInt(wInput?.value) || 0;
                         onChange('custom', { width: w, height: h });
                       }}
                     />

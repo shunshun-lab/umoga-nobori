@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react';
+import optionReferenceImage from '@/../shopify-theme/assets/option-sample.jpg';
 import { FABRICS, type FabricId } from '@/utils/constants';
-import { uiConfigService } from '@/utils/uiConfigService';
 
 interface Props {
   value: FabricId;
@@ -8,34 +7,6 @@ interface Props {
 }
 
 export function FabricSelector({ value, onChange }: Props) {
-  // UI設定から生地画像（最大3件のうち先頭1件）を取得
-  const [fabricImageMap, setFabricImageMap] = useState<Record<string, string | undefined>>({});
-
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const config = await uiConfigService.loadUiConfig();
-        if (!mounted) return;
-        const map: Record<string, string | undefined> = {};
-        const byFabricId = config.fabricImages?.byFabricId || {};
-        Object.entries(byFabricId).forEach(([fabricId, payload]) => {
-          const images = (payload.images || [])
-            .filter(img => img.active)
-            .sort((a, b) => a.sortOrder - b.sortOrder);
-          if (images[0]) {
-            map[fabricId] = images[0].imageUrl;
-          }
-        });
-        setFabricImageMap(map);
-      } catch {
-        // 読み込み失敗時はプレースホルダーにフォールバック
-      }
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, []);
   return (
     <div className="bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
       <div className="flex items-center space-x-3 mb-6">
@@ -69,15 +40,7 @@ export function FabricSelector({ value, onChange }: Props) {
               />
             </div>
 
-            <div className="ml-4 mr-4 w-24 h-24 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden hidden sm:block">
-              <img
-                src={fabricImageMap[id] || 'https://placehold.co/200x200?text=Fabric'}
-                alt={fabric.displayName}
-                className="w-full h-full object-cover"
-              />
-            </div>
-
-            <div className="flex-1">
+            <div className="flex-1 ml-4">
               <div className="flex items-center justify-between mb-2">
                 <div className="font-bold text-xl text-gray-900">{fabric.displayName}</div>
                 {value === id && (
@@ -87,12 +50,20 @@ export function FabricSelector({ value, onChange }: Props) {
                 )}
               </div>
               <div className="text-sm text-gray-600 mb-3 leading-relaxed">{fabric.description}</div>
-              <div className="flex flex-wrap gap-2">
-                {fabric.features.map((feature) => (
-                  <span key={feature} className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-medium">
-                    {feature}
-                  </span>
-                ))}
+
+              <div className="mt-2 flex items-start gap-4">
+                <img
+                  src={optionReferenceImage}
+                  alt={`${fabric.displayName} のイメージ`}
+                  className="w-20 h-20 object-contain rounded-lg border border-gray-100 shadow-sm bg-gray-50"
+                />
+                <div className="flex flex-wrap gap-2">
+                  {fabric.features.map((feature) => (
+                    <span key={feature} className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-medium">
+                      {feature}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
 

@@ -1,5 +1,4 @@
-
-
+import optionReferenceImage from '@/../shopify-theme/assets/option-sample.jpg';
 interface Props {
     onSelectProduct: (productId: 'nobori' | 'admin') => void;
 }
@@ -23,10 +22,12 @@ export function ProductList({ onSelectProduct }: Props) {
                         onClick={() => onSelectProduct('nobori')}
                         className="group relative bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden border border-gray-100 ring-2 ring-transparent hover:ring-blue-500"
                     >
-                        <div className="aspect-w-3 aspect-h-2 bg-gray-200 group-hover:opacity-75 relative h-48 bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
-                            <svg className="w-20 h-20 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 21v-8a2 2 0 012-2h14a2 2 0 012 2v8M13 10V3M4 14h16" />
-                            </svg>
+                        <div className="aspect-w-3 aspect-h-2 bg-gray-200 group-hover:opacity-75 relative h-48 bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center overflow-hidden">
+                            <img
+                                src={optionReferenceImage}
+                                alt="のぼり旗 サンプル画像"
+                                className="w-full h-full object-contain"
+                            />
                         </div>
                         <div className="p-6">
                             <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
@@ -64,7 +65,7 @@ export function ProductList({ onSelectProduct }: Props) {
                 </div>
 
                 <div className="mt-24 pt-8 border-t border-gray-200 text-center">
-                    <p className="text-gray-400 text-sm mb-4">© 2026 UMOGA</p>
+                    <p className="text-gray-400 text-sm mb-4">© 2025 umoga</p>
                     <button
                         onClick={() => onSelectProduct('admin' as any)}
                         className="text-xs text-gray-300 hover:text-gray-500 transition-colors"

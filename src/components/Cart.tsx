@@ -1,3 +1,4 @@
+import optionReferenceImage from '@/../shopify-theme/assets/option-sample.jpg';
 import { useStore } from '@/store';
 
 interface Props {
@@ -11,19 +12,19 @@ export function Cart({ onContinueShopping, onProceedToDelivery }: Props) {
     const optionsMaster = useStore(state => state.options);
     const fabricMaster = useStore(state => state.fabrics);
     const removeFromCart = useStore(state => state.removeFromCart);
+    const setItemDeliveryMode = useStore(state => state.setItemDeliveryMode);
 
     // Delivery State
     const deliverySettings = useStore((state) => state.deliverySettings);
-    const cartDeliveryMode = useStore((state) => state.cartDeliveryMode);
-    const setCartDeliveryMode = useStore((state) => state.setCartDeliveryMode);
 
     // Totals
     const subtotal = cart.reduce((sum, item) => sum + item.price.totalPrice, 0);
 
-    // Surcharge Logic
-    const surcharge = cartDeliveryMode === 'rush'
-        ? Math.floor(subtotal * deliverySettings.rushSurchargeRate)
-        : 0;
+    // Surcharge Logic (per-item)
+    const rushSubtotal = cart
+        .filter(item => item.deliveryMode === 'rush')
+        .reduce((sum, item) => sum + item.price.totalPrice, 0);
+    const surcharge = Math.floor(rushSubtotal * deliverySettings.rushSurchargeRate);
 
     const grandTotal = subtotal + surcharge;
     const tax = Math.floor(grandTotal * 0.1);
@@ -59,9 +60,14 @@ export function Cart({ onContinueShopping, onProceedToDelivery }: Props) {
         return date;
     };
 
-    const arrivalDate = getShipmentDate(
-        cartDeliveryMode === 'rush' ? deliverySettings.rushDays : deliverySettings.standardDays
-    );
+    // Determine shipment date based on per-item delivery modes
+    const hasRush = cart.some(item => item.deliveryMode === 'rush');
+    const hasStandard = cart.some(item => item.deliveryMode === 'standard');
+    // If both modes exist, show the slowest (standard); otherwise whichever is present
+    const effectiveDays = (hasStandard || !hasRush)
+        ? deliverySettings.standardDays
+        : deliverySettings.rushDays;
+    const arrivalDate = getShipmentDate(effectiveDays);
 
     const handlePrint = () => {
         window.print();
@@ -80,10 +86,8 @@ ${cart.map((item, i) => `
 生地: ${item.specs.fabric}
 枚数: ${item.specs.quantity}
 オプション: ${item.specs.options.join(', ')}
+配送: ${item.deliveryMode === 'rush' ? 'お急ぎ便' : '通常便'}
 `).join('\n')}
-
--------------
-配送希望: ${cartDeliveryMode === 'rush' ? 'お急ぎ便' : '通常便'}
 `);
             window.location.href = `mailto:info@example.com?subject=${subject}&body=${body}`;
             return;
@@ -128,8 +132,12 @@ ${cart.map((item, i) => `
 
                         return (
                             <div key={item.id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col sm:flex-row gap-6 print:hidden">
-                                <div className="w-full sm:w-24 h-24 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                    <span className="text-2xl">🚩</span>
+                                <div className="w-full sm:w-24 h-24 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                                    <img
+                                        src={optionReferenceImage}
+                                        alt="のぼり旗 サンプル画像"
+                                        className="w-full h-full object-contain"
+                                    />
                                 </div>
                                 <div className="flex-1">
                                     <div className="flex justify-between items-start">
@@ -154,7 +162,40 @@ ${cart.map((item, i) => `
                                         </div>
                                     </div>
 
-                                    <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center">
+                                    <div className="mt-3 pt-3 border-t border-gray-100">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-xs font-bold text-gray-500">配送方法</span>
+                                            <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden text-xs">
+                                                <button
+                                                    onClick={() => setItemDeliveryMode(item.id, 'standard')}
+                                                    className={`px-3 py-1.5 font-bold transition-colors ${
+                                                        item.deliveryMode === 'standard'
+                                                            ? 'bg-blue-600 text-white'
+                                                            : 'bg-white text-gray-600 hover:bg-gray-50'
+                                                    }`}
+                                                >
+                                                    通常便
+                                                </button>
+                                                <button
+                                                    onClick={() => setItemDeliveryMode(item.id, 'rush')}
+                                                    className={`px-3 py-1.5 font-bold transition-colors ${
+                                                        item.deliveryMode === 'rush'
+                                                            ? 'bg-orange-500 text-white'
+                                                            : 'bg-white text-gray-600 hover:bg-gray-50'
+                                                    }`}
+                                                >
+                                                    お急ぎ便
+                                                </button>
+                                            </div>
+                                        </div>
+                                        {item.deliveryMode === 'rush' && (
+                                            <p className="text-xs text-orange-600 font-medium">
+                                                +{(deliverySettings.rushSurchargeRate * 100).toFixed(0)}%割増 (+¥{Math.floor(item.price.totalPrice * deliverySettings.rushSurchargeRate).toLocaleString()})
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center">
                                         <div className="text-sm text-gray-600">
                                             {item.specs.options.length > 0 ? (
                                                 <span>Op: {item.specs.options.map(oid => optionsMaster[oid]?.name).join(', ')}</span>
@@ -186,57 +227,16 @@ ${cart.map((item, i) => `
 
                 {/* Action Panel */}
                 <div className="w-full lg:w-96 print:hidden">
-                    {/* Delivery Options */}
+                    {/* Shipment & Summary */}
                     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-6">
-                        <h2 className="text-lg font-bold mb-4">配送方法</h2>
+                        <h2 className="text-lg font-bold mb-4">出荷予定</h2>
 
-                        <div className="space-y-3">
-                            <label className={`
-                        relative flex items-center p-4 rounded-lg border-2 cursor-pointer transition-all
-                        ${cartDeliveryMode === 'standard' ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}
-                    `}>
-                                <input
-                                    type="radio"
-                                    name="delivery"
-                                    className="w-5 h-5 text-blue-600 focus:ring-blue-500"
-                                    checked={cartDeliveryMode === 'standard'}
-                                    onChange={() => setCartDeliveryMode('standard')}
-                                />
-                                <div className="ml-3 flex-1">
-                                    <span className="block font-bold text-gray-900">通常便</span>
-                                    <span className="block text-sm text-gray-500">
-                                        {deliverySettings.standardDays}営業日後 発送
-                                    </span>
-                                </div>
-                                <span className="font-bold text-gray-900">¥0</span>
-                            </label>
-
-                            <label className={`
-                        relative flex items-center p-4 rounded-lg border-2 cursor-pointer transition-all
-                        ${cartDeliveryMode === 'rush' ? 'border-orange-500 bg-orange-50' : 'border-gray-200 hover:border-gray-300'}
-                    `}>
-                                <input
-                                    type="radio"
-                                    name="delivery"
-                                    className="w-5 h-5 text-orange-600 focus:ring-orange-500"
-                                    checked={cartDeliveryMode === 'rush'}
-                                    onChange={() => setCartDeliveryMode('rush')}
-                                />
-                                <div className="ml-3 flex-1">
-                                    <div className="flex items-center space-x-2">
-                                        <span className="block font-bold text-gray-900">お急ぎ便</span>
-                                        <span className="bg-orange-100 text-orange-700 text-xs px-2 py-0.5 rounded-full font-bold">
-                                            {(deliverySettings.rushSurchargeRate * 100).toFixed(0)}%割増
-                                        </span>
-                                    </div>
-                                    <span className="block text-sm text-orange-800">
-                                        {deliverySettings.rushDays}営業日後 発送
-                                    </span>
-                                </div>
-                                <span className="font-bold text-orange-600">+¥{Math.floor(subtotal * deliverySettings.rushSurchargeRate).toLocaleString()}</span>
-                            </label>
-                        </div>
-
+                        {surcharge > 0 && (
+                            <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg text-sm">
+                                <span className="font-bold text-orange-700">お急ぎ便手数料: </span>
+                                <span className="text-orange-700">+¥{surcharge.toLocaleString()}</span>
+                            </div>
+                        )}
 
                         {/* Shipment Date Visualization */}
                         <div className="mt-6 p-4 bg-gray-50 rounded-lg">
