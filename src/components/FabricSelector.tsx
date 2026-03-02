@@ -1,4 +1,4 @@
-import optionReferenceImage from '@/../shopify-theme/assets/option-sample.jpg';
+import optionReferenceImage from '@/lib/150x150.png';
 import { FABRICS, type FabricId } from '@/utils/constants';
 
 interface Props {

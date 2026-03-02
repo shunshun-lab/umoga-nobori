@@ -1,4 +1,4 @@
-import optionReferenceImage from '@/../shopify-theme/assets/option-sample.jpg';
+import optionReferenceImage from '@/lib/150x150.png';
 import { type OptionId } from '@/utils/constants';
 import { useStore } from '@/store';
 import { calculateNoboriPrice } from '@/utils/priceCalculator';
