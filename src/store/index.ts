@@ -65,6 +65,7 @@ export interface CartItem {
     specs: NoboriSpecs;
     price: PriceBreakdown;
     addedAt: number;
+    deliveryMode?: 'standard' | 'rush';
 }
 
 export interface DiscountRule {
@@ -110,6 +111,7 @@ interface StoreState {
     cartDeliveryMode: 'standard' | 'rush';
     updateDeliverySettings: (settings: Partial<StoreState['deliverySettings']>) => void;
     setCartDeliveryMode: (mode: 'standard' | 'rush') => void;
+    setItemDeliveryMode: (id: string, mode: 'standard' | 'rush') => void;
 
     // Logic Editing
     updateDiscountRule: (index: number, newRule: DiscountRule) => void;
@@ -229,6 +231,11 @@ export const useStore = create<StoreState>()(
             })),
 
             setCartDeliveryMode: (mode) => set({ cartDeliveryMode: mode }),
+            setItemDeliveryMode: (id, mode) => set((state) => ({
+                cart: state.cart.map(item =>
+                    item.id === id ? { ...item, deliveryMode: mode } : item
+                ),
+            })),
 
             updateDiscountRule: (index, newRule) => set((state) => {
                 const newRules = [...state.discountRules];

@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import optionReferenceImage from '@/lib/150x150.png';
-import { SIZES, type SizeId } from '@/utils/constants';
+import { type SizeId } from '@/utils/constants';
 import { useStore } from '@/store';
 import { calculateNoboriPrice } from '@/utils/priceCalculator';
 import type { NoboriSpecs } from '@/types/nobori.types';
@@ -11,13 +12,15 @@ interface Props {
 }
 
 export function SizeSelector({ value, specs, onChange }: Props) {
+  const [zoomedImage, setZoomedImage] = useState<string | null>(null);
+
   // Master Data
   const sizesMaster = useStore(state => state.sizes);
   const fabrics = useStore(state => state.fabrics);
   const options = useStore(state => state.options);
   const pricingTables = useStore(state => state.pricingTables);
   const discountRules = useStore(state => state.discountRules);
-  const fabricLimits = useStore(state => state.fabricLimits); // New
+  const fabricLimits = useStore(state => state.fabricLimits);
 
   // Get current limits
   const currentFabricId = specs.fabric || 'polyester';
@@ -26,7 +29,6 @@ export function SizeSelector({ value, specs, onChange }: Props) {
   const getDynamicPrice = (sizeId: string): string => {
     if (sizeId === 'custom') {
       if (specs.customDimensions && specs.customDimensions.width && specs.customDimensions.height) {
-        // Calculate custom price
         const tempSpec = { ...specs, size: 'custom' as const, customDimensions: specs.customDimensions };
         const calc = calculateNoboriPrice(tempSpec, { sizes: sizesMaster, fabrics, options, pricingTables, discountRules });
         return `¥${calc.unitPrice.toLocaleString()}`;
@@ -47,7 +49,7 @@ export function SizeSelector({ value, specs, onChange }: Props) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
           </svg>
         </div>
-        <h2 className="text-2xl font-bold">サイズを選択</h2>
+        <h2 className="text-xl font-bold">サイズを選択</h2>
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
@@ -56,35 +58,48 @@ export function SizeSelector({ value, specs, onChange }: Props) {
             <button
               onClick={() => onChange(id as SizeId)}
               className={`
-                w-full group relative p-6 rounded-2xl border-2 text-left transition-all duration-200 h-full
+                w-full group relative p-4 rounded-2xl border-2 text-left transition-all duration-200 h-full
                 ${value === id
                   ? 'border-blue-600 bg-gradient-to-br from-blue-50 to-blue-100/50 shadow-lg ring-4 ring-blue-100'
                   : 'border-gray-200 hover:border-blue-400 hover:shadow-md bg-white'
                 }
               `}
-              >
-              {value === id && (
-                <div className="absolute top-4 right-4">
-                  <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                </div>
-              )}
-              <div className="font-bold text-xl mb-2 text-gray-900">{size.displayName}</div>
-              <div className="mt-2 flex items-start gap-4">
-                <img
-                  src={optionReferenceImage}
-                  alt={`${size.displayName} の仕上がりイメージ`}
-                  className="w-20 h-20 object-contain rounded-lg border border-gray-100 shadow-sm bg-gray-50"
-                />
-                <div>
-                  <div className="text-sm text-gray-600 mb-3 leading-relaxed">{size.description}</div>
-                  <div className="flex items-baseline space-x-1">
-                    <span className="text-blue-600 font-black text-2xl">
+            >
+              <div className="flex items-stretch gap-4">
+                {/* Left: check + text info */}
+                <div className="flex-1 min-w-0 flex flex-col">
+                  <div className="flex items-center gap-2 mb-1">
+                    {value === id ? (
+                      <svg className="w-5 h-5 text-blue-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    ) : (
+                      <div className="w-5 h-5 rounded-full border-2 border-gray-300 flex-shrink-0" />
+                    )}
+                    <div className="font-bold text-base text-gray-900">{size.displayName}</div>
+                  </div>
+                  <div className="text-xs text-gray-600 leading-relaxed ml-7 mb-2">{size.description}</div>
+                  <div className="flex items-baseline space-x-1 ml-7 mt-auto">
+                    <span className="text-blue-600 font-black text-lg">
                       {getDynamicPrice(id)}
                     </span>
-                    <span className="text-gray-500 text-sm">〜</span>
+                    <span className="text-gray-500 text-xs">〜</span>
                   </div>
+                </div>
+
+                {/* Right: 1:1 square image */}
+                <div
+                  className="flex-shrink-0 w-20 h-20 rounded-lg border border-gray-100 shadow-sm bg-gray-50 overflow-hidden cursor-zoom-in"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setZoomedImage(optionReferenceImage);
+                  }}
+                >
+                  <img
+                    src={optionReferenceImage}
+                    alt={`${size.displayName} の仕上がりイメージ`}
+                    className="w-full h-full object-contain"
+                  />
                 </div>
               </div>
             </button>
@@ -106,9 +121,6 @@ export function SizeSelector({ value, specs, onChange }: Props) {
                       className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                       onChange={(e) => {
                         let w = parseInt(e.target.value) || 0;
-                        // Removed clamping to allow "Quote Required" flow for oversized items
-                        // if (w > limits.maxWidth) w = limits.maxWidth;
-
                         const hInput = document.getElementById('custom-height') as HTMLInputElement;
                         const h = parseInt(hInput?.value) || 0;
                         onChange('custom', { width: w, height: h });
@@ -128,9 +140,6 @@ export function SizeSelector({ value, specs, onChange }: Props) {
                       className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                       onChange={(e) => {
                         let h = parseInt(e.target.value) || 0;
-                        // Removed clamping to allow "Quote Required" flow
-                        // if (h > limits.maxHeight) h = limits.maxHeight;
-
                         const wInput = document.getElementById('custom-width') as HTMLInputElement;
                         const w = parseInt(wInput?.value) || 0;
                         onChange('custom', { width: w, height: h });
@@ -146,6 +155,20 @@ export function SizeSelector({ value, specs, onChange }: Props) {
           </div>
         ))}
       </div>
+
+      {/* Image zoom modal */}
+      {zoomedImage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-8"
+          onClick={() => setZoomedImage(null)}
+        >
+          <img
+            src={zoomedImage}
+            alt="拡大画像"
+            className="max-w-full max-h-full rounded-2xl shadow-2xl"
+          />
+        </div>
+      )}
     </div>
   );
 }

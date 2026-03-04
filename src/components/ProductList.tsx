@@ -1,4 +1,3 @@
-import optionReferenceImage from '@/lib/150x150.png';
 import noboriImage from '@/../shopify-theme/assets/option-sample.jpg';
 interface Props {
     onSelectProduct: (productId: 'nobori' | 'admin') => void;

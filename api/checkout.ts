@@ -50,6 +50,7 @@ interface CartItem {
         totalPrice: number;
         designFee: number;
     };
+    deliveryMode: 'standard' | 'rush';
 }
 
 interface DeliveryInfo {
@@ -119,7 +120,7 @@ function resolveOptionNames(optionIds: string[]): string {
         .join(', ');
 }
 
-function buildCustomAttributes(specs: CartItem['specs'], index: number, total: number) {
+function buildCustomAttributes(specs: CartItem['specs'], deliveryMode: CartItem['deliveryMode'], index: number, total: number) {
     const attrs = [
         { key: 'サイズ', value: resolveSizeName(specs) },
         { key: '生地', value: resolveFabricName(specs.fabric) },
@@ -127,6 +128,7 @@ function buildCustomAttributes(specs: CartItem['specs'], index: number, total: n
         { key: '数量', value: `${specs.quantity}枚` },
         { key: 'オプション', value: resolveOptionNames(specs.options) },
         { key: 'デザイン区分', value: specs.designDataMethod === 'self' ? '完全データ入稿' : 'デザイン制作依頼' },
+        { key: '配送', value: deliveryMode === 'rush' ? 'お急ぎ便' : '通常便' },
         { key: '_商品番号', value: `${index + 1}/${total}` },
     ];
     if (specs.orderName) {
@@ -176,10 +178,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     try {
-        const { cart, deliveryInfo, deliveryMode, surcharge } = req.body as {
+        const { cart, deliveryInfo, surcharge } = req.body as {
             cart: CartItem[];
             deliveryInfo: DeliveryInfo;
-            deliveryMode: 'standard' | 'rush';
             surcharge: number;
         };
 
@@ -191,7 +192,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 amount: String(item.price.unitPrice),
                 currencyCode: 'JPY',
             },
-            customAttributes: buildCustomAttributes(item.specs, index, cart.length),
+            customAttributes: buildCustomAttributes(item.specs, item.deliveryMode, index, cart.length),
         }));
 
         // Add rush surcharge as a separate custom line item
@@ -211,10 +212,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         // Build draft order input
+        const hasRush = cart.some(item => item.deliveryMode === 'rush');
+        const hasStandard = cart.some(item => item.deliveryMode === 'standard');
+        const tags = ['nobori-app'];
+        if (hasRush) tags.push('rush');
+        if (hasStandard) tags.push('standard');
+
         const input: Record<string, unknown> = {
             lineItems,
             presentmentCurrencyCode: 'JPY',
-            tags: ['nobori-app', deliveryMode],
+            tags,
         };
 
         // Attach customer contact info

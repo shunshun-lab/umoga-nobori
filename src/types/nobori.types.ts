@@ -1,5 +1,12 @@
 import type { SizeId, FabricId, PrintMethodId, OptionId } from '@/utils/constants';
 
+export interface DesignItem {
+  id: string;
+  file: File | string;
+  previewUrl?: string;
+  quantity: number;
+}
+
 export interface NoboriSpecs {
   size: SizeId | 'custom';
   customDimensions?: {
@@ -14,12 +21,30 @@ export interface NoboriSpecs {
   orderName?: string; // Optional: Reference name
   designDataMethod: 'self' | 'request'; // 'self' = AI/Upload, 'request' = Professional Design
   designRequestDetails?: string; // Text for design request
+  rushSchedule?: boolean;
+  designs?: DesignItem[];
+  accessories?: { id: string; quantity: number }[];
+  desiredShipDate?: string;
+  externalDataUrl?: string;
 }
 
 export interface DeliveryInfo {
   name: string;
   phone: string;
   email: string;
+}
+
+export interface ShippingAddress {
+  id?: string;
+  name: string;
+  companyName?: string;
+  zip?: string;
+  postalCode?: string;
+  prefecture: string;
+  city: string;
+  address1: string;
+  address2?: string;
+  phone: string;
 }
 
 export interface PriceBreakdown {
@@ -54,4 +79,5 @@ export interface PriceBreakdown {
   discountLabel: string;
   wholesalePrice: number;
   quoteRequired: boolean;
+  accessoriesCost: number;
 }

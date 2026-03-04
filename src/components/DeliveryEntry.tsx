@@ -16,7 +16,6 @@ export function DeliveryEntry({ onBack, onComplete }: Props) {
     const [devSuccess, setDevSuccess] = useState(false);
 
     const cart = useStore(state => state.cart);
-    const cartDeliveryMode = useStore(state => state.cartDeliveryMode);
     const deliverySettings = useStore(state => state.deliverySettings);
     const clearCart = useStore(state => state.clearCart);
 
@@ -31,7 +30,6 @@ export function DeliveryEntry({ onBack, onComplete }: Props) {
         const result = await submitOrder(
             cart,
             { name: formData.name, phone: formData.phone, email: formData.email },
-            cartDeliveryMode,
             deliverySettings.rushSurchargeRate
         );
 

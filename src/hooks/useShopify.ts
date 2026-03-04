@@ -18,23 +18,21 @@ export function useShopify() {
   const submitOrder = async (
     cartItems: CartItem[],
     deliveryInfo: DeliveryInfo,
-    deliveryMode: 'standard' | 'rush',
     rushSurchargeRate: number
   ): Promise<SubmitResult> => {
     setError(null);
     setIsSubmitting(true);
 
     try {
-      // Calculate surcharge
-      const subtotal = cartItems.reduce((sum, item) => sum + item.price.totalPrice, 0);
-      const surcharge = deliveryMode === 'rush'
-        ? Math.floor(subtotal * rushSurchargeRate)
-        : 0;
+      // Calculate surcharge (per-item: only rush items)
+      const rushSubtotal = cartItems
+        .filter(item => item.deliveryMode === 'rush')
+        .reduce((sum, item) => sum + item.price.totalPrice, 0);
+      const surcharge = Math.floor(rushSubtotal * rushSurchargeRate);
 
       const payload = {
         cart: cartItems,
         deliveryInfo,
-        deliveryMode,
         surcharge,
       };
 

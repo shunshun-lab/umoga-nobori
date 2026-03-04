@@ -6,19 +6,19 @@ import type { BannerItem } from '@/utils/uiConfigTypes';
 const FALLBACK_BANNERS: BannerItem[] = [
     {
         id: 'fallback-1',
-        imageUrl: 'https://placehold.co/1200x400/2563eb/white?text=Campaign+1',
+        imageUrl: 'https://placehold.co/1200x750/2563eb/white?text=Campaign+1',
         sortOrder: 1,
         active: true,
     },
     {
         id: 'fallback-2',
-        imageUrl: 'https://placehold.co/1200x400/dc2626/white?text=Campaign+2',
+        imageUrl: 'https://placehold.co/1200x750/dc2626/white?text=Campaign+2',
         sortOrder: 2,
         active: true,
     },
     {
         id: 'fallback-3',
-        imageUrl: 'https://placehold.co/1200x400/16a34a/white?text=Campaign+3',
+        imageUrl: 'https://placehold.co/1200x750/16a34a/white?text=Campaign+3',
         sortOrder: 3,
         active: true,
     },
@@ -63,7 +63,7 @@ export function BannerSlider() {
     }
 
     return (
-        <div className="relative w-full aspect-[3/1] md:aspect-[4/1] overflow-hidden rounded-2xl shadow-lg bg-gray-100">
+        <div className="relative w-full aspect-[8/5] overflow-hidden rounded-2xl shadow-lg bg-gray-100">
             {banners.map((banner, index) => (
                 <div
                     key={banner.id}

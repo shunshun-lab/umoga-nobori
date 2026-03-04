@@ -70,12 +70,6 @@ export function NoboriEstimator({ onAddToCart }: Props) {
   }, [specs.designs, specs.designDataMethod]);
 
   const handleAddToCart = () => {
-    // デザイン1種に対して1会計・1品番に制限
-    if (specs.designDataMethod === 'self' && specs.designs && specs.designs.length > 1) {
-      alert('完全データ入稿では、1回のご注文につき1デザインまでとしています。\nデザインごとに見積もり・注文を分けてください。');
-      return;
-    }
-
     addToCart({
       specs,
       price,
@@ -104,10 +98,37 @@ export function NoboriEstimator({ onAddToCart }: Props) {
           {/* Main Content Column */}
           <div className="lg:col-span-2 space-y-12 pb-40 lg:pb-24">
 
+            {/* お届け予定 */}
+            <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span className="font-bold text-green-800">お届け予定</span>
+              </div>
+              <div className="text-sm space-y-1">
+                <div className="font-bold text-green-900">
+                  {specs.rushSchedule
+                    ? 'お急ぎ納期：3〜5営業日'
+                    : '通常納期：7〜10営業日'
+                  }
+                </div>
+                <div className="text-green-700">
+                  {(() => {
+                    const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
+                    const base = new Date();
+                    const days = specs.rushSchedule ? 3 : 7;
+                    base.setDate(base.getDate() + days);
+                    return `発送予定日: ${base.getMonth() + 1}/${base.getDate()}(${WEEKDAYS[base.getDay()]}) 頃`;
+                  })()}
+                </div>
+              </div>
+            </div>
+
             {/* Step 1: 仕様選択 */}
             <section id="specs" className="space-y-12">
               <div className="flex items-center space-x-3 mb-6 border-b pb-2">
-                <h2 className="text-2xl font-bold text-gray-900">仕様を選択</h2>
+                <h2 className="text-xl font-bold text-gray-900">仕様を選択</h2>
               </div>
 
               <div id="size">
@@ -137,6 +158,23 @@ export function NoboriEstimator({ onAddToCart }: Props) {
                 />
               </div>
 
+              {/* 完全データ入稿の場合は個別の枚数指定を使うため、ここでは合計を表示（または非表示） */
+              /* ただし、外部URL利用等でファイルがない場合は手入力できるようにする */}
+              <div id="quantity">
+                {(specs.designDataMethod !== 'self' || (specs.designs && specs.designs.length === 0)) && (
+                  <QuantityInput
+                    value={specs.quantity}
+                    onChange={(quantity) => setSpecs({ ...specs, quantity })}
+                  />
+                )}
+                {specs.designDataMethod === 'self' && specs.designs && specs.designs.length > 0 && (
+                  <div className="bg-blue-50 p-4 rounded-xl border border-blue-200 flex items-center justify-between">
+                    <div className="font-bold text-blue-900">合計数量</div>
+                    <div className="text-xl font-bold text-blue-600">{specs.quantity}枚</div>
+                  </div>
+                )}
+              </div>
+
               <div id="schedule">
                 <ScheduleSelector
                   value={specs.rushSchedule || false}
@@ -149,10 +187,11 @@ export function NoboriEstimator({ onAddToCart }: Props) {
                       <div className="text-xs font-bold text-gray-600">出荷予定日の目安</div>
                       <div className="text-sm text-gray-700">
                         {(() => {
+                          const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
                           const base = new Date();
                           const days = specs.rushSchedule ? 3 : 7;
                           base.setDate(base.getDate() + days);
-                          return `${base.getMonth() + 1}/${base.getDate()} 頃`;
+                          return `${base.getMonth() + 1}/${base.getDate()}(${WEEKDAYS[base.getDay()]}) 頃`;
                         })()}
                       </div>
                     </div>
@@ -192,35 +231,19 @@ export function NoboriEstimator({ onAddToCart }: Props) {
                 </div>
               </div>
 
-              {/* 完全データ入稿の場合は個別の枚数指定を使うため、ここでは合計を表示（または非表示） */
-              /* ただし、外部URL利用等でファイルがない場合は手入力できるようにする */}
-              <div id="quantity">
-                {(specs.designDataMethod !== 'self' || (specs.designs && specs.designs.length === 0)) && (
-                  <QuantityInput
-                    value={specs.quantity}
-                    onChange={(quantity) => setSpecs({ ...specs, quantity })}
-                  />
-                )}
-                {specs.designDataMethod === 'self' && specs.designs && specs.designs.length > 0 && (
-                  <div className="bg-blue-50 p-4 rounded-xl border border-blue-200 flex items-center justify-between">
-                    <div className="font-bold text-blue-900">合計数量</div>
-                    <div className="text-2xl font-bold text-blue-600">{specs.quantity}枚</div>
-                  </div>
-                )}
-              </div>
-
               <div id="accessories">
                 <AccessoriesSelector
                   value={specs.accessories || []}
                   onChange={(acc) => setSpecs({ ...specs, accessories: acc })}
+                  subtitle="のぼりの設置に必要な器具をお選びください"
                 />
               </div>
             </section>
 
-            {/* Step 2: データ入稿・デザイン */}
+            {/* Step 2: デザインアップロード */}
             <section id="design" className="border-t pt-12">
               <div className="flex items-center space-x-3 mb-6 border-b pb-2">
-                <h2 className="text-2xl font-bold text-gray-900">データ・デザイン選択</h2>
+                <h2 className="text-xl font-bold text-gray-900">デザインアップロード</h2>
               </div>
 
               <TemplateDownload />
@@ -261,59 +284,64 @@ export function NoboriEstimator({ onAddToCart }: Props) {
                   </div>
                 </div>
 
-                {/* Dynamic Content */}
+                {/* Mode-specific content */}
+                {specs.designDataMethod === 'request' && (
+                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <h4 className="font-bold text-gray-900">制作のご要望</h4>
+                    <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-100 text-sm text-yellow-800 my-4">
+                      <p className="font-bold mb-1">【流れについて】</p>
+                      <p>ご注文完了後、担当者よりメールにて詳細なヒアリングを行います。ここでは大まかなイメージや入れたい文字をご入力ください。</p>
+                    </div>
+                    <textarea
+                      value={specs.designRequestDetails || ''}
+                      onChange={(e) => setSpecs({ ...specs, designRequestDetails: e.target.value })}
+                      className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all min-h-[150px]"
+                      placeholder="例：赤色をベースに「大売り出し」という文字を入れてください。ロゴは後でメールで送ります。"
+                    />
+                  </div>
+                )}
+
+                {/* File Upload (shared: both modes) */}
                 <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                  {specs.designDataMethod === 'self' ? (
-                    <div className="space-y-6">
-                      <DesignQuantitySelector
-                        designs={specs.designs || []}
-                        onDesignsChange={(designs) => setSpecs({ ...specs, designs })}
-                      />
+                  <h4 className="font-bold text-gray-900 mb-1">ファイルアップロード（任意）</h4>
+                  <p className="text-xs text-gray-500 mb-4">
+                    {specs.designDataMethod === 'self'
+                      ? '完成データをアップロードしてください。後からメール等でもお送りいただけます。'
+                      : 'ラフ案や参考画像があればアップロードしてください。後からメール等でもお送りいただけます。'
+                    }
+                  </p>
+                  <DesignQuantitySelector
+                    designs={specs.designs || []}
+                    onDesignsChange={(designs) => setSpecs({ ...specs, designs })}
+                  />
 
-                      <div className="bg-gray-50 rounded-xl p-5 border border-gray-200">
-                        <h4 className="font-bold text-gray-900 mb-2 flex items-center">
-                          <svg className="w-5 h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                          </svg>
-                          ファイルサイズが大きい場合
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-4">
-                          200MBを超えるファイルや、ファイル数が10を超える場合は、外部ストレージサービス（ギガファイル便など）をご利用ください。
+                  <div className="bg-gray-50 rounded-xl p-4 border border-gray-200 mt-4">
+                    <h4 className="font-bold text-gray-900 mb-2 text-sm flex items-center">
+                      <svg className="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                      </svg>
+                      ファイルサイズが大きい場合
+                    </h4>
+                    <p className="text-xs text-gray-600 mb-3">
+                      200MBを超えるファイルや、6個以上のファイルがある場合は、外部ストレージサービス（ギガファイル便など）をご利用ください。
+                    </p>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 mb-1">ダウンロードURL</label>
+                      <input
+                        type="url"
+                        value={specs.externalDataUrl || ''}
+                        onChange={(e) => setSpecs({ ...specs, externalDataUrl: e.target.value })}
+                        placeholder="https://gigafile.nu/..."
+                        className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-50 text-sm"
+                      />
+                      {specs.externalDataUrl && (
+                        <p className="mt-2 text-xs text-green-600 font-bold flex items-center">
+                          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                          外部URLが入力されました
                         </p>
-
-                        <div>
-                          <label className="block text-sm font-bold text-gray-700 mb-1">ダウンロードURL</label>
-                          <input
-                            type="url"
-                            value={specs.externalDataUrl || ''}
-                            onChange={(e) => setSpecs({ ...specs, externalDataUrl: e.target.value })}
-                            placeholder="https://gigafile.nu/..."
-                            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-50"
-                          />
-                          {specs.externalDataUrl && (
-                            <p className="mt-2 text-xs text-green-600 font-bold flex items-center">
-                              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                              外部URLが入力されました
-                            </p>
-                          )}
-                        </div>
-                      </div>
+                      )}
                     </div>
-                  ) : (
-                    <div className="space-y-4">
-                      <h4 className="font-bold text-gray-900">制作のご要望</h4>
-                      <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-100 text-sm text-yellow-800 mb-4">
-                        <p className="font-bold mb-1">【流れについて】</p>
-                        <p>ご注文完了後、担当者よりメールにて詳細なヒアリングを行います。ここでは大まかなイメージや入れたい文字をご入力ください。</p>
-                      </div>
-                      <textarea
-                        value={specs.designRequestDetails || ''}
-                        onChange={(e) => setSpecs({ ...specs, designRequestDetails: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all min-h-[150px]"
-                        placeholder="例：赤色をベースに「大売り出し」という文字を入れてください。ロゴは後でメールで送ります。"
-                      />
-                    </div>
-                  )}
+                  </div>
                 </div>
 
                 {/* Common Options */}
@@ -341,7 +369,7 @@ export function NoboriEstimator({ onAddToCart }: Props) {
                 <div className="p-2 bg-yellow-100 rounded-full">
                   <svg className="w-6 h-6 text-yellow-600" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900">お客様の声</h2>
+                <h2 className="text-xl font-bold text-gray-900">お客様の声</h2>
               </div>
 
               <div className="grid md:grid-cols-2 gap-6">
@@ -353,9 +381,16 @@ export function NoboriEstimator({ onAddToCart }: Props) {
                       <div className="text-xs text-gray-500">2024年 春 ご利用</div>
                     </div>
                   </div>
-                  <p className="text-gray-600 text-sm leading-relaxed">
+                  <p className="text-gray-600 text-sm leading-relaxed mb-4">
                     「オンラインでその場ですぐに金額と納期がわかるので、社内承認もスムーズでした。枚数やサイズを変えても自動で再計算されるので、最適な条件をその場で相談できたのが良かったです。」
                   </p>
+                  <div className="w-full aspect-[8/5] bg-gray-100 rounded-xl overflow-hidden">
+                    <img
+                      src="https://placehold.co/800x500/f3f4f6/9ca3af?text=Sample+Photo"
+                      alt="のぼり設置事例"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
                 </div>
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                   <div className="flex items-center mb-4">
@@ -365,9 +400,16 @@ export function NoboriEstimator({ onAddToCart }: Props) {
                       <div className="text-xs text-gray-500">2024年 夏 ご利用</div>
                     </div>
                   </div>
-                  <p className="text-gray-600 text-sm leading-relaxed">
+                  <p className="text-gray-600 text-sm leading-relaxed mb-4">
                     「初めてのぼりを注文しましたが、サイズや生地の違いが画面でわかりやすく説明されていて安心して選べました。付属品も一緒に選べるので、届いてすぐに設置できました。」
                   </p>
+                  <div className="w-full aspect-[8/5] bg-gray-100 rounded-xl overflow-hidden">
+                    <img
+                      src="https://placehold.co/800x500/f3f4f6/9ca3af?text=Sample+Photo"
+                      alt="のぼり設置事例"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
                 </div>
               </div>
             </section>
@@ -378,11 +420,9 @@ export function NoboriEstimator({ onAddToCart }: Props) {
               <div className="lg:hidden">
                 <button
                   onClick={handleAddToCart}
-                  disabled={(specs.designDataMethod === 'self' && (!specs.designs || specs.designs.length === 0) && !specs.externalDataUrl)}
+                  disabled={false}
                   className={`w-full py-4 text-white rounded-xl font-bold shadow-lg text-lg 
-                        ${(specs.designDataMethod === 'self' && (!specs.designs || specs.designs.length === 0) && !specs.externalDataUrl)
-                      ? 'bg-gray-400 cursor-not-allowed'
-                      : 'bg-gradient-to-r from-blue-600 to-blue-500'}`}
+                        ${'bg-gradient-to-r from-blue-600 to-blue-500'}`}
                 >
                   カートに入れる
                 </button>
@@ -399,11 +439,9 @@ export function NoboriEstimator({ onAddToCart }: Props) {
               <div className="mt-6">
                 <button
                   onClick={handleAddToCart}
-                  disabled={(specs.designDataMethod === 'self' && (!specs.designs || specs.designs.length === 0) && !specs.externalDataUrl)}
+                  disabled={false}
                   className={`w-full py-4 text-white rounded-xl font-bold shadow-lg flex justify-center items-center space-x-2 text-lg transform transition-all duration-200 
-                    ${(specs.designDataMethod === 'self' && (!specs.designs || specs.designs.length === 0) && !specs.externalDataUrl)
-                      ? 'bg-gray-400 cursor-not-allowed'
-                      : 'bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 hover:-translate-y-1 hover:shadow-xl'}`}
+                    ${'bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 hover:-translate-y-1 hover:shadow-xl'}`}
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -446,7 +484,7 @@ export function NoboriEstimator({ onAddToCart }: Props) {
               <div className="mt-8 pb-8">
                 <button
                   onClick={handleAddToCart}
-                  disabled={(specs.designDataMethod === 'self' && (!specs.designs || specs.designs.length === 0) && !specs.externalDataUrl)}
+                  disabled={false}
                   className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-blue-700"
                 >
                   カートに入れる
@@ -459,9 +497,10 @@ export function NoboriEstimator({ onAddToCart }: Props) {
 
       <StickyEstimateFooter
         price={price}
+        specs={specs}
         onOpenDetail={() => setShowMobileQuote(true)}
         onAddToCart={handleAddToCart}
-        disabled={(specs.designDataMethod === 'self' && (!specs.designs || specs.designs.length === 0) && !specs.externalDataUrl)}
+        disabled={false}
       />
     </div>
   );

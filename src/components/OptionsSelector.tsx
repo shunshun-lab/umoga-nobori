@@ -1,5 +1,5 @@
+import { useState } from 'react';
 import optionReferenceImage from '@/lib/150x150.png';
-import noboriImage from '@/../shopify-theme/assets/option-sample.jpg';
 import { type OptionId } from '@/utils/constants';
 import { useStore } from '@/store';
 import { calculateNoboriPrice } from '@/utils/priceCalculator';
@@ -12,9 +12,11 @@ interface Props {
 }
 
 export function OptionsSelector({ value, specs, onChange }: Props) {
+  const [zoomedImage, setZoomedImage] = useState<string | null>(null);
+
   const optionsMaster = useStore((state) => state.options);
   const exclusions = useStore((state) => state.exclusions);
-  const optionVisibility = useStore((state) => state.optionVisibility); // New
+  const optionVisibility = useStore((state) => state.optionVisibility);
 
   // Master Data for Calculation
   const sizes = useStore(state => state.sizes);
@@ -38,26 +40,14 @@ export function OptionsSelector({ value, specs, onChange }: Props) {
     }
   };
 
-  // Helper to calculate cost impact of a single option
   const getOptionPrice = (optionId: string): number => {
-    // We calculate the delta between "No Options" and "Only This Option"
-    // relative to the CURRENT specs (Size, Fabric, Qty).
-    // Note: We use the *Current* quantity to get the correct multiplier,
-    // but we return the *Per Unit* cost for display.
-
-    // Base Spec (No options)
     const baseSpec = { ...specs, options: [] };
     const baseCalc = calculateNoboriPrice(baseSpec, { sizes, fabrics, options: optionsMaster, pricingTables, discountRules });
 
-    // With Option Spec
     const withSpec = { ...specs, options: [optionId as OptionId] };
     const withCalc = calculateNoboriPrice(withSpec, { sizes, fabrics, options: optionsMaster, pricingTables, discountRules });
 
-    // Total Difference
     const diffTotal = withCalc.totalPrice - baseCalc.totalPrice;
-
-    // Per Unit Difference
-    // Use Math.round to avoid floating point ugliness, though usually integers.
     return Math.round(diffTotal / specs.quantity);
   };
 
@@ -69,79 +59,90 @@ export function OptionsSelector({ value, specs, onChange }: Props) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
           </svg>
         </div>
-        <h2 className="text-2xl font-bold">オプション加工</h2>
+        <h2 className="text-xl font-bold">オプション加工</h2>
       </div>
 
-      <div className="flex flex-col xl:flex-row gap-8">
-        <div className="space-y-3 flex-1">
-          {Object.entries(optionsMaster).map(([id, option]) => {
-            if (optionVisibility && optionVisibility[id] === false) return null;
+      <div className="grid md:grid-cols-2 gap-4">
+        {Object.entries(optionsMaster).map(([id, option]) => {
+          if (optionVisibility && optionVisibility[id] === false) return null;
 
-            const price = getOptionPrice(id);
-            const sign = price > 0 ? '+' : ''; // Negative has built-in minus
+          const price = getOptionPrice(id);
+          const sign = price > 0 ? '+' : '';
+          const isSelected = value.includes(id as OptionId);
 
-            return (
-              <label
-                key={id}
-                className={`
-                flex items-start p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200
-                ${value.includes(id as OptionId)
-                    ? 'border-blue-600 bg-gradient-to-br from-blue-50 to-blue-100/50 shadow-lg ring-4 ring-blue-100'
-                    : 'border-gray-200 hover:border-blue-400 hover:shadow-md bg-white'
-                  }
+          return (
+            <label
+              key={id}
+              className={`
+                relative flex items-stretch p-4 rounded-2xl border-2 cursor-pointer transition-all duration-200
+                ${isSelected
+                  ? 'border-blue-600 bg-gradient-to-br from-blue-50 to-blue-100/50 shadow-lg ring-4 ring-blue-100'
+                  : 'border-gray-200 hover:border-blue-400 hover:shadow-md bg-white'
+                }
               `}
-              >
-                <div className="relative mt-1">
-                  <input
-                    type="checkbox"
-                    checked={value.includes(id as OptionId)}
-                    onChange={() => toggleOption(id as OptionId)}
-                    className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
-                  />
-                </div>
+            >
+              <input
+                type="checkbox"
+                checked={isSelected}
+                onChange={() => toggleOption(id as OptionId)}
+                className="sr-only"
+              />
 
-                <div className="flex-1 ml-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="font-bold text-xl text-gray-900">{option.displayName}</div>
-                    {value.includes(id as OptionId) && (
-                      <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+              <div className="flex items-stretch gap-4 w-full">
+                {/* Left: check + text info */}
+                <div className="flex-1 min-w-0 flex flex-col">
+                  <div className="flex items-center gap-2 mb-1">
+                    {isSelected ? (
+                      <svg className="w-5 h-5 text-blue-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                       </svg>
+                    ) : (
+                      <div className="w-5 h-5 rounded-full border-2 border-gray-300 flex-shrink-0" />
                     )}
+                    <div className="font-bold text-base text-gray-900">{option.displayName}</div>
                   </div>
-                  <div className="text-sm text-gray-600 leading-relaxed mb-2">{option.description}</div>
-
-                  {/* オプションごとの参考画像（なければ共通サンプルを表示） */}
-                  <div className="mt-3 mb-1 flex items-center justify-start">
-                    <img
-                      src={option.imageUrl || optionReferenceImage}
-                      alt={option.displayName}
-                      className="h-28 w-auto object-contain rounded-lg border border-gray-100 shadow-sm bg-gray-50"
-                    />
+                  <div className="text-xs text-gray-600 leading-relaxed ml-7 mb-2">{option.description}</div>
+                  <div className="ml-7 mt-auto">
+                    <span className={`inline-block px-2 py-0.5 rounded text-sm font-bold ${price < 0 ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>
+                      {sign}¥{price.toLocaleString()}
+                    </span>
                   </div>
                 </div>
 
-                <div className="ml-4 flex items-center">
-                  <div className={`px-3 py-1 rounded-lg font-bold text-sm ${price < 0 ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>
-                    {sign}¥{price.toLocaleString()}
-                  </div>
+                {/* Right: 1:1 square image */}
+                <div
+                  className="flex-shrink-0 w-20 h-20 rounded-lg border border-gray-100 shadow-sm bg-gray-50 overflow-hidden cursor-zoom-in"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setZoomedImage(option.imageUrl || optionReferenceImage);
+                  }}
+                >
+                  <img
+                    src={option.imageUrl || optionReferenceImage}
+                    alt={option.displayName}
+                    className="w-full h-full object-contain"
+                  />
                 </div>
-              </label>
-            );
-          })}
-        </div>
-
-        <figure className="flex-shrink-0 w-full xl:w-80">
-          <img
-            src={noboriImage}
-            alt="オプション加工イメージ"
-            className="w-full h-auto rounded-2xl shadow-md"
-          />
-          <figcaption className="mt-3 text-sm text-gray-500">
-            棒袋縫製など代表的な加工イメージです。
-          </figcaption>
-        </figure>
+              </div>
+            </label>
+          );
+        })}
       </div>
+
+      {/* Image zoom modal */}
+      {zoomedImage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-8"
+          onClick={() => setZoomedImage(null)}
+        >
+          <img
+            src={zoomedImage}
+            alt="拡大画像"
+            className="max-w-full max-h-full rounded-2xl shadow-2xl"
+          />
+        </div>
+      )}
     </div>
   );
 }
