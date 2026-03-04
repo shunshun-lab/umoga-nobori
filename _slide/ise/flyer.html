@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>伊勢神宮基礎講座 ｜ 常磐会 — A4チラシ</title>
+  <style>
+    @page { size: A4; margin: 0; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 210mm;
+      height: 297mm;
+      font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+      color: #222;
+      background: #faf8f5;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      overflow: hidden;
+    }
+
+    .page {
+      width: 210mm;
+      height: 297mm;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(135deg, #1a0a00 0%, #2d1810 50%, #1a1a2e 100%);
+      color: #fff;
+      text-align: center;
+      padding: 4mm 6mm 3.5mm;
+      flex-shrink: 0;
+    }
+    .hero-sub {
+      font-size: 6pt;
+      letter-spacing: 0.5em;
+      color: #d4a838;
+      margin-bottom: 1mm;
+    }
+    .hero h1 {
+      font-size: 18pt;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+    }
+    .hero-tagline {
+      font-size: 7pt;
+      color: rgba(255,255,255,0.7);
+      margin-top: 1mm;
+    }
+
+    /* ── Content ── */
+    .content {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      padding: 2.5mm 5mm 2mm;
+    }
+
+    .col-left {
+      padding-right: 3.5mm;
+      border-right: 0.3pt solid #d4c5a9;
+    }
+    .col-right {
+      padding-left: 3.5mm;
+    }
+
+    h2 {
+      font-size: 9pt;
+      letter-spacing: 0.08em;
+      color: #1a1a1a;
+      border-bottom: 1.2pt solid #b8860b;
+      padding-bottom: 0.8mm;
+      margin-bottom: 1.5mm;
+      display: inline-block;
+    }
+
+    h3 {
+      font-size: 7pt;
+      color: #8b2500;
+      margin: 1.8mm 0 0.8mm;
+      letter-spacing: 0.03em;
+    }
+
+    p, li {
+      font-size: 6pt;
+      line-height: 1.6;
+    }
+
+    p { margin-bottom: 1mm; }
+
+    ul {
+      margin: 0 0 1mm 3mm;
+      list-style: none;
+    }
+    ul li::before {
+      content: "・";
+      color: #b8860b;
+    }
+
+    strong { color: #1a1a1a; }
+
+    /* ── Num cards ── */
+    .nums {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1mm;
+      margin: 1.5mm 0;
+    }
+    .num-card {
+      background: #fff;
+      border: 0.3pt solid #d4c5a9;
+      border-radius: 1mm;
+      padding: 1mm 0.5mm;
+      text-align: center;
+    }
+    .num-card .n {
+      font-size: 9pt;
+      font-weight: 700;
+      color: #b8860b;
+      display: block;
+      line-height: 1.2;
+    }
+    .num-card .l {
+      font-size: 4.5pt;
+      color: #888;
+      margin-top: 0.2mm;
+    }
+
+    /* ── Small table ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1mm 0;
+      font-size: 5.5pt;
+    }
+    th, td {
+      padding: 0.6mm 1mm;
+      border-bottom: 0.3pt solid #d4c5a9;
+      text-align: left;
+    }
+    th {
+      background: #f5f0e8;
+      font-weight: 600;
+      font-size: 5pt;
+      color: #1a1a1a;
+    }
+
+    /* ── Quote ── */
+    .quote {
+      border-left: 1.5pt solid #b8860b;
+      padding: 0.8mm 2mm;
+      margin: 1mm 0;
+      background: #f5f0e8;
+      font-style: italic;
+      font-size: 6pt;
+      color: #1a1a1a;
+    }
+
+    /* ── Wow ── */
+    .wow {
+      background: #fff;
+      border: 0.3pt solid #d4c5a9;
+      border-left: 1.5pt solid #b8860b;
+      border-radius: 0.8mm;
+      padding: 1mm 1.5mm;
+      margin-bottom: 1mm;
+    }
+    .wow .wt {
+      font-size: 6pt;
+      font-weight: 700;
+      color: #1a1a1a;
+    }
+    .wow .wb {
+      font-size: 5pt;
+      color: #666;
+      line-height: 1.45;
+    }
+
+    /* ── Event card ── */
+    .ev {
+      background: #fff;
+      border: 0.3pt solid #d4c5a9;
+      border-radius: 1mm;
+      padding: 1.5mm 2mm;
+      margin-bottom: 1.2mm;
+      position: relative;
+    }
+    .ev.hot { border-color: #b8860b; border-width: 0.8pt; }
+    .ev.hot::after {
+      content: "注目";
+      position: absolute;
+      top: -1.2mm;
+      right: 2mm;
+      background: #b8860b;
+      color: #fff;
+      font-size: 4.5pt;
+      padding: 0.2mm 1.2mm;
+      border-radius: 0.8mm;
+      font-weight: 600;
+    }
+    .ev-badge {
+      display: inline-block;
+      font-size: 4.5pt;
+      padding: 0.2mm 1.2mm;
+      border-radius: 0.8mm;
+      font-weight: 600;
+      margin-bottom: 0.5mm;
+    }
+    .b-green { background: #e8f5e9; color: #2d5016; }
+    .b-orange { background: #fff3e0; color: #e65100; }
+    .b-blue { background: #e3f2fd; color: #1565c0; }
+    .ev h4 {
+      font-size: 7pt;
+      color: #1a1a1a;
+      margin-bottom: 0.3mm;
+    }
+    .ev .meta {
+      font-size: 5pt;
+      color: #888;
+      margin-bottom: 0.5mm;
+    }
+    .ev p { font-size: 5.5pt; margin-bottom: 0; line-height: 1.5; }
+
+    /* ── Fit ── */
+    .fit {
+      margin: 1mm 0;
+      font-size: 6pt;
+    }
+    .fit-row {
+      display: flex;
+      gap: 1.5mm;
+      padding: 0.6mm 0;
+      border-bottom: 0.3pt solid #d4c5a9;
+      align-items: baseline;
+    }
+    .fit-row:last-child { border-bottom: none; }
+    .fit-who { font-weight: 600; min-width: 26mm; color: #1a1a1a; font-size: 5.5pt; }
+    .fit-what { color: #8b2500; font-weight: 600; font-size: 5.5pt; }
+
+    /* ── CTA ── */
+    .cta {
+      background: linear-gradient(135deg, #2d1810, #1a1a2e);
+      color: #fff;
+      padding: 3.5mm 6mm;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5mm;
+    }
+    .cta-text {
+      text-align: center;
+      flex: 1;
+    }
+    .cta-text p {
+      color: rgba(255,255,255,0.85);
+      font-size: 6.5pt;
+      margin-bottom: 1.5mm;
+    }
+    .cta-text .url-btn {
+      display: inline-block;
+      background: #b8860b;
+      color: #fff;
+      padding: 1.2mm 5mm;
+      border-radius: 1.2mm;
+      font-size: 8.5pt;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-decoration: none;
+    }
+    .cta-text .copy {
+      font-size: 4.5pt;
+      color: rgba(255,255,255,0.45);
+      margin-top: 1mm;
+    }
+    .cta-qr {
+      flex-shrink: 0;
+      text-align: center;
+    }
+    .cta-qr img {
+      width: 18mm;
+      height: 18mm;
+      display: block;
+    }
+    .cta-qr .qr-label {
+      font-size: 4.5pt;
+      color: rgba(255,255,255,0.6);
+      margin-top: 0.5mm;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Hero -->
+  <div class="hero">
+    <p class="hero-sub">ISE JINGU &amp; TOKIWAKAI</p>
+    <h1>伊勢神宮基礎講座</h1>
+    <p class="hero-tagline">1,300年の「常若」が息づく、日本の心のふるさとへ</p>
+  </div>
+
+  <!-- 2-column content -->
+  <div class="content">
+
+    <!-- ━━ LEFT: 伊勢神宮基礎 ━━ -->
+    <div class="col-left">
+
+      <h2>伊勢神宮とは</h2>
+      <p>正式名称はただの一言<strong>「神宮」</strong>。全国約8万社の頂点に立つ、日本の「心のふるさと」。</p>
+
+      <div class="nums">
+        <div class="num-card"><span class="n">125</span><span class="l">宮社の総数</span></div>
+        <div class="num-card"><span class="n">2,000</span><span class="l">年前に創建</span></div>
+        <div class="num-card"><span class="n">5,500</span><span class="l">ha（≒世田谷区）</span></div>
+        <div class="num-card"><span class="n">4市2町</span><span class="l">にまたがる</span></div>
+      </div>
+
+      <table>
+        <tr><th></th><th>内宮（皇大神宮）</th><th>外宮（豊受大神宮）</th></tr>
+        <tr><td><strong>祭神</strong></td><td>天照大御神</td><td>豊受大御神</td></tr>
+        <tr><td><strong>役割</strong></td><td>国民の「総氏神」</td><td>衣食住・産業の守り神</td></tr>
+      </table>
+
+      <h3>古事記と伊勢</h3>
+      <p>イザナギの禊から生まれた天照大御神。天の岩戸の物語で登場する<strong>八咫鏡</strong>が、そのまま伊勢神宮内宮の御神体。三種の神器のひとつであり、天照大御神の言葉<strong>「この鏡を私だと思って祀りなさい」</strong>の通り祀られています。倭姫命が諸国を巡り、お告げで五十鈴川の川上に宮を建てました。</p>
+      <div class="quote">「この神風の伊勢の国は常世から波が寄せる美しい国。ここにいたい」</div>
+
+      <h3>式年遷宮 — 1,300年の大事業</h3>
+      <p><strong>20年ごと</strong>に65棟を建て替え、714種1,576点の神宝を全て新調。次回<strong>第63回は2033年秋</strong>。宮大工が一生で最大3回携わることで<strong>身体知</strong>として技術を継承。古材は正殿→鳥居→全国の神社へと<strong>60年以上リレー</strong>。費用は約550億円。</p>
+
+      <h3>「常若（とこわか）」の思想</h3>
+      <p>本質を守るために形を変え続ける。朽ちやすい木で作り、<strong>定期的に作り替えることで永遠を実現</strong>する日本固有の哲学。ピラミッドは廃墟だが、伊勢神宮は常に新築。SDGsの遥か以前から存在する<strong>「和のサステナビリティ」</strong>。</p>
+
+      <h3>驚きの事実</h3>
+      <div class="wow">
+        <p class="wt">御神体を誰も見たことがない</p>
+        <p class="wb">遷御の儀は完全な闇の中。八咫鏡は天皇ですら直接見られない。</p>
+      </div>
+      <div class="wow">
+        <p class="wt">1830年、6人に1人が伊勢を目指した</p>
+        <p class="wb">半年で460万人が殺到（当時人口3,000万人）。「抜け参り」でもお咎めなし。</p>
+      </div>
+      <div class="wow">
+        <p class="wt">江戸時代、犬が単独でお伊勢参り</p>
+        <p class="wb">首に旅費とメモをくくりつけ、道中の人々がリレーで世話。「おかげ犬」。</p>
+      </div>
+      <div class="wow">
+        <p class="wt">古事記に伊勢神宮の起源が書かれていない</p>
+        <p class="wb">日本書紀には詳しいのに、古事記では「いつの間にか存在」。今なお謎。</p>
+      </div>
+
+    </div>
+
+    <!-- ━━ RIGHT: 常磐会 ━━ -->
+    <div class="col-right">
+
+      <h2>常磐会（ときわかい）とは</h2>
+      <p>伊勢の地から未来を育むコミュニティ。<strong>「常磐（ときわ）」</strong>＝いつまでも揺るがないもの。祝詞の<strong>「常磐尓堅磐尓」</strong>に由来し、式年遷宮の「常若」に通じます。</p>
+      <ul>
+        <li>日本の伝統文化の継承</li>
+        <li>若い世代・子どもたちの健全な育ち</li>
+        <li>世代をこえた温かなつながり</li>
+      </ul>
+      <p>大学生・若い起業家・家族連れなど「伊勢を学びたい」人が集まる場。キーワードは<strong>奉仕・友愛・責任・忍耐・進取</strong>。</p>
+
+      <h3>イベント紹介</h3>
+
+      <div class="ev">
+        <span class="ev-badge b-green">入門</span>
+        <h4>朔日餅を楽しむ会（@東京）</h4>
+        <p class="meta">毎月2日 ／ 東京都内</p>
+        <p>伊勢の朔日参りの文化を東京で味わう交流会。<strong>朔日餅</strong>を味わいながら伊勢の話を聞く。伊勢に行ったことがなくても気軽に参加OK。<strong>まずはここから。</strong></p>
+      </div>
+
+      <div class="ev hot">
+        <span class="ev-badge b-orange">中級〜上級</span>
+        <h4>お木曳き（おきひき）</h4>
+        <p class="meta">2026年5月〜8月（第一次） ／ 伊勢現地</p>
+        <p>2033年遷宮に向け始動。550年以上の伝統行事。内宮用は五十鈴川を水上で曳く<strong>川曳</strong>、外宮用は陸路の<strong>陸曳</strong>。揃いの法被、伊勢音頭。伊勢音頭は<strong>京都をどり</strong>の発祥。</p>
+      </div>
+
+      <div class="ev hot">
+        <span class="ev-badge b-blue">全レベル</span>
+        <h4>二見ヶ浦の夏至祭</h4>
+        <p class="meta">2026年6月20日（土）〜 21日（日） ／ 二見興玉神社</p>
+        <p><strong>今年はなんと土日開催！</strong> 夫婦岩から昇る朝日を浴びながら海で禊。自分と向き合い心身を清める時間。ダンスやワークも。夫婦岩の先200kmに<strong>富士山が一直線</strong>。</p>
+      </div>
+
+      <div class="ev">
+        <span class="ev-badge b-green">入門〜中級</span>
+        <h4>リアル伊勢ツアー</h4>
+        <p class="meta">不定期 ／ 伊勢現地</p>
+        <p>伊勢現地での宿泊・参拝・まち歩き。少人数で背景や意味を学びながら体験。</p>
+      </div>
+
+      <h3>どのイベントが向いている？</h3>
+      <div class="fit">
+        <div class="fit-row"><span class="fit-who">雰囲気を知りたい</span><span class="fit-what">→ 朔日餅の会（東京）</span></div>
+        <div class="fit-row"><span class="fit-who">伊勢にじっくり行きたい</span><span class="fit-what">→ リアル伊勢ツアー</span></div>
+        <div class="fit-row"><span class="fit-who">行事のど真ん中で奉仕</span><span class="fit-what">→ お木曳き（2026年〜）</span></div>
+        <div class="fit-row"><span class="fit-who">自分と向き合いたい</span><span class="fit-what">→ 夏至祭（今年は土日！）</span></div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- CTA with QR -->
+  <div class="cta">
+    <div class="cta-text">
+      <p>2026年は<strong>お木曳き元年</strong>＆<strong>夏至祭が土日</strong> — 伊勢に関わる絶好のタイミング</p>
+      <a href="https://www.isetokiwa.jp/" class="url-btn">isetokiwa.jp</a>
+      <p class="copy">&copy; 常磐会（ときわかい）</p>
+    </div>
+    <div class="cta-qr">
+      <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MSIgaGVpZ2h0PSI4MSIgY2xhc3M9InNlZ25vIj48cGF0aCB0cmFuc2Zvcm09InNjYWxlKDMpIiBjbGFzcz0icXJsaW5lIiBzdHJva2U9IiNmZmYiIGQ9Ik0xIDEuNWg3bTMgMGgybTEgMGgzbTIgMGg3bS0yNSAxaDFtNSAwaDFtMSAwaDFtMiAwaDJtMiAwaDJtMSAwaDFtNSAwaDFtLTI1IDFoMW0xIDBoM20xIDBoMW0yIDBoMm00IDBoMW0yIDBoMW0xIDBoM20xIDBoMW0tMjUgMWgxbTEgMGgzbTEgMGgxbTIgMGgzbTIgMGgxbTMgMGgxbTEgMGgzbTEgMGgxbS0yNSAxaDFtMSAwaDNtMSAwaDFtMSAwaDFtMyAwaDRtMiAwaDFtMSAwaDNtMSAwaDFtLTI1IDFoMW01IDBoMW0yIDBoM20xIDBoMW0xIDBoMW0yIDBoMW01IDBoMW0tMjUgMWg3bTEgMGgxbTEgMGgxbTEgMGgxbTEgMGgxbTEgMGgxbTEgMGg3bS0xMyAxaDVtLTE3IDFoMW0xIDBoMW0xIDBoMW0xIDBoMW0yIDBoM20xIDBoMW02IDBoMW0yIDBoMW0tMjMgMWgxbTEgMGgxbTQgMGgybTEgMGgxbTEgMGgybTEgMGgxbTEgMGgxbTUgMGgxbS0yNSAxaDJtMSAwaDFtMiAwaDFtMyAwaDJtMSAwaDFtMyAwaDNtMiAwaDNtLTI1IDFoM20xIDBoMm0yIDBoM20xIDBoNW0xIDBoMW00IDBoMW0tMjIgMWgzbTEgMGgxbTEgMGgxbTEgMGg0bTIgMGg0bTEgMGgxbTEgMGgybS0yNCAxaDFtMSAwaDFtMyAwaDJtMSAwaDJtMSAwaDFtMiAwaDFtMSAwaDFtMiAwaDFtMiAwaDFtLTI1IDFoMW0xIDBoN20xIDBoMW0xIDBoMW0xIDBoMW0yIDBoM20yIDBoM20tMjQgMWgybTQgMGgxbTEgMGgxbTEgMGgxbTEgMGgybTMgMGgxbTEgMGgxbTIgMGgxbS0yNCAxaDFtMSAwaDFtMSAwaDFtMSAwaDJtMSAwaDFtMiAwaDNtMSAwaDZtLTE0IDFoMW0yIDBoMW00IDBoMW0zIDBoMm0xIDBoMm0tMjUgMWg3bTIgMGgybTIgMGgxbTEgMGgybTEgMGgxbTEgMGgybTEgMGgybS0yNSAxaDFtNSAwaDFtMiAwaDFtMiAwaDJtMiAwaDFtMyAwaDJtLTIyIDFoMW0xIDBoM20xIDBoMW0xIDBoMm0xIDBoM20yIDBoNm0tMjIgMWgxbTEgMGgzbTEgMGgxbTIgMGgxbTcgMGgxbTEgMGg0bS0yMyAxaDFtMSAwaDNtMSAwaDFtMSAwaDNtMSAwaDNtNSAwaDFtMyAwaDFtLTI1IDFoMW01IDBoMW0zIDBoMm0xIDBoMW0xIDBoMm0xIDBoMW0xIDBoMm0xIDBoMW0tMjQgMWg3bTEgMGgybTMgMGgxbTEgMGgybTIgMGgxbTMgMGgyIi8+PC9zdmc+Cg==" alt="QR Code - isetokiwa.jp">
+      <span class="qr-label">QRコードで<br>HPにアクセス</span>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

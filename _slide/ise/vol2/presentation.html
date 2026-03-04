@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>伊勢神宮基礎講座 第二弾 — 参拝と歩き方 ｜ 常磐会</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --gold: #b8860b;
+    --gold-light: #d4a838;
+    --crimson: #8b2500;
+    --dark: #1a0a00;
+    --dark-blue: #1a1a2e;
+    --bg-warm: #faf8f5;
+    --text-light: rgba(255,255,255,0.92);
+    --text-dim: rgba(255,255,255,0.6);
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: #000;
+    font-family: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Slide container ── */
+  .deck { width: 100vw; height: 100vh; position: relative; }
+
+  .slide {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    text-align: center;
+    opacity: 0; visibility: hidden;
+    transition: opacity 0.6s ease, visibility 0.6s ease;
+    background-size: cover; background-position: center;
+    color: var(--text-light);
+    padding: 6vh 8vw;
+  }
+  .slide.active { opacity: 1; visibility: visible; }
+
+  /* Dark overlay on photo slides */
+  .slide.photo::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(26,10,0,0.72) 0%, rgba(26,26,46,0.68) 100%);
+    z-index: 0;
+  }
+  .slide.photo > * { position: relative; z-index: 1; }
+
+  /* Solid-background slides */
+  .slide.solid {
+    background: linear-gradient(135deg, var(--dark) 0%, #2d1810 50%, var(--dark-blue) 100%);
+  }
+
+  /* Photo-only slides (full-screen image + caption) */
+  .slide.photo-only {
+    background-size: cover;
+    background-position: center;
+    justify-content: flex-end;
+    align-items: center;
+    padding-bottom: 8vh;
+  }
+  .slide.photo-only::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(0,0,0,0.05) 0%,
+      rgba(0,0,0,0.15) 50%,
+      rgba(0,0,0,0.70) 85%,
+      rgba(0,0,0,0.85) 100%
+    );
+    z-index: 0;
+  }
+  .slide.photo-only > * { position: relative; z-index: 1; }
+  .slide.photo-only .photo-caption {
+    font-size: clamp(0.9rem, 1.6vw, 1.3rem);
+    color: rgba(255,255,255,0.92);
+    text-shadow: 0 2px 12px rgba(0,0,0,0.8);
+    letter-spacing: 0.05em;
+    line-height: 1.6;
+    text-align: center;
+    max-width: 80%;
+  }
+  .slide.photo-only .photo-caption .caption-sub {
+    display: block;
+    font-size: 0.75em;
+    color: rgba(255,255,255,0.55);
+    margin-top: 0.5vh;
+  }
+
+  /* Credit slide */
+  .slide.credits {
+    background: #111;
+    justify-content: flex-start;
+    padding-top: 6vh;
+    text-align: left;
+  }
+  .slide.credits h2 {
+    font-size: clamp(1.2rem, 2.5vw, 2rem);
+    margin-bottom: 3vh;
+    text-align: center;
+    width: 100%;
+  }
+  .slide.credits .credit-list {
+    font-size: clamp(0.55rem, 0.9vw, 0.75rem);
+    color: rgba(255,255,255,0.5);
+    line-height: 2;
+    max-width: 90%;
+    margin: 0 auto;
+    column-count: 2;
+    column-gap: 4vw;
+  }
+  .slide.credits .credit-list p {
+    break-inside: avoid;
+    margin-bottom: 0.5vh;
+  }
+
+  /* ── Typography ── */
+  .slide-sub {
+    font-size: clamp(0.7rem, 1.4vw, 1.1rem);
+    letter-spacing: 0.5em;
+    color: var(--gold-light);
+    text-transform: uppercase;
+    margin-bottom: 1.5vh;
+  }
+
+  h1 {
+    font-size: clamp(2rem, 5.5vw, 4.5rem);
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    line-height: 1.25;
+    margin-bottom: 2vh;
+    text-shadow: 0 4px 30px rgba(0,0,0,0.5);
+  }
+
+  h2 {
+    font-size: clamp(1.6rem, 4vw, 3.2rem);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    line-height: 1.3;
+    margin-bottom: 2.5vh;
+    text-shadow: 0 3px 20px rgba(0,0,0,0.4);
+  }
+
+  .tagline {
+    font-size: clamp(0.9rem, 1.8vw, 1.4rem);
+    color: var(--text-dim);
+    line-height: 1.6;
+    max-width: 70%;
+    margin: 0 auto;
+  }
+
+  .body-text {
+    font-size: clamp(1rem, 2vw, 1.5rem);
+    line-height: 1.8;
+    max-width: 80%;
+    text-align: left;
+    margin: 0 auto;
+  }
+
+  .body-text li {
+    margin-bottom: 1vh;
+    list-style: none;
+    padding-left: 1.5em;
+    position: relative;
+  }
+  .body-text li::before {
+    content: "◆";
+    color: var(--gold);
+    position: absolute;
+    left: 0;
+    font-size: 0.7em;
+    top: 0.2em;
+  }
+
+  .quote-block {
+    border-left: 4px solid var(--gold);
+    padding: 2vh 3vw;
+    margin: 3vh auto;
+    max-width: 75%;
+    text-align: left;
+    font-style: italic;
+    font-size: clamp(1.1rem, 2.2vw, 1.8rem);
+    line-height: 1.7;
+    background: rgba(184,134,11,0.08);
+    border-radius: 0 8px 8px 0;
+  }
+
+  .flyer-cue {
+    display: inline-block;
+    background: var(--gold);
+    color: #fff;
+    font-size: clamp(0.65rem, 1.1vw, 0.85rem);
+    padding: 0.4em 1.2em;
+    border-radius: 2em;
+    margin-top: 2vh;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+  }
+
+  /* ── Table ── */
+  .slide-table {
+    border-collapse: collapse;
+    margin: 2vh auto;
+    font-size: clamp(0.9rem, 1.6vw, 1.3rem);
+    text-align: left;
+  }
+  .slide-table th, .slide-table td {
+    padding: 1.2vh 2vw;
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+  }
+  .slide-table th {
+    color: var(--gold-light);
+    font-weight: 700;
+  }
+  .slide-table td { color: var(--text-light); }
+
+  /* ── Gold accent ── */
+  .gold { color: var(--gold-light); }
+  .big-num {
+    font-size: clamp(3rem, 8vw, 7rem);
+    font-weight: 900;
+    color: var(--gold-light);
+    line-height: 1;
+    display: block;
+    margin-bottom: 1vh;
+  }
+
+  /* ── Fact cards ── */
+  .fact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 2vw;
+    max-width: 90%;
+    margin: 2vh auto 0;
+    text-align: left;
+  }
+  .fact-card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(184,134,11,0.3);
+    border-radius: 12px;
+    padding: 3vh 2vw;
+  }
+  .fact-card h3 {
+    font-size: clamp(0.9rem, 1.5vw, 1.2rem);
+    color: var(--gold-light);
+    margin-bottom: 1vh;
+    font-weight: 700;
+  }
+  .fact-card p {
+    font-size: clamp(0.75rem, 1.2vw, 1rem);
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  /* ── Step cards ── */
+  .step-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5vw;
+    max-width: 90%;
+    margin: 2vh auto 0;
+    text-align: left;
+  }
+  .step-card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(184,134,11,0.3);
+    border-radius: 12px;
+    padding: 2.5vh 2vw;
+  }
+  .step-card .step-num {
+    font-size: clamp(1.5rem, 3vw, 2.5rem);
+    font-weight: 900;
+    color: var(--gold-light);
+    line-height: 1;
+    margin-bottom: 0.5vh;
+  }
+  .step-card p {
+    font-size: clamp(0.8rem, 1.3vw, 1.1rem);
+    color: var(--text-light);
+    line-height: 1.5;
+  }
+
+  /* ── Route flow ── */
+  .route-flow {
+    font-size: clamp(0.9rem, 1.6vw, 1.3rem);
+    color: var(--text-light);
+    line-height: 2.2;
+    max-width: 85%;
+    margin: 0 auto;
+    text-align: center;
+  }
+  .route-flow .arrow {
+    color: var(--gold);
+    margin: 0 0.3em;
+  }
+
+  /* ── CTA ── */
+  .cta-url {
+    display: inline-block;
+    background: var(--gold);
+    color: #fff;
+    font-size: clamp(1.2rem, 2.5vw, 2rem);
+    font-weight: 700;
+    padding: 1.5vh 4vw;
+    border-radius: 8px;
+    text-decoration: none;
+    letter-spacing: 0.05em;
+    margin: 2vh 0;
+  }
+  .qr-area {
+    margin-top: 3vh;
+    text-align: center;
+  }
+  .qr-area img {
+    width: clamp(100px, 15vw, 200px);
+    height: auto;
+    filter: drop-shadow(0 0 20px rgba(184,134,11,0.3));
+  }
+  .qr-label {
+    display: block;
+    font-size: clamp(0.6rem, 1vw, 0.8rem);
+    color: var(--text-dim);
+    margin-top: 0.5vh;
+  }
+
+  /* ── Progress bar ── */
+  .progress {
+    position: fixed; bottom: 0; left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    transition: width 0.4s ease;
+    z-index: 100;
+  }
+
+  /* ── Slide number ── */
+  .slide-num {
+    position: fixed;
+    bottom: 1.5vh; right: 2vw;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    z-index: 100;
+    font-family: sans-serif;
+  }
+
+  /* ── Controls hint ── */
+  .hint {
+    position: fixed;
+    bottom: 1.5vh; left: 2vw;
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.25);
+    z-index: 100;
+    font-family: sans-serif;
+  }
+
+  /* ── Responsive tweaks ── */
+  @media (max-aspect-ratio: 4/3) {
+    .fact-grid, .step-grid { grid-template-columns: 1fr; max-width: 80%; }
+    .slide { padding: 4vh 6vw; }
+  }
+</style>
+</head>
+<body>
+<div class="deck">
+
+  <!-- ════════ 1. タイトル ════════ -->
+  <div class="slide photo active" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/4/43/Ise_Ise-jingu_Ujibashi_Bridge_1.jpg');">
+    <p class="slide-sub">伊勢神宮基礎講座 第二弾</p>
+    <h1>参拝と歩き方</h1>
+    <p class="tagline">外宮から内宮へ — 作法・順路・心の整え方<br>実践ガイド</p>
+  </div>
+
+  <!-- ════════ 2. 今日の4パート概要 ════════ -->
+  <div class="slide solid">
+    <h2>今日の流れ</h2>
+    <div class="body-text">
+      <ul>
+        <li><span class="gold">第一部</span>　参拝作法のきほん — 鳥居・手水・二拝二拍手一拝</li>
+        <li><span class="gold">第二部</span>　外宮・内宮の歩き方 — 順路と別宮</li>
+        <li><span class="gold">第三部</span>　二見・別宮・まち歩き — モデルコース</li>
+        <li><span class="gold">第四部</span>　日常へのいかし方と常磐会</li>
+      </ul>
+    </div>
+    <p style="margin-top:3vh; font-size: clamp(0.8rem,1.3vw,1rem); color: var(--text-dim);">30分 ／ 第一弾（物語・歴史編）の続編・実践編です</p>
+  </div>
+
+  <!-- ════════ 3. 作法＝心を整える型 ════════ -->
+  <div class="slide photo" style="background-image: url('https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=1920&q=80');">
+    <p class="slide-sub">第一部 — 参拝作法のきほん</p>
+    <h2>作法＝心を整える「型」</h2>
+    <div class="body-text" style="text-align:center; max-width:75%;">
+      <p>茶道や武道と同じ<br>型をなぞることで、頭の中の雑念が静まる</p>
+      <p style="margin-top:2vh;">「どう動けばいいか」が決まっているからこそ<br><span class="gold" style="font-weight:700; font-size:1.1em;">「何を感じたいか」に集中できる</span></p>
+    </div>
+    <div class="quote-block" style="margin-top:3vh; font-size: clamp(0.9rem, 1.6vw, 1.3rem);">
+      完璧にできる必要はまったくありません。<br>「こういう意味があるんだな」と知っているだけで、<br>同じ一礼が、まったく違う体験に変わります。
+    </div>
+  </div>
+
+  <!-- ════════ 4. 鳥居をくぐる前に ════════ -->
+  <div class="slide photo" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/1/1b/Entrance_of_Toyouke_Grand_Shrine.jpg');">
+    <h2>鳥居をくぐる前に</h2>
+    <div class="body-text" style="text-align:center; max-width:75%;">
+      <p>鳥居は<span class="gold" style="font-weight:700; font-size:1.2em;">日常と神域の境界線</span></p>
+      <p style="margin-top:2vh;">一度立ち止まり、軽く会釈<br>心の中で「これからお参りさせていただきます」</p>
+      <p style="margin-top:2vh;">帽子やフードはこのタイミングで外す</p>
+    </div>
+    <p style="margin-top:3vh; font-size: clamp(0.9rem,1.5vw,1.2rem); color: var(--gold-light); font-weight:700;">
+      「観光客」から「お呼ばれした客人」へ
+    </p>
+  </div>
+
+  <!-- ════════ P1. 鳥居の写真 ════════ -->
+  <div class="slide photo-only" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/1/1b/Entrance_of_Toyouke_Grand_Shrine.jpg');">
+    <p class="photo-caption">外宮 表参道の鳥居 — 左側通行で進む<span class="caption-sub">豊受大神宮（三重県伊勢市）</span></p>
+  </div>
+
+  <!-- ════════ 5. 手水舎の作法 ════════ -->
+  <div class="slide photo" style="background-image: url('https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=1920&q=80');">
+    <h2>手水舎の作法</h2>
+    <div class="step-grid" style="grid-template-columns: repeat(4, 1fr);">
+      <div class="step-card">
+        <p class="step-num">①</p>
+        <p>右手で柄杓<br><span class="gold" style="font-weight:700;">左手</span>を清める</p>
+      </div>
+      <div class="step-card">
+        <p class="step-num">②</p>
+        <p>持ち替えて<br><span class="gold" style="font-weight:700;">右手</span>を清める</p>
+      </div>
+      <div class="step-card">
+        <p class="step-num">③</p>
+        <p>左手に水を受け<br><span class="gold" style="font-weight:700;">口</span>をすすぐ</p>
+      </div>
+      <div class="step-card">
+        <p class="step-num">④</p>
+        <p>左手をもう一度<br>柄杓の<span class="gold" style="font-weight:700;">柄を清め</span>戻す</p>
+      </div>
+    </div>
+    <p style="margin-top:3vh; font-size: clamp(0.9rem,1.5vw,1.2rem); color: var(--gold-light); font-weight:700;">
+      「澄んだ心で入りたいな」と思うこと — それだけで十分
+    </p>
+  </div>
+
+  <!-- ════════ P2. 手水舎/五十鈴川の写真 ════════ -->
+  <div class="slide photo-only" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/f/ff/Isuzu_River_-_Naiku%2C_Ise_Shrine_-_Ise%2C_Mie%2C_Japan_-_DSC07653.jpg');">
+    <p class="photo-caption">五十鈴川 御手洗場 — 倭姫命が裳の裾を濯いだ聖地<span class="caption-sub">内宮では川の水でも手を清められる</span></p>
+  </div>
+
+  <!-- ════════ 6. 二拝二拍手一拝 ════════ -->
+  <div class="slide solid">
+    <h2>二拝二拍手一拝</h2>
+    <p style="font-size: clamp(0.85rem,1.4vw,1.1rem); color: var(--text-dim); margin-bottom: 2vh;">伊勢神宮の参拝作法</p>
+    <div class="step-grid" style="grid-template-columns: repeat(4, 1fr);">
+      <div class="step-card">
+        <p class="step-num">①②</p>
+        <p>深く<span class="gold" style="font-weight:700;">2回</span><br>お辞儀<br><span style="font-size:0.8em; color: var(--text-dim);">（二拝）</span></p>
+      </div>
+      <div class="step-card">
+        <p class="step-num">③④</p>
+        <p>胸の高さで<br><span class="gold" style="font-weight:700;">2回</span>手を打つ<br><span style="font-size:0.8em; color: var(--text-dim);">（二拍手）</span></p>
+      </div>
+      <div class="step-card">
+        <p class="step-num">⑤</p>
+        <p>手を合わせ<br><span class="gold" style="font-weight:700;">感謝・祈り</span></p>
+      </div>
+      <div class="step-card">
+        <p class="step-num">⑥</p>
+        <p>深く<span class="gold" style="font-weight:700;">1回</span><br>お辞儀<br><span style="font-size:0.8em; color: var(--text-dim);">（一拝）</span></p>
+      </div>
+    </div>
+    <p style="margin-top:3vh; font-size: clamp(0.9rem,1.5vw,1.2rem); color: var(--text-light);">
+      動きを暗記するよりも、<span class="gold" style="font-weight:700;">一つひとつの動きに意味を乗せる</span>こと
+    </p>
+  </div>
+
+  <!-- ════════ 7. 何を祈ればいいのか ════════ -->
+  <div class="slide photo" style="background-image: url('https://images.unsplash.com/photo-1480796927426-f609979314bd?w=1920&q=80');">
+    <h2>何を祈ればいいのか</h2>
+    <div class="body-text" style="text-align:center; max-width:75%;">
+      <p>「<span style="text-decoration: line-through; opacity:0.5;">〜してほしい</span>」よりも<br><span class="gold" style="font-weight:700; font-size:1.3em;">「〜します」</span></p>
+    </div>
+    <div class="fact-grid" style="grid-template-columns: 1fr 1fr; margin-top:2vh;">
+      <div class="fact-card">
+        <h3>お願い型</h3>
+        <p>「健康をください」<br>「いい出会いがありますように」</p>
+      </div>
+      <div class="fact-card" style="background: rgba(184,134,11,0.12); border-color: var(--gold);">
+        <h3>宣言型</h3>
+        <p>「この体を大切に扱います」<br>「人に誠実に向き合います」</p>
+      </div>
+    </div>
+    <div style="margin-top:3vh; font-size: clamp(0.85rem,1.4vw,1.1rem); color: var(--text-light); line-height:1.8;">
+      <span class="gold">①</span> これまで無事に過ごせたことへのお礼<br>
+      <span class="gold">②</span> 最近あった出来事の報告<br>
+      <span class="gold">③</span> これからどう生きていきたいかの宣言
+    </div>
+  </div>
+
+  <!-- ════════ 8. 外宮から内宮へ ════════ -->
+  <div class="slide photo" style="background-image: url('https://images.unsplash.com/photo-1478436127897-769e1b3f0f36?w=1920&q=80');">
+    <p class="slide-sub">第二部 — 外宮・内宮の歩き方</p>
+    <h2>外宮から内宮へ</h2>
+    <div class="body-text" style="text-align:center; max-width:75%;">
+      <p>参拝の基本は<span class="gold" style="font-weight:700; font-size:1.2em;">外宮 → 内宮</span></p>
+      <p style="margin-top:2vh;">外宮の豊受大御神は<span class="gold" style="font-weight:700;">衣食住・暮らしの守り神</span><br>まず日々の暮らしへの感謝をお伝えしてから<br>天照大御神の内宮へ</p>
+    </div>
+    <p style="margin-top:3vh; font-size: clamp(0.9rem,1.5vw,1.2rem); color: var(--gold-light); font-weight:700;">
+      外宮で日常への感謝 → 内宮でより大きな祈り
+    </p>
+  </div>
+
+  <!-- ════════ P3. 外宮正宮 ════════ -->
+  <div class="slide photo-only" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/7/70/Ise_Shrine_Geku_%28New_shrine%29.jpg');">
+    <p class="photo-caption">外宮 正宮 — 豊受大御神を祀る<span class="caption-sub">第62回式年遷宮（2013年）後の姿</span></p>
+  </div>
+
+  <!-- ════════ 9. 外宮モデルルート ════════ -->
+  <div class="slide solid">
+    <h2>外宮の歩き方</h2>
+    <p style="font-size: clamp(0.85rem,1.4vw,1.1rem); color: var(--text-dim); margin-bottom: 2vh;">左側通行 ／ 所要時間 30〜40分</p>
+    <div class="route-flow">
+      <span class="gold" style="font-weight:700;">伊勢市駅</span>
+      <span class="arrow">→</span>
+      外宮参道
+      <span class="arrow">→</span>
+      <span class="gold" style="font-weight:700;">鳥居（一礼）</span>
+      <span class="arrow">→</span>
+      <span class="gold" style="font-weight:700;">手水舎</span><br>
+      <span class="arrow">→</span>
+      <span class="gold" style="font-weight:700;">正宮</span>
+      <span class="arrow">→</span>
+      多賀宮
+      <span class="arrow">→</span>
+      風宮・土宮
+    </div>
+    <div class="body-text" style="margin-top:3vh; max-width:70%;">
+      <ul>
+        <li><span class="gold">正宮</span> — 「毎日のご飯」「仕事」「暮らし」への感謝を</li>
+        <li><span class="gold">多賀宮</span> — 外宮最大の別宮。エネルギーを感じる場所</li>
+        <li><span class="gold">風宮・土宮</span> — 風と大地を司る神様に感謝</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ════════ 9B. 外宮ルートマップ（SVG図解） ════════ -->
+  <div class="slide solid">
+    <h2>外宮 境内マップ</h2>
+    <p style="font-size: clamp(0.75rem,1.2vw,0.95rem); color: var(--text-dim); margin-bottom: 1vh;">左側通行 ／ 所要 30〜40分</p>
+    <svg viewBox="0 0 800 500" style="width: min(85vw, 85vh); max-height: 62vh;" xmlns="http://www.w3.org/2000/svg">
+      <!-- 背景の参道エリア -->
+      <rect x="0" y="0" width="800" height="500" fill="none"/>
+      <!-- 玉砂利参道（メインルート） -->
+      <path d="M 100,420 L 100,340 L 200,340 L 200,250 L 350,250 L 350,150 L 500,150" stroke="rgba(255,255,255,0.15)" stroke-width="30" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <!-- 別宮への道 -->
+      <path d="M 500,150 L 600,150 L 600,80" stroke="rgba(255,255,255,0.10)" stroke-width="20" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 500,150 L 500,250 L 600,250" stroke="rgba(255,255,255,0.10)" stroke-width="20" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 600,250 L 700,250" stroke="rgba(255,255,255,0.10)" stroke-width="20" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+
+      <!-- ルート矢印（点線） -->
+      <path d="M 100,420 L 100,340 L 200,340 L 200,250 L 350,250 L 350,150 L 500,150" stroke="var(--gold-light)" stroke-width="2.5" fill="none" stroke-dasharray="8,5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowGeku)"/>
+      <path d="M 500,150 L 600,150 L 600,80" stroke="var(--gold-light)" stroke-width="2" fill="none" stroke-dasharray="6,4" marker-end="url(#arrowGeku)"/>
+      <path d="M 500,150 L 500,250 L 600,250" stroke="rgba(255,255,255,0.4)" stroke-width="2" fill="none" stroke-dasharray="6,4" marker-end="url(#arrowGeku2)"/>
+      <path d="M 600,250 L 700,250" stroke="rgba(255,255,255,0.4)" stroke-width="2" fill="none" stroke-dasharray="6,4" marker-end="url(#arrowGeku2)"/>
+
+      <!-- 矢印マーカー -->
+      <defs>
+        <marker id="arrowGeku" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6" fill="var(--gold-light)"/>
+        </marker>
+        <marker id="arrowGeku2" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6" fill="rgba(255,255,255,0.4)"/>
+        </marker>
+      </defs>
+
+      <!-- ① 火除橋（入口） -->
+      <circle cx="100" cy="420" r="14" fill="rgba(184,134,11,0.25)" stroke="var(--gold-light)" stroke-width="2"/>
+      <text x="100" y="424" text-anchor="middle" fill="var(--gold-light)" font-family="'Noto Serif JP', serif" font-size="11" font-weight="700">入口</text>
+      <text x="100" y="455" text-anchor="middle" fill="rgba(255,255,255,0.92)" font-family="'Noto Serif JP', serif" font-size="14" font-weight="700">火除橋</text>
+      <text x="100" y="473" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-family="'Noto Serif JP', serif" font-size="10">ひよけばし</text>
+
+      <!-- ② 手水舎 -->
+      <circle cx="200" cy="340" r="12" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+      <text x="230" y="335" fill="rgba(255,255,255,0.92)" font-family="'Noto Serif JP', serif" font-size="14" font-weight="700">手水舎</text>
+      <text x="230" y="355" fill="rgba(255,255,255,0.5)" font-family="'Noto Serif JP', serif" font-size="10">心身を清める</text>
+
+      <!-- 所要時間ラベル -->
+      <text x="140" y="375" fill="var(--gold)" font-family="sans-serif" font-size="10" font-weight="700">〜3分</text>
+
+      <!-- ③ 正宮（ハイライト） -->
+      <circle cx="350" cy="250" r="10" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+      <text x="265" y="245" fill="rgba(255,255,255,0.5)" font-family="'Noto Serif JP', serif" font-size="10">〜5分</text>
+      <rect x="310" y="130" width="80" height="40" rx="6" fill="rgba(184,134,11,0.2)" stroke="var(--gold)" stroke-width="2"/>
+      <text x="350" y="148" text-anchor="middle" fill="var(--gold-light)" font-family="'Noto Serif JP', serif" font-size="11" font-weight="700">豊受大御神</text>
+      <text x="350" y="163" text-anchor="middle" fill="var(--gold-light)" font-family="'Noto Serif JP', serif" font-size="9">感謝の場</text>
+
+      <circle cx="500" cy="150" r="18" fill="rgba(184,134,11,0.3)" stroke="var(--gold)" stroke-width="2.5"/>
+      <text x="500" y="155" text-anchor="middle" fill="var(--gold-light)" font-family="'Noto Serif JP', serif" font-size="14" font-weight="900">正宮</text>
+
+      <!-- ④ 多賀宮（ハイライト・石段上） -->
+      <circle cx="600" cy="80" r="16" fill="rgba(184,134,11,0.25)" stroke="var(--gold)" stroke-width="2"/>
+      <text x="600" y="85" text-anchor="middle" fill="var(--gold-light)" font-family="'Noto Serif JP', serif" font-size="13" font-weight="700">多賀宮</text>
+      <text x="600" y="55" text-anchor="middle" fill="var(--gold-light)" font-family="'Noto Serif JP', serif" font-size="10">⬆ 石段98段</text>
+      <text x="600" y="42" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-family="'Noto Serif JP', serif" font-size="9">第一別宮・荒御魂</text>
+      <text x="555" y="115" fill="var(--gold)" font-family="sans-serif" font-size="10" font-weight="700">〜10分</text>
+
+      <!-- ⑤ 土宮 -->
+      <circle cx="600" cy="250" r="13" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+      <text x="600" y="254" text-anchor="middle" fill="rgba(255,255,255,0.85)" font-family="'Noto Serif JP', serif" font-size="12" font-weight="700">土宮</text>
+      <text x="600" y="280" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-family="'Noto Serif JP', serif" font-size="9">大地の神</text>
+      <text x="545" y="210" fill="var(--gold)" font-family="sans-serif" font-size="10" font-weight="700">〜5分</text>
+
+      <!-- ⑥ 風宮 -->
+      <circle cx="700" cy="250" r="13" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+      <text x="700" y="254" text-anchor="middle" fill="rgba(255,255,255,0.85)" font-family="'Noto Serif JP', serif" font-size="12" font-weight="700">風宮</text>
+      <text x="700" y="280" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-family="'Noto Serif JP', serif" font-size="9">風の神</text>
+
+      <!-- 伊勢市駅ラベル -->
+      <text x="100" y="498" text-anchor="middle" fill="rgba(255,255,255,0.35)" font-family="sans-serif" font-size="10">← 伊勢市駅 徒歩5分</text>
+
+      <!-- 凡例 -->
+      <circle cx="30" y="20" r="6" fill="rgba(184,134,11,0.3)" stroke="var(--gold)" stroke-width="1.5" cy="25"/>
+      <text x="42" y="29" fill="rgba(255,255,255,0.5)" font-family="sans-serif" font-size="9">主要参拝所</text>
+      <circle cx="30" cy="45" r="6" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+      <text x="42" y="49" fill="rgba(255,255,255,0.5)" font-family="sans-serif" font-size="9">別宮</text>
+    </svg>
+  </div>
+
+  <!-- ════════ 10. 内宮の歩き方 ════════ -->
+  <div class="slide photo" style="background-image: url('https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=1920&q=80');">
+    <h2>内宮の歩き方</h2>
+    <p style="font-size: clamp(0.85rem,1.4vw,1.1rem); color: var(--text-dim); margin-bottom: 2vh;">右側通行 ／ 所要時間 1〜1.5時間</p>
+    <div class="route-flow">
+      <span class="gold" style="font-weight:700;">宇治橋</span>
+      <span class="arrow">→</span>
+      神苑
+      <span class="arrow">→</span>
+      <span class="gold" style="font-weight:700;">五十鈴川</span>
+      <span class="arrow">→</span>
+      <span class="gold" style="font-weight:700;">正宮</span><br>
+      <span class="arrow">→</span>
+      <span class="gold" style="font-weight:700;">荒祭宮</span>
+      <span class="arrow">→</span>
+      風日祈宮
+      <span class="arrow">→</span>
+      神楽殿
+    </div>
+    <div class="body-text" style="margin-top:3vh; text-align:center; max-width:75%;">
+      <p>五十鈴川の流れを感じながら歩く時間は<br>それだけで心が整っていくひととき</p>
+      <p style="margin-top:1.5vh;">正宮では<span class="gold" style="font-weight:700;">あまり個人的なお願いはしない</span><br>国家安泰や世界の平和など、より大きな視点で</p>
+    </div>
+  </div>
+
+  <!-- ════════ P4. 宇治橋 / 五十鈴川 ════════ -->
+  <div class="slide photo-only" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/4/43/Ise_Ise-jingu_Ujibashi_Bridge_1.jpg');">
+    <p class="photo-caption">宇治橋 — 俗界と聖界をつなぐ101.8mの橋<span class="caption-sub">内宮参道の入口・右側通行</span></p>
+  </div>
+
+  <!-- ════════ 10B. 内宮ルートマップ（SVG図解） ════════ -->
+  <div class="slide solid">
+    <h2>内宮 境内マップ</h2>
+    <p style="font-size: clamp(0.75rem,1.2vw,0.95rem); color: var(--text-dim); margin-bottom: 1vh;">右側通行 ／ 所要 1〜1.5時間</p>
+    <svg viewBox="0 0 800 520" style="width: min(85vw, 85vh); max-height: 62vh;" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrowNaiku" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6" fill="var(--gold-light)"/>
+        </marker>
+        <marker id="arrowNaiku2" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6" fill="rgba(255,255,255,0.4)"/>
+        </marker>
+      </defs>
+
+      <!-- 五十鈴川（曲線） -->
+      <path d="M 0,380 Q 80,350 160,370 Q 260,395 350,360 Q 440,325 500,340 Q 580,360 680,330 Q 750,310 800,320" stroke="rgba(100,160,220,0.35)" stroke-width="28" fill="none" stroke-linecap="round"/>
+      <path d="M 0,380 Q 80,350 160,370 Q 260,395 350,360 Q 440,325 500,340 Q 580,360 680,330 Q 750,310 800,320" stroke="rgba(100,160,220,0.5)" stroke-width="2" fill="none"/>
+      <text x="620" y="355" fill="rgba(100,160,220,0.6)" font-family="'Noto Serif JP', serif" font-size="12" font-style="italic">五十鈴川</text>
+
+      <!-- 玉砂利参道エリア -->
+      <path d="M 80,460 L 200,460 L 200,380 L 350,340 L 500,240 L 500,120" stroke="rgba(255,255,255,0.12)" stroke-width="28" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+
+      <!-- メインルート（点線矢印） -->
+      <path d="M 80,460 L 200,460 L 200,380" stroke="var(--gold-light)" stroke-width="2.5" fill="none" stroke-dasharray="8,5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 200,380 L 350,340" stroke="var(--gold-light)" stroke-width="2.5" fill="none" stroke-dasharray="8,5" stroke-linecap="round"/>
+      <path d="M 350,340 L 500,240" stroke="var(--gold-light)" stroke-width="2.5" fill="none" stroke-dasharray="8,5" stroke-linecap="round"/>
+      <path d="M 500,240 L 500,120" stroke="var(--gold-light)" stroke-width="2.5" fill="none" stroke-dasharray="8,5" stroke-linecap="round" marker-end="url(#arrowNaiku)"/>
+
+      <!-- 荒祭宮ルート -->
+      <path d="M 500,120 L 620,80" stroke="var(--gold-light)" stroke-width="2" fill="none" stroke-dasharray="6,4" marker-end="url(#arrowNaiku)"/>
+
+      <!-- 風日祈宮ルート -->
+      <path d="M 500,240 L 400,200 L 300,220" stroke="rgba(255,255,255,0.4)" stroke-width="2" fill="none" stroke-dasharray="6,4" marker-end="url(#arrowNaiku2)"/>
+      <!-- 風日祈宮橋 -->
+      <line x1="340" y1="215" x2="360" y2="205" stroke="rgba(100,160,220,0.4)" stroke-width="6" stroke-linecap="round"/>
+
+      <!-- 神楽殿ルート -->
+      <path d="M 500,240 L 650,200" stroke="rgba(255,255,255,0.4)" stroke-width="2" fill="none" stroke-dasharray="6,4" marker-end="url(#arrowNaiku2)"/>
+
+      <!-- ① 宇治橋 -->
+      <circle cx="80" cy="460" r="15" fill="rgba(184,134,11,0.25)" stroke="var(--gold-light)" stroke-width="2"/>
+      <text x="80" y="464" text-anchor="middle" fill="var(--gold-light)" font-family="'Noto Serif JP', serif" font-size="10" font-weight="700">宇治橋</text>
+      <text x="80" y="498" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-family="'Noto Serif JP', serif" font-size="10">101.8m の橋</text>
+
+      <!-- ② 神苑 -->
+      <circle cx="200" cy="460" r="12" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+      <text x="200" y="464" text-anchor="middle" fill="rgba(255,255,255,0.85)" font-family="'Noto Serif JP', serif" font-size="11" font-weight="700">神苑</text>
+      <text x="140" y="445" fill="var(--gold)" font-family="sans-serif" font-size="10" font-weight="700">〜3分</text>
+
+      <!-- ③ 五十鈴川 御手洗場 -->
+      <circle cx="200" cy="380" r="14" fill="rgba(100,160,220,0.2)" stroke="var(--gold-light)" stroke-width="2"/>
+      <text x="200" y="384" text-anchor="middle" fill="var(--gold-light)" font-family="'Noto Serif JP', serif" font-size="9" font-weight="700">御手洗場</text>
+      <text x="260" y="398" fill="rgba(255,255,255,0.6)" font-family="'Noto Serif JP', serif" font-size="10">五十鈴川で清める</text>
+      <text x="270" y="356" fill="var(--gold)" font-family="sans-serif" font-size="10" font-weight="700">〜5分</text>
+
+      <!-- ④ 正宮（最大ハイライト） -->
+      <circle cx="500" cy="120" r="22" fill="rgba(184,134,11,0.3)" stroke="var(--gold)" stroke-width="3"/>
+      <text x="500" y="126" text-anchor="middle" fill="var(--gold-light)" font-family="'Noto Serif JP', serif" font-size="16" font-weight="900">正宮</text>
+      <rect x="430" y="55" width="140" height="38" rx="6" fill="rgba(184,134,11,0.15)" stroke="var(--gold)" stroke-width="1.5"/>
+      <text x="500" y="72" text-anchor="middle" fill="var(--gold-light)" font-family="'Noto Serif JP', serif" font-size="11" font-weight="700">天照大御神</text>
+      <text x="500" y="87" text-anchor="middle" fill="var(--gold-light)" font-family="'Noto Serif JP', serif" font-size="9">感謝の場（個人祈願×）</text>
+      <text x="445" y="185" fill="var(--gold)" font-family="sans-serif" font-size="10" font-weight="700">〜15分</text>
+
+      <!-- ⑤ 荒祭宮（ハイライト） -->
+      <circle cx="620" cy="80" r="17" fill="rgba(184,134,11,0.25)" stroke="var(--gold)" stroke-width="2"/>
+      <text x="620" y="84" text-anchor="middle" fill="var(--gold-light)" font-family="'Noto Serif JP', serif" font-size="12" font-weight="700">荒祭宮</text>
+      <text x="680" y="66" fill="var(--gold-light)" font-family="'Noto Serif JP', serif" font-size="10">祈願の場</text>
+      <text x="680" y="82" fill="rgba(255,255,255,0.5)" font-family="'Noto Serif JP', serif" font-size="9">荒御魂・個人祈願OK</text>
+      <text x="550" y="60" fill="var(--gold)" font-family="sans-serif" font-size="10" font-weight="700">〜5分</text>
+
+      <!-- ⑥ 風日祈宮 -->
+      <circle cx="300" cy="220" r="13" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+      <text x="300" y="224" text-anchor="middle" fill="rgba(255,255,255,0.85)" font-family="'Noto Serif JP', serif" font-size="10" font-weight="700">風日祈宮</text>
+      <text x="300" y="250" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-family="'Noto Serif JP', serif" font-size="9">橋を渡って静寂の地</text>
+
+      <!-- ⑦ 神楽殿 -->
+      <circle cx="650" cy="200" r="14" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+      <text x="650" y="204" text-anchor="middle" fill="rgba(255,255,255,0.85)" font-family="'Noto Serif JP', serif" font-size="11" font-weight="700">神楽殿</text>
+      <text x="650" y="230" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-family="'Noto Serif JP', serif" font-size="9">お守り・御朱印</text>
+
+      <!-- 凡例 -->
+      <circle cx="30" cy="25" r="6" fill="rgba(184,134,11,0.3)" stroke="var(--gold)" stroke-width="1.5"/>
+      <text x="42" y="29" fill="rgba(255,255,255,0.5)" font-family="sans-serif" font-size="9">主要参拝所</text>
+      <circle cx="30" cy="45" r="6" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+      <text x="42" y="49" fill="rgba(255,255,255,0.5)" font-family="sans-serif" font-size="9">別宮・施設</text>
+      <line x1="22" y1="65" x2="38" y2="65" stroke="rgba(100,160,220,0.5)" stroke-width="3"/>
+      <text x="42" y="69" fill="rgba(255,255,255,0.5)" font-family="sans-serif" font-size="9">五十鈴川</text>
+
+      <!-- おはらい町ラベル -->
+      <text x="80" y="515" fill="rgba(255,255,255,0.35)" font-family="sans-serif" font-size="10">← おはらい町・おかげ横丁</text>
+    </svg>
+  </div>
+
+  <!-- ════════ 11. 内宮の別宮（荒祭宮・風日祈宮） ════════ -->
+  <div class="slide photo" style="background-image: url('https://images.unsplash.com/photo-1504198453319-5ce911bafcde?w=1920&q=80');">
+    <h2>内宮の別宮</h2>
+    <div class="fact-grid" style="grid-template-columns: 1fr 1fr;">
+      <div class="fact-card" style="background: rgba(184,134,11,0.12); border-color: var(--gold);">
+        <h3>荒祭宮（あらまつりのみや）</h3>
+        <p>天照大御神の<span class="gold" style="font-weight:700;">荒御魂</span>をお祀り<br>
+        「一歩踏み出す力」「挑戦」「決断」<br>
+        <span class="gold" style="font-weight:700;">個人的な祈願はここで</span></p>
+      </div>
+      <div class="fact-card">
+        <h3>風日祈宮（かざひのみのみや）</h3>
+        <p>川を渡って向かう静寂の場所<br>
+        日々の慌ただしさを手放し<br>
+        <span class="gold" style="font-weight:700;">深呼吸するのにぴったり</span></p>
+      </div>
+    </div>
+    <p style="margin-top:3vh; font-size: clamp(0.9rem,1.5vw,1.2rem); color: var(--text-light);">
+      「この別宮では、自分のどんな側面と向き合うか」<br>そんな視点を持って、ゆっくり時間を過ごす
+    </p>
+  </div>
+
+  <!-- ════════ P5. 荒祭宮 / 参道 ════════ -->
+  <div class="slide photo-only" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/1/10/Naiku_Ise-jingu_Grand_Shrine_01.JPG');">
+    <p class="photo-caption">内宮 正宮への石段 — この先は撮影禁止<span class="caption-sub">石段を登り、二拝二拍手一拝で感謝を捧げる</span></p>
+  </div>
+
+  <!-- ════════ 12. 子ども・初めての人と歩くコツ ════════ -->
+  <div class="slide solid">
+    <p class="slide-sub">第三部 — 二見・別宮・まち歩き</p>
+    <h2>子ども・初めての人と歩くコツ</h2>
+    <div class="body-text" style="text-align:center; max-width:75%;">
+      <p>「正しい作法を教えなきゃ」より<br><span class="gold" style="font-weight:700; font-size:1.2em;">一緒に感じること</span>が一番大事</p>
+    </div>
+    <div class="fact-grid" style="grid-template-columns: 1fr 1fr 1fr; margin-top:2vh;">
+      <div class="fact-card">
+        <h3>問いかける</h3>
+        <p>「どんな音が聞こえる？」<br>「ここで何をお願いしたい？」<br>相手の言葉を引き出す</p>
+      </div>
+      <div class="fact-card">
+        <h3>ゆっくり歩く</h3>
+        <p>いつもの<span class="gold" style="font-weight:700;">8〜9割</span>のスピード<br>急がない、詰め込まない</p>
+      </div>
+      <div class="fact-card" style="background: rgba(184,134,11,0.12); border-color: var(--gold);">
+        <h3>余白をつくる</h3>
+        <p>必ず1回は<br>「ベンチや川辺で<br><span class="gold" style="font-weight:700;">ボーッとする時間</span>」を入れる</p>
+      </div>
+    </div>
+    <p style="margin-top:3vh; font-size: clamp(0.9rem,1.5vw,1.2rem); color: var(--gold-light); font-weight:700;">
+      「消費するイベント」→「心に残る体験」へ
+    </p>
+  </div>
+
+  <!-- ════════ 13. 二見興玉神社 ════════ -->
+  <div class="slide photo" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/b/bc/Meoto_Iwa_3.JPG');">
+    <h2>お伊勢参りは二見から</h2>
+    <div class="body-text" style="text-align:center; max-width:75%;">
+      <p>二見興玉神社で<span class="gold" style="font-weight:700;">禊をして、心身を清めてから</span><br>伊勢神宮に向かう</p>
+      <p style="margin-top:2vh;">夫婦岩の先<span class="gold" style="font-weight:700; font-size:1.2em;">約200km</span>に<span class="gold" style="font-weight:700;">富士山</span>が一直線<br>夏至に富士山の山頂付近から日の出</p>
+    </div>
+    <p style="margin-top:3vh; font-size: clamp(0.9rem,1.5vw,1.2rem); color: var(--text-light);">
+      「伊勢」と「富士」— 日本人の心のふるさと同士が<br>光のラインでつながっている
+    </p>
+  </div>
+
+  <!-- ════════ P6. 夫婦岩の朝日 ════════ -->
+  <div class="slide photo-only" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/b/bc/Meoto_Iwa_3.JPG');">
+    <p class="photo-caption">夫婦岩 — 大注連縄で結ばれた2つの岩<span class="caption-sub">二見興玉神社（三重県伊勢市）・夏至には富士山から日の出</span></p>
+  </div>
+
+  <!-- ════════ 14. モデルコースA：一泊二日 ════════ -->
+  <div class="slide solid">
+    <h2>モデルコースA：一泊二日</h2>
+    <div class="step-grid" style="grid-template-columns: 1fr 1fr;">
+      <div class="step-card">
+        <p style="color: var(--gold-light); font-weight:700; font-size: clamp(1.2rem,2vw,1.6rem); margin-bottom:1vh;">1日目</p>
+        <p><span class="gold">朝</span> 二見興玉神社で禊・参拝<br>
+        <span class="gold">昼</span> 外宮へ — 外宮参道を楽しむ<br>
+        <span class="gold">午後</span> 外宮参拝・せんぐう館<br>
+        <span class="gold">夕</span> 内宮近くの宿へ</p>
+      </div>
+      <div class="step-card" style="background: rgba(184,134,11,0.12); border-color: var(--gold);">
+        <p style="color: var(--gold-light); font-weight:700; font-size: clamp(1.2rem,2vw,1.6rem); margin-bottom:1vh;">2日目</p>
+        <p><span class="gold">早朝</span> 内宮参拝（静かな時間に）<br>
+        <span class="gold">午前</span> 別宮めぐり<br>
+        <span class="gold">昼</span> おはらい町・おかげ横丁<br>
+        <span class="gold">午後</span> ゆっくり過ごして帰路</p>
+      </div>
+    </div>
+    <p style="margin-top:3vh; font-size: clamp(0.9rem,1.5vw,1.2rem); color: var(--gold-light); font-weight:700;">
+      「全部回る」より「いくつかの場所で腰を落ち着ける」
+    </p>
+  </div>
+
+  <!-- ════════ 15. モデルコースB：日帰り ════════ -->
+  <div class="slide solid">
+    <h2>モデルコースB：日帰り</h2>
+    <div class="route-flow" style="margin-bottom:2vh;">
+      <span class="gold" style="font-weight:700;">午前</span> 外宮参拝
+      <span class="arrow">→</span>
+      <span class="gold" style="font-weight:700;">昼食</span> 外宮前 or 伊勢市駅周辺<br>
+      <span class="arrow">→</span>
+      <span class="gold" style="font-weight:700;">午後</span> バスで内宮へ
+      <span class="arrow">→</span>
+      参拝 + おかげ横丁
+    </div>
+    <div class="fact-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+      <div class="fact-card">
+        <h3>写真の時間</h3>
+        <p>思い出を形に。<br>鳥居前・五十鈴川は<br>必ず撮りたいポイント</p>
+      </div>
+      <div class="fact-card">
+        <h3>お土産の時間</h3>
+        <p>赤福・伊勢うどん・<br>おかげ横丁の食べ歩き</p>
+      </div>
+      <div class="fact-card" style="background: rgba(184,134,11,0.12); border-color: var(--gold);">
+        <h3>ただ座る時間</h3>
+        <p>川辺のベンチで<br>スマホをしまって<br>1分だけ空を見上げる</p>
+      </div>
+    </div>
+    <p style="margin-top:3vh; font-size: clamp(0.9rem,1.5vw,1.2rem); color: var(--text-light);">
+      行けなかった場所があっても「<span class="gold" style="font-weight:700;">また来る理由ができた</span>」
+    </p>
+  </div>
+
+  <!-- ════════ 16. 日常へのいかし方 ════════ -->
+  <div class="slide photo" style="background-image: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1920&q=80');">
+    <p class="slide-sub">第四部 — 日常へのいかし方</p>
+    <h2>小さな「常若」を<br>日常に</h2>
+    <div class="fact-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+      <div class="fact-card">
+        <h3>朝の一言</h3>
+        <p>窓を開けて深呼吸<br>「今日もありがとうございます」</p>
+      </div>
+      <div class="fact-card">
+        <h3>決断の前に</h3>
+        <p>ノートに<br>「どう在りたいか」<br>を書き出してみる</p>
+      </div>
+      <div class="fact-card">
+        <h3>近所の神社で</h3>
+        <p>スマホをしまって<br>1分だけ<br>空を見上げる</p>
+      </div>
+    </div>
+    <p style="margin-top:3vh; font-size: clamp(0.9rem,1.5vw,1.2rem); color: var(--gold-light); font-weight:700;">
+      参拝を「その場限りのイベント」から「人生の軸を整える習慣」へ
+    </p>
+  </div>
+
+  <!-- ════════ P7. おはらい町 / 参道 ════════ -->
+  <div class="slide photo-only" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/8/8a/Ando_hiroshige_miyakawanowatashi.jpg');">
+    <p class="photo-caption">伊勢参宮 宮川の渡し — 歌川広重画<span class="caption-sub">古来より人々が目指した伊勢への道</span></p>
+  </div>
+
+  <!-- ════════ 17. 常磐会と一緒にできること ════════ -->
+  <div class="slide photo" style="background-image: url('https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1920&q=80');">
+    <h2>常磐会と一緒にできること</h2>
+    <div class="body-text" style="text-align:center; max-width:80%;">
+      <p>伊勢の地から未来世代を育むコミュニティ</p>
+    </div>
+    <div class="fact-grid" style="grid-template-columns: 1fr 1fr 1fr; margin-top:2vh;">
+      <div class="fact-card">
+        <h3>朔日餅の会（東京）</h3>
+        <p>毎月開催<br>「月に一度の小さな伊勢」<br>まずはここから</p>
+      </div>
+      <div class="fact-card">
+        <h3>夏至祭・お木曳き</h3>
+        <p>「身体で味わう伊勢」<br>二見の海での禊<br>遷宮の奉仕</p>
+      </div>
+      <div class="fact-card">
+        <h3>学び合い・合宿</h3>
+        <p>仲間と共に考え<br>語り合う時間<br>リアル伊勢ツアー</p>
+      </div>
+    </div>
+    <span class="flyer-cue">お手元のチラシにイベント一覧があります</span>
+  </div>
+
+  <!-- ════════ 18. CTA（QR + isetokiwa.jp） ════════ -->
+  <div class="slide solid">
+    <h2>次の一歩</h2>
+    <a href="https://www.isetokiwa.jp/" class="cta-url">isetokiwa.jp</a>
+    <div class="qr-area">
+      <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MSIgaGVpZ2h0PSI4MSIgY2xhc3M9InNlZ25vIj48cGF0aCB0cmFuc2Zvcm09InNjYWxlKDMpIiBjbGFzcz0icXJsaW5lIiBzdHJva2U9IiNmZmYiIGQ9Ik0xIDEuNWg3bTMgMGgybTEgMGgzbTIgMGg3bS0yNSAxaDFtNSAwaDFtMSAwaDFtMiAwaDJtMiAwaDJtMSAwaDFtNSAwaDFtLTI1IDFoMW0xIDBoM20xIDBoMW0yIDBoMm00IDBoMW0yIDBoMW0xIDBoM20xIDBoMW0tMjUgMWgxbTEgMGgzbTEgMGgxbTIgMGgzbTIgMGgxbTMgMGgxbTEgMGgzbTEgMGgxbS0yNSAxaDFtMSAwaDNtMSAwaDFtMSAwaDFtMyAwaDRtMiAwaDFtMSAwaDNtMSAwaDFtLTI1IDFoMW01IDBoMW0yIDBoM20xIDBoMW0xIDBoMW0yIDBoMW01IDBoMW0tMjUgMWg3bTEgMGgxbTEgMGgxbTEgMGgxbTEgMGgxbTEgMGgxbTEgMGg3bS0xMyAxaDVtLTE3IDFoMW0xIDBoMW0xIDBoMW0xIDBoMW0yIDBoM20xIDBoMW02IDBoMW0yIDBoMW0tMjMgMWgxbTEgMGgxbTQgMGgybTEgMGgxbTEgMGgybTEgMGgxbTEgMGgxbTUgMGgxbS0yNSAxaDJtMSAwaDFtMiAwaDFtMyAwaDJtMSAwaDFtMyAwaDNtMiAwaDNtLTI1IDFoM20xIDBoMm0yIDBoM20xIDBoNW0xIDBoMW00IDBoMW0tMjIgMWgzbTEgMGgxbTEgMGgxbTEgMGg0bTIgMGg0bTEgMGgxbTEgMGgybS0yNCAxaDFtMSAwaDFtMyAwaDJtMSAwaDJtMSAwaDFtMiAwaDFtMSAwaDFtMiAwaDFtMiAwaDFtLTI1IDFoMW0xIDBoN20xIDBoMW0xIDBoMW0xIDBoMW0yIDBoM20yIDBoM20tMjQgMWgybTQgMGgxbTEgMGgxbTEgMGgxbTEgMGgybTMgMGgxbTEgMGgxbTIgMGgxbS0yNCAxaDFtMSAwaDFtMSAwaDFtMSAwaDJtMSAwaDFtMiAwaDNtMSAwaDZtLTE0IDFoMW0yIDBoMW00IDBoMW0zIDBoMm0xIDBoMm0tMjUgMWg3bTIgMGgybTIgMGgxbTEgMGgybTEgMGgxbTEgMGgybTEgMGgybS0yNSAxaDFtNSAwaDFtMiAwaDFtMiAwaDJtMiAwaDFtMyAwaDJtLTIyIDFoMW0xIDBoM20xIDBoMW0xIDBoMm0xIDBoM20yIDBoNm0tMjIgMWgxbTEgMGgzbTEgMGgxbTIgMGgxbTcgMGgxbTEgMGg0bS0yMyAxaDFtMSAwaDNtMSAwaDFtMSAwaDNtMSAwaDNtNSAwaDFtMyAwaDFtLTI1IDFoMW01IDBoMW0zIDBoMm0xIDBoMW0xIDBoMm0xIDBoMW0xIDBoMm0xIDBoMW0tMjQgMWg3bTEgMGgybTMgMGgxbTEgMGgybTIgMGgxbTMgMGgyIi8+PC9zdmc+Cg==" alt="QR Code - isetokiwa.jp">
+      <span class="qr-label">QRコードでHPにアクセス</span>
+    </div>
+    <div style="margin-top:2vh; font-size: clamp(0.85rem,1.4vw,1.1rem); color: var(--text-light); line-height: 2;">
+      <p><span class="gold" style="font-weight:700;">まず雰囲気を知りたい</span> → 朔日餅の会（東京・毎月）</p>
+      <p><span class="gold" style="font-weight:700;">特別な体験がしたい</span> → 夏至祭（6/20-21 土日）</p>
+      <p><span class="gold" style="font-weight:700;">本気で関わりたい</span> → お木曳き（5月〜）</p>
+    </div>
+    <p style="margin-top:3vh; font-size: clamp(1rem,1.8vw,1.4rem); color: var(--gold-light); font-weight:700;">
+      一緒に「常若」のこころを、伊勢から未来へ
+    </p>
+  </div>
+
+  <!-- ════════ CR. 写真クレジット ════════ -->
+  <div class="slide credits">
+    <h2>写真クレジット</h2>
+    <div class="credit-list">
+      <p>宇治橋（タイトル・内宮入口） — Wikimedia Commons / CC BY-SA 3.0</p>
+      <p>外宮 表参道（豊受大神宮入口） — Wikimedia Commons / CC BY-SA 3.0</p>
+      <p>外宮 正宮（第62回式年遷宮後） — Wikimedia Commons / CC BY-SA 3.0</p>
+      <p>五十鈴川 御手洗場 — Wikimedia Commons / CC BY-SA 3.0</p>
+      <p>内宮 正宮 石段 — Wikimedia Commons / CC BY-SA 3.0</p>
+      <p>夫婦岩（二見興玉神社） — Wikimedia Commons / CC BY-SA 3.0</p>
+      <p>宮川の渡し（歌川広重画） — Wikimedia Commons / Public Domain</p>
+      <p>竹林・京都 — Unsplash / @danigsla</p>
+      <p>日本の鳥居 — Unsplash / @luca-bravo</p>
+      <p>手水舎 — Unsplash / @tianshu</p>
+      <p>日本の参道 — Unsplash / @ajhm</p>
+      <p>森の参道 — Unsplash / @samuelbriniimg</p>
+      <p>自然・朝日 — Unsplash / @bailey-zindel</p>
+      <p>コミュニティ — Unsplash / @afonso-morais</p>
+      <p>その他の写真 — Unsplash License</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- Progress bar -->
+<div class="progress" id="progress"></div>
+<div class="slide-num" id="slideNum"></div>
+<div class="hint">← → キーで操作 ／ F でフルスクリーン</div>
+
+<script>
+(function() {
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let current = 0;
+
+  function show(n) {
+    if (n < 0 || n >= total) return;
+    slides[current].classList.remove('active');
+    current = n;
+    slides[current].classList.add('active');
+    document.getElementById('progress').style.width = ((current + 1) / total * 100) + '%';
+    document.getElementById('slideNum').textContent = (current + 1) + ' / ' + total;
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+      e.preventDefault();
+      show(current + 1);
+    } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+      e.preventDefault();
+      show(current - 1);
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      show(0);
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      show(total - 1);
+    } else if (e.key === 'f' || e.key === 'F') {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(function(){});
+      } else {
+        document.exitFullscreen();
+      }
+    }
+  });
+
+  // Touch support
+  let touchStartX = 0;
+  document.addEventListener('touchstart', function(e) {
+    touchStartX = e.changedTouches[0].screenX;
+  });
+  document.addEventListener('touchend', function(e) {
+    const diff = e.changedTouches[0].screenX - touchStartX;
+    if (Math.abs(diff) > 50) {
+      if (diff < 0) show(current + 1);
+      else show(current - 1);
+    }
+  });
+
+  // Click to advance (right half) / go back (left half)
+  document.addEventListener('click', function(e) {
+    if (e.target.tagName === 'A') return;
+    if (e.clientX > window.innerWidth / 2) show(current + 1);
+    else show(current - 1);
+  });
+
+  show(0);
+})();
+</script>
+</body>
+</html>

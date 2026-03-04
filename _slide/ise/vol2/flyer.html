@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>伊勢神宮 参拝ガイド ｜ 常磐会 — A4チラシ</title>
+  <style>
+    @page { size: A4; margin: 0; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 210mm;
+      height: 297mm;
+      font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+      color: #222;
+      background: #faf8f5;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      overflow: hidden;
+    }
+
+    .page {
+      width: 210mm;
+      height: 297mm;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(135deg, #1a0a00 0%, #2d1810 50%, #1a1a2e 100%);
+      color: #fff;
+      text-align: center;
+      padding: 4mm 6mm 3.5mm;
+      flex-shrink: 0;
+    }
+    .hero-sub {
+      font-size: 6pt;
+      letter-spacing: 0.5em;
+      color: #d4a838;
+      margin-bottom: 1mm;
+    }
+    .hero h1 {
+      font-size: 18pt;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+    }
+    .hero-tagline {
+      font-size: 7pt;
+      color: rgba(255,255,255,0.7);
+      margin-top: 1mm;
+    }
+
+    /* ── Content ── */
+    .content {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      padding: 2.5mm 5mm 2mm;
+    }
+
+    .col-left {
+      padding-right: 3.5mm;
+      border-right: 0.3pt solid #d4c5a9;
+    }
+    .col-right {
+      padding-left: 3.5mm;
+    }
+
+    h2 {
+      font-size: 9pt;
+      letter-spacing: 0.08em;
+      color: #1a1a1a;
+      border-bottom: 1.2pt solid #b8860b;
+      padding-bottom: 0.8mm;
+      margin-bottom: 1.5mm;
+      display: inline-block;
+    }
+
+    h3 {
+      font-size: 7pt;
+      color: #8b2500;
+      margin: 1.8mm 0 0.8mm;
+      letter-spacing: 0.03em;
+    }
+
+    p, li {
+      font-size: 6pt;
+      line-height: 1.6;
+    }
+
+    p { margin-bottom: 1mm; }
+
+    ul {
+      margin: 0 0 1mm 3mm;
+      list-style: none;
+    }
+    ul li::before {
+      content: "・";
+      color: #b8860b;
+    }
+
+    strong { color: #1a1a1a; }
+
+    /* ── Route box ── */
+    .route-box {
+      background: #fff;
+      border: 0.3pt solid #d4c5a9;
+      border-left: 1.5pt solid #b8860b;
+      border-radius: 0.8mm;
+      padding: 1mm 1.5mm;
+      margin: 1mm 0;
+      font-size: 5.5pt;
+      line-height: 1.6;
+    }
+    .route-box .arrow {
+      color: #b8860b;
+      font-weight: 700;
+    }
+
+    /* ── Small table ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1mm 0;
+      font-size: 5.5pt;
+    }
+    th, td {
+      padding: 0.6mm 1mm;
+      border-bottom: 0.3pt solid #d4c5a9;
+      text-align: left;
+    }
+    th {
+      background: #f5f0e8;
+      font-weight: 600;
+      font-size: 5pt;
+      color: #1a1a1a;
+    }
+
+    /* ── Quote ── */
+    .quote {
+      border-left: 1.5pt solid #b8860b;
+      padding: 0.8mm 2mm;
+      margin: 1mm 0;
+      background: #f5f0e8;
+      font-style: italic;
+      font-size: 6pt;
+      color: #1a1a1a;
+    }
+
+    /* ── Step cards ── */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1mm;
+      margin: 1mm 0;
+    }
+    .step {
+      background: #fff;
+      border: 0.3pt solid #d4c5a9;
+      border-radius: 0.8mm;
+      padding: 1mm 0.5mm;
+      text-align: center;
+    }
+    .step .sn {
+      font-size: 8pt;
+      font-weight: 700;
+      color: #b8860b;
+      display: block;
+    }
+    .step .st {
+      font-size: 4.5pt;
+      color: #444;
+    }
+
+    /* ── Wow ── */
+    .wow {
+      background: #fff;
+      border: 0.3pt solid #d4c5a9;
+      border-left: 1.5pt solid #b8860b;
+      border-radius: 0.8mm;
+      padding: 1mm 1.5mm;
+      margin-bottom: 1mm;
+    }
+    .wow .wt {
+      font-size: 6pt;
+      font-weight: 700;
+      color: #1a1a1a;
+    }
+    .wow .wb {
+      font-size: 5pt;
+      color: #666;
+      line-height: 1.45;
+    }
+
+    /* ── Event card ── */
+    .ev {
+      background: #fff;
+      border: 0.3pt solid #d4c5a9;
+      border-radius: 1mm;
+      padding: 1.5mm 2mm;
+      margin-bottom: 1.2mm;
+      position: relative;
+    }
+    .ev.hot { border-color: #b8860b; border-width: 0.8pt; }
+    .ev.hot::after {
+      content: "注目";
+      position: absolute;
+      top: -1.2mm;
+      right: 2mm;
+      background: #b8860b;
+      color: #fff;
+      font-size: 4.5pt;
+      padding: 0.2mm 1.2mm;
+      border-radius: 0.8mm;
+      font-weight: 600;
+    }
+    .ev-badge {
+      display: inline-block;
+      font-size: 4.5pt;
+      padding: 0.2mm 1.2mm;
+      border-radius: 0.8mm;
+      font-weight: 600;
+      margin-bottom: 0.5mm;
+    }
+    .b-green { background: #e8f5e9; color: #2d5016; }
+    .b-orange { background: #fff3e0; color: #e65100; }
+    .b-blue { background: #e3f2fd; color: #1565c0; }
+    .ev h4 {
+      font-size: 7pt;
+      color: #1a1a1a;
+      margin-bottom: 0.3mm;
+    }
+    .ev .meta {
+      font-size: 5pt;
+      color: #888;
+      margin-bottom: 0.5mm;
+    }
+    .ev p { font-size: 5.5pt; margin-bottom: 0; line-height: 1.5; }
+
+    /* ── Course box ── */
+    .course {
+      background: #fff;
+      border: 0.3pt solid #d4c5a9;
+      border-radius: 1mm;
+      padding: 1.2mm 1.5mm;
+      margin-bottom: 1mm;
+    }
+    .course.rec {
+      border-color: #b8860b;
+      border-width: 0.8pt;
+    }
+    .course h4 {
+      font-size: 6.5pt;
+      color: #1a1a1a;
+      margin-bottom: 0.3mm;
+    }
+    .course p {
+      font-size: 5pt;
+      line-height: 1.5;
+      margin-bottom: 0;
+    }
+
+    /* ── CTA ── */
+    .cta {
+      background: linear-gradient(135deg, #2d1810, #1a1a2e);
+      color: #fff;
+      padding: 3.5mm 6mm;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5mm;
+    }
+    .cta-text {
+      text-align: center;
+      flex: 1;
+    }
+    .cta-text p {
+      color: rgba(255,255,255,0.85);
+      font-size: 6.5pt;
+      margin-bottom: 1.5mm;
+    }
+    .cta-text .url-btn {
+      display: inline-block;
+      background: #b8860b;
+      color: #fff;
+      padding: 1.2mm 5mm;
+      border-radius: 1.2mm;
+      font-size: 8.5pt;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-decoration: none;
+    }
+    .cta-text .copy {
+      font-size: 4.5pt;
+      color: rgba(255,255,255,0.45);
+      margin-top: 1mm;
+    }
+    .cta-qr {
+      flex-shrink: 0;
+      text-align: center;
+    }
+    .cta-qr img {
+      width: 18mm;
+      height: 18mm;
+      display: block;
+    }
+    .cta-qr .qr-label {
+      font-size: 4.5pt;
+      color: rgba(255,255,255,0.6);
+      margin-top: 0.5mm;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Hero -->
+  <div class="hero">
+    <p class="hero-sub">ISE JINGU SANPAI GUIDE</p>
+    <h1>伊勢神宮 参拝ガイド</h1>
+    <p class="hero-tagline">外宮から内宮へ — 作法と歩き方の実践ガイド</p>
+  </div>
+
+  <!-- 2-column content -->
+  <div class="content">
+
+    <!-- ━━ LEFT: ルート・作法 ━━ -->
+    <div class="col-left">
+
+      <h2>外宮先祭</h2>
+      <p>参拝の順番は<strong>外宮→内宮</strong>が正式。外宮の豊受大御神は天照大御神のお食事を司る神。「お膳立て」してから主役のもとへ。</p>
+
+      <h3>外宮の歩き方（左側通行・30〜40分）</h3>
+      <div class="route-box">
+        <strong>火除橋</strong> <span class="arrow">→</span> <strong>手水舎</strong> <span class="arrow">→</span> <strong>正宮</strong> <span class="arrow">→</span> <strong>多賀宮</strong>(98段) <span class="arrow">→</span> 土宮 <span class="arrow">→</span> 風宮 <span class="arrow">→</span> <strong>せんぐう館</strong>(300円)
+      </div>
+      <p><strong>多賀宮</strong>は外宮最大の別宮。個人の祈願はここで。</p>
+
+      <h3>外宮→内宮（バス15分/タクシー10分/徒歩50分）</h3>
+      <p>寄り道: <strong>月夜見宮</strong>（外宮北御門から徒歩5分）</p>
+
+      <h3>内宮の歩き方（右側通行・1〜1.5時間）</h3>
+      <div class="route-box">
+        <strong>宇治橋</strong> <span class="arrow">→</span> 神苑 <span class="arrow">→</span> <strong>五十鈴川</strong> <span class="arrow">→</span> <strong>正宮</strong>(感謝) <span class="arrow">→</span> <strong>荒祭宮</strong>(祈願) <span class="arrow">→</span> 風日祈宮 <span class="arrow">→</span> <strong>神楽殿</strong>
+      </div>
+
+      <h3>二拝二拍手一拝</h3>
+      <div class="steps">
+        <div class="step"><span class="sn">①②</span><span class="st">深く2回<br>お辞儀</span></div>
+        <div class="step"><span class="sn">③④</span><span class="st">2回<br>手を打つ</span></div>
+        <div class="step"><span class="sn">⑤</span><span class="st">手を合わせ<br>感謝・祈り</span></div>
+        <div class="step"><span class="sn">⑥</span><span class="st">深く1回<br>お辞儀</span></div>
+      </div>
+      <div class="quote">正宮では「感謝」。お願いは荒祭宮で。</div>
+
+      <h3>手水の作法（一杯の水で）</h3>
+      <p>①右手で柄杓→左手洗う ②持ち替え→右手洗う ③左手に水→口すすぐ ④左手洗う ⑤柄杓立て→柄を清め戻す</p>
+
+      <h3>正式参拝</h3>
+      <table>
+        <tr><th>方法</th><th>費用</th><th>特徴</th></tr>
+        <tr><td><strong>御祈祷</strong></td><td>5,000円〜</td><td>御垣の中で正式参拝</td></tr>
+        <tr><td><strong>御神楽</strong></td><td>15,000円〜</td><td>雅楽の奏楽・舞付き</td></tr>
+        <tr><td><strong>御垣内参拝</strong></td><td>—</td><td>特別参拝（正装必須）</td></tr>
+      </table>
+      <p>いずれも予約不要。当日神楽殿で申し込み。</p>
+
+      <h3>参拝マナー</h3>
+      <ul>
+        <li>石段より上は<strong>撮影禁止</strong></li>
+        <li>参道の中央（正中）を避けて歩く</li>
+        <li>鳥居で入退場とも<strong>一礼</strong></li>
+        <li>帽子を取る・飲食しない</li>
+      </ul>
+
+    </div>
+
+    <!-- ━━ RIGHT: 見どころ・コース・CTA ━━ -->
+    <div class="col-right">
+
+      <h2>見どころ巡り</h2>
+
+      <h3>別宮めぐり（14の「もうひとつの伊勢」）</h3>
+      <table>
+        <tr><th>別宮</th><th>場所</th><th>特徴</th></tr>
+        <tr><td><strong>月読宮</strong></td><td>内宮から徒歩20分</td><td>4社殿が並ぶ</td></tr>
+        <tr><td><strong>月夜見宮</strong></td><td>外宮から徒歩5分</td><td>大楠木・穴場</td></tr>
+        <tr><td><strong>瀧原宮</strong></td><td>内宮から車40分</td><td>「遥宮」深い杉木立</td></tr>
+        <tr><td><strong>伊雑宮</strong></td><td>志摩市</td><td>日本三大田植祭</td></tr>
+      </table>
+
+      <h3>おはらい町・おかげ横丁</h3>
+      <p>内宮前800mの門前町。赤福本店(朝5時〜)・伊勢うどん・てこね寿司・松阪牛コロッケ。毎月1日は<strong>朔日餅</strong>（行列覚悟）。1〜2時間で回れます。</p>
+
+      <h3>二見興玉神社と夫婦岩</h3>
+      <div class="wow">
+        <p class="wt">「お伊勢参りは二見から」</p>
+        <p class="wb">夫婦岩の先200kmに<strong>富士山が一直線</strong>。夏至に山頂付近から日の出。天の岩屋・蛙の像も。外宮からバス20分。</p>
+      </div>
+
+      <h3>季節ごとの伊勢</h3>
+      <table>
+        <tr><th>季節</th><th>おすすめ</th></tr>
+        <tr><td><strong>春</strong></td><td>桜（宮川堤・五十鈴川）+ お木曳き(5月〜)</td></tr>
+        <tr><td><strong>夏</strong></td><td>夏至祭(6月) + 花火大会(7月)</td></tr>
+        <tr><td><strong>秋</strong></td><td>神嘗祭(10/15-17) 年間最重要の祭事</td></tr>
+        <tr><td><strong>冬</strong></td><td>初詣(約50万人) + 冬の早朝参拝(最高)</td></tr>
+      </table>
+
+      <h3>モデルコース</h3>
+      <div class="course">
+        <h4>半日（3〜4時間）</h4>
+        <p>外宮(40分) → バス → 内宮(1.5h) → おかげ横丁(1h)</p>
+      </div>
+      <div class="course">
+        <h4>1日（6〜8時間）</h4>
+        <p>外宮(1h) → 月夜見宮(20min) → 内宮(1.5h) → おかげ横丁(1.5h) → 月読宮(30min)</p>
+      </div>
+      <div class="course rec">
+        <h4>1泊2日（おすすめ）</h4>
+        <p><strong>1日目:</strong> 二見(2h) → 外宮 → せんぐう館<br><strong>2日目:</strong> 早朝内宮(6時台) → 別宮 → おかげ横丁</p>
+        <p style="color:#8b2500; font-weight:600; margin-top:0.5mm;">早朝の内宮は別世界。泊まる価値はここにある。</p>
+      </div>
+
+      <h3>常磐会イベント</h3>
+      <div class="ev">
+        <span class="ev-badge b-green">入門</span>
+        <h4>リアル伊勢ツアー</h4>
+        <p class="meta">不定期 ／ 伊勢現地</p>
+        <p>この参拝ガイドの内容をガイド付きで体験。初心者歓迎。</p>
+      </div>
+      <div class="ev hot">
+        <span class="ev-badge b-orange">中級〜上級</span>
+        <h4>お木曳き</h4>
+        <p class="meta">2026年5月〜8月 ／ 伊勢現地</p>
+        <p>2033年遷宮に向けた550年以上の伝統行事。歴史の当事者に。</p>
+      </div>
+      <div class="ev hot">
+        <span class="ev-badge b-blue">全レベル</span>
+        <h4>夏至祭（今年は土日！）</h4>
+        <p class="meta">2026年6月20日(土)〜21日(日) ／ 二見興玉神社</p>
+        <p>夫婦岩から昇る朝日を浴びながら海で禊。一生忘れない体験。</p>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- CTA with QR -->
+  <div class="cta">
+    <div class="cta-text">
+      <p>参拝のポイント: <strong>① 外宮→内宮</strong> <strong>② 正宮で感謝</strong> <strong>③ 別宮と早朝参拝</strong></p>
+      <a href="https://www.isetokiwa.jp/" class="url-btn">isetokiwa.jp</a>
+      <p class="copy">&copy; 常磐会（ときわかい）</p>
+    </div>
+    <div class="cta-qr">
+      <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MSIgaGVpZ2h0PSI4MSIgY2xhc3M9InNlZ25vIj48cGF0aCB0cmFuc2Zvcm09InNjYWxlKDMpIiBjbGFzcz0icXJsaW5lIiBzdHJva2U9IiNmZmYiIGQ9Ik0xIDEuNWg3bTMgMGgybTEgMGgzbTIgMGg3bS0yNSAxaDFtNSAwaDFtMSAwaDFtMiAwaDJtMiAwaDJtMSAwaDFtNSAwaDFtLTI1IDFoMW0xIDBoM20xIDBoMW0yIDBoMm00IDBoMW0yIDBoMW0xIDBoM20xIDBoMW0tMjUgMWgxbTEgMGgzbTEgMGgxbTIgMGgzbTIgMGgxbTMgMGgxbTEgMGgzbTEgMGgxbS0yNSAxaDFtMSAwaDNtMSAwaDFtMSAwaDFtMyAwaDRtMiAwaDFtMSAwaDNtMSAwaDFtLTI1IDFoMW01IDBoMW0yIDBoM20xIDBoMW0xIDBoMW0yIDBoMW01IDBoMW0tMjUgMWg3bTEgMGgxbTEgMGgxbTEgMGgxbTEgMGgxbTEgMGgxbTEgMGg3bS0xMyAxaDVtLTE3IDFoMW0xIDBoMW0xIDBoMW0xIDBoMW0yIDBoM20xIDBoMW02IDBoMW0yIDBoMW0tMjMgMWgxbTEgMGgxbTQgMGgybTEgMGgxbTEgMGgybTEgMGgxbTEgMGgxbTUgMGgxbS0yNSAxaDJtMSAwaDFtMiAwaDFtMyAwaDJtMSAwaDFtMyAwaDNtMiAwaDNtLTI1IDFoM20xIDBoMm0yIDBoM20xIDBoNW0xIDBoMW00IDBoMW0tMjIgMWgzbTEgMGgxbTEgMGgxbTEgMGg0bTIgMGg0bTEgMGgxbTEgMGgybS0yNCAxaDFtMSAwaDFtMyAwaDJtMSAwaDJtMSAwaDFtMiAwaDFtMSAwaDFtMiAwaDFtMiAwaDFtLTI1IDFoMW0xIDBoN20xIDBoMW0xIDBoMW0xIDBoMW0yIDBoM20yIDBoM20tMjQgMWgybTQgMGgxbTEgMGgxbTEgMGgxbTEgMGgybTMgMGgxbTEgMGgxbTIgMGgxbS0yNCAxaDFtMSAwaDFtMSAwaDFtMSAwaDJtMSAwaDFtMiAwaDNtMSAwaDZtLTE0IDFoMW0yIDBoMW00IDBoMW0zIDBoMm0xIDBoMm0tMjUgMWg3bTIgMGgybTIgMGgxbTEgMGgybTEgMGgxbTEgMGgybTEgMGgybS0yNSAxaDFtNSAwaDFtMiAwaDFtMiAwaDJtMiAwaDFtMyAwaDJtLTIyIDFoMW0xIDBoM20xIDBoMW0xIDBoMm0xIDBoM20yIDBoNm0tMjIgMWgxbTEgMGgzbTEgMGgxbTIgMGgxbTcgMGgxbTEgMGg0bS0yMyAxaDFtMSAwaDNtMSAwaDFtMSAwaDNtMSAwaDNtNSAwaDFtMyAwaDFtLTI1IDFoMW01IDBoMW0zIDBoMm0xIDBoMW0xIDBoMm0xIDBoMW0xIDBoMm0xIDBoMW0tMjQgMWg3bTEgMGgybTMgMGgxbTEgMGgybTIgMGgxbTMgMGgyIi8+PC9zdmc+Cg==" alt="QR Code - isetokiwa.jp">
+      <span class="qr-label">QRコードで<br>HPにアクセス</span>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

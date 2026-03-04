@@ -1,0 +1,1680 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                     String                   @id @default(cuid())
+  name                   String?
+  email                  String?                  @unique
+  lineUserId             String?                  @unique
+  did                    String?                  @unique
+  firebaseUid            String?                  @unique
+  image                  String?
+  provider               String                   @default("line")
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime                 @updatedAt
+  emailVerified          DateTime?
+  isAdmin                Boolean                  @default(false)
+  password               String?
+  website                String?
+  bio                    String?
+  exchangeScope          String                   @default("COMMUNITY")
+  googleEmail            String?
+  googleId               String?                  @unique
+  instagramUrl           String?
+  isVerified             Boolean                  @default(false)
+  linkedinUrl            String?
+  location               String?
+  phoneNumber            String?
+  points                 Int                      @default(0)
+  preferences            String?
+  profileConfig          String?
+  realName               String?
+  socialLinks            String?
+  twitterUrl             String?
+  whatsappUserId         String?                  @unique
+  personalCommunityId    String?                  @unique
+  displayName            String?
+  phoneNumberHash        String?
+  tutorialStatus         TutorialStatus           @default(PENDING)
+  stripeCustomerId       String?                  @unique
+  notificationSettings   Json?
+  interests              String[]         @default([])
+  referralCode           String?                  @unique
+  profileReferralTiers   Json?                    // [{ n: 1, label: "特典", emoji: "🎁" }, ...]
+  accounts               Account[]
+  campaignCommentReplies CampaignCommentReply[]
+  campaignComments       CampaignComment[]
+  campaignSupporters     CampaignSupporter[]
+  campaignUpdates        CampaignUpdate[]
+  comments               Comment[]
+  communities            Community[]              @relation("OrganizerCommunities")
+  communityMembers       CommunityMember[]
+  receivedConnections    Connection[]             @relation("MyReceivedConnections")
+  sentConnections        Connection[]             @relation("MySentConnections")
+  contestEntries         ContestEntry[]
+  contestVotes           ContestVote[]
+  contests               Contest[]                @relation("OrganizerContests")
+  didIssuanceRequests    DidIssuanceRequest[]
+  Entitlement            Entitlement[]
+  credentials            EventCredential[]
+  events                 Event[]                  @relation("OwnerEvents")
+  favoritedBy            Favorite[]               @relation("FavoritedUsers")
+  favorites              Favorite[]
+  following              Follow[]                 @relation("following")
+  followedBy             Follow[]                 @relation("followedBy")
+  issuedInviteCodes      InviteCode[]
+  MemberFact             MemberFact[]
+  messages               Message[]
+  notifications          Notification[]
+  orders                 Order[]
+  participants           Participant[]
+  payments               Payment[]
+  pledges                Pledge[]
+  pointTransactions      PointTransaction[]
+  posts                  Post[]
+  projects               Project[]
+  questApplications      QuestApplication[]
+  quests                 Quest[]
+  recurringTemplates     RecurringEventTemplate[]
+  RoleGrant              RoleGrant[]
+  sessions               Session[]
+  shippingAddresses      ShippingAddress[]
+  phoneVerification      UserPhoneVerification?
+  pushSubscriptions      PushSubscription[]
+  authenticators         Authenticator[]
+  chatConversations      ChatConversation[]
+  personalCommunity      Community?               @relation("UserPersonalCommunity", fields: [personalCommunityId], references: [id])
+  coOrganizedEvents      Event[]                  @relation("EventCoOrganizers")
+  eventReviews           EventReview[]
+  profileDrafts          ProfileDraft[]
+  claimedQuests          QuestApplication[]       @relation("ClaimedQuests")
+  claimedOrders          Order[]                  @relation("ClaimedOrders")
+  claimedParticipants    Participant[]            @relation("ClaimedParticipants")
+
+  @@index([phoneNumberHash])
+  @@map("users")
+}
+
+model UserPhoneVerification {
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  phoneHash  String   @unique
+  verifiedAt DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_phone_verifications")
+}
+
+model DidIssuanceRequest {
+  id           String   @id @default(cuid())
+  userId       String
+  status       String   @default("PENDING")
+  didRef       String?
+  errorMessage String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@map("did_issuance_requests")
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String
+  type        String
+  title       String
+  message     String
+  link        String?
+  isRead      Boolean  @default(false)
+  eventId     String?
+  communityId String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead, createdAt])
+  @@map("notifications")
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+  follower    User     @relation("following", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("followedBy", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@map("follows")
+}
+
+model Connection {
+  id          String   @id @default(cuid())
+  requesterId String
+  recipientId String
+  status      String   @default("PENDING")
+  message     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  recipient   User     @relation("MyReceivedConnections", fields: [recipientId], references: [id], onDelete: Cascade)
+  requester   User     @relation("MySentConnections", fields: [requesterId], references: [id], onDelete: Cascade)
+
+  @@unique([requesterId, recipientId])
+  @@map("connections")
+}
+
+model PointTransaction {
+  id              String    @id @default(cuid())
+  userId          String
+  amount          Int
+  description     String
+  createdAt       DateTime  @default(now())
+  communityId     String
+  createdByUserId String?
+  type            String    @default("EARN")
+  community       Community @relation(fields: [communityId], references: [id], onDelete: SetNull)
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("point_transactions")
+}
+
+model Item {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  imageUrl    String?
+  points      Int
+  stock       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("items")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model Event {
+  id                     String                  @id @default(cuid())
+  title                  String
+  description            String?
+  imageUrl               String?
+  startAt                DateTime
+  endAt                  DateTime?
+  location               String?
+  capacity               Int?
+  ownerId                String?
+  isPublic               Boolean                 @default(true)
+  status                 String                  @default("draft")
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  format                 String                  @default("offline")
+  onlineUrl              String?
+  instanceNumber         Int?
+  isApproved             Boolean                 @default(false)
+  isRecurring            Boolean                 @default(false)
+  recurringTemplateId    String?
+  category               String?
+  tags                   String?
+  website                String?
+  acceptedPaymentMethods String?
+  bankDetails            String?
+  communityId            String?
+  concept                String?
+  googleMapsUrl          String?
+  keyword                String?
+  needs                  String?
+  organizerCommunityId   String?
+  projectId              String?
+  rtmpKey                String?
+  target                 String?
+  theme                  String?
+  venueAddress           String?
+  venueLat               Float?
+  venueLng               Float?
+  venueTitle             String?
+  youtubeBroadcastId     String?
+  youtubeStreamUrl       String?
+  paymentDeadline        DateTime?
+  registrationDeadline   DateTime?
+  approvalRequired       Boolean                 @default(false)
+  createdByUserId        String?
+  communities            Community[]
+  contests               Contest[]
+  credentials            EventCredential[]
+  tickets                EventTicket[]
+  questions              RegistrationQuestion[]
+  blasts                 Blast[]
+  community              Community?              @relation("AttachedCommunity", fields: [communityId], references: [id])
+  organizerCommunity     Community?              @relation("CommunityEvents", fields: [organizerCommunityId], references: [id])
+  owner                  User?                   @relation("OwnerEvents", fields: [ownerId], references: [id])
+  project                Project?                @relation(fields: [projectId], references: [id])
+  recurringTemplate      RecurringEventTemplate? @relation(fields: [recurringTemplateId], references: [id])
+  favorites              Favorite[]
+  participants           Participant[]
+  allowedRoles           CommunityRole[]         @relation("EventAllowedRoles")
+  coOrganizerCommunities Community[]             @relation("EventCoOrganizerCommunities")
+  coOrganizers           User[]                  @relation("EventCoOrganizers")
+  reviews                EventReview[]
+
+  @@map("events")
+}
+
+model Blast {
+  id        String   @id @default(cuid())
+  eventId   String
+  title     String
+  content   String
+  type      String   @default("INFO") // INFO, URGENT, etc.
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId, createdAt])
+  @@map("blasts")
+}
+
+model RegistrationQuestion {
+  id          String   @id @default(cuid())
+  eventId     String
+  type        String   @default("TEXT") // TEXT, PARAGRAPH, SELECT, RADIO, CHECKBOX
+  label       String
+  description String?  // 説明（Google Form の「説明テキスト」）
+  options     String[] @default([]) // For SELECT/RADIO/CHECKBOX
+  required    Boolean  @default(false)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  answers     RegistrationAnswer[]
+
+  @@index([eventId, order])
+  @@map("registration_questions")
+}
+
+model RegistrationAnswer {
+  id            String               @id @default(cuid())
+  questionId    String
+  participantId String
+  value         String
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  question      RegistrationQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  participant   Participant          @relation(fields: [participantId], references: [id], onDelete: Cascade)
+
+  @@index([participantId])
+  @@map("registration_answers")
+}
+
+model EventTicket {
+  id           String        @id @default(cuid())
+  eventId      String
+  name         String
+  description  String?
+  price        Int           @default(0)
+  limit        Int?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  event        Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  participants Participant[]
+
+  @@map("event_tickets")
+}
+
+model Project {
+  id              String       @id @default(cuid())
+  communityId     String?
+  ownerId         String
+  title           String
+  issue           String?
+  value           String?
+  businessPlan    String?
+  roadmap         String?
+  status          String       @default("active")
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  domainModel     Json?
+  createdByUserId String?
+  resources       String?
+  solution        String?
+  target          String?
+  url             String?
+  campaigns       Campaign[]
+  decisions       Decision[]
+  events          Event[]
+  intakes         IntakeItem[]
+  posts           Post[]
+  community       Community?   @relation(fields: [communityId], references: [id])
+  owner           User         @relation(fields: [ownerId], references: [id])
+  tickets         Ticket[]
+
+  @@map("projects")
+}
+
+model Favorite {
+  id           String     @id @default(cuid())
+  userId       String
+  eventId      String?
+  questId      String?
+  createdAt    DateTime   @default(now())
+  communityId  String?
+  targetUserId String?
+  campaignId   String?
+  postId       String?
+  campaign     Campaign?  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  community    Community? @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  event        Event?     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  quest        Quest?     @relation(fields: [questId], references: [id], onDelete: Cascade)
+  post         Post?      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  targetUser   User?      @relation("FavoritedUsers", fields: [targetUserId], references: [id], onDelete: Cascade)
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, eventId])
+  @@unique([userId, questId])
+  @@unique([userId, communityId])
+  @@unique([userId, targetUserId])
+  @@unique([userId, campaignId])
+  @@unique([userId, postId])
+  @@map("favorites")
+}
+
+model Participant {
+  id                    String       @id @default(cuid())
+  userId                String
+  eventId               String
+  status                String       @default("joined")
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
+  paymentMethod         String?
+  paymentStatus         String       @default("free")
+  reminded1h            Boolean      @default(false)
+  reminded24h           Boolean      @default(false)
+  stripePaymentIntentId String?
+  ticketId              String?
+  event                 Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  ticket                EventTicket? @relation(fields: [ticketId], references: [id])
+  user                  User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  answers               RegistrationAnswer[]
+  claimedById           String?
+  claimedAt             DateTime?
+  claimedBy             User?        @relation("ClaimedParticipants", fields: [claimedById], references: [id])
+
+  @@unique([userId, eventId])
+  @@map("participants")
+}
+
+model EventCredential {
+  id         String   @id @default(cuid())
+  userId     String
+  eventId    String
+  vcRecordId String
+  vcJobId    String?
+  status     String   @default("ISSUED")
+  jwt        String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  event      Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, eventId])
+  @@map("event_credentials")
+}
+
+model RecurringEventTemplate {
+  id              String    @id @default(cuid())
+  title           String
+  description     String?
+  imageUrl        String?
+  dayOfWeek       Int?
+  startTime       String
+  endTime         String?
+  location        String?
+  format          String    @default("online")
+  capacity        Int?
+  ownerId         String
+  isActive        Boolean   @default(true)
+  maxFutureEvents Int       @default(2)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  customDays      String?
+  endDate         DateTime?
+  endType         String    @default("never")
+  interval        Int       @default(1)
+  maxOccurrences  Int?
+  onlineUrl       String?
+  repeatType      String    @default("weekly")
+  weekOfMonth     Int?
+  communityId     String?
+  projectId       String?
+  events          Event[]
+  owner           User      @relation(fields: [ownerId], references: [id])
+
+  @@map("recurring_event_templates")
+}
+
+model Community {
+  id                 String             @id @default(cuid())
+  name               String
+  description        String?
+  slug               String             @unique
+  imageUrl           String?
+  bannerUrl          String?
+  hpUrl              String?
+  twitterUrl         String?
+  instagramUrl       String?
+  discordUrl         String?
+  lineUrl            String?
+  lineOpenChatUrl    String?
+  scope              String             @default("OFFICIAL")
+  isOfficial         Boolean            @default(false)
+  isPublic           Boolean            @default(true)
+  constitution       String?
+  location           String?
+  lat                Float?
+  lng                Float?
+  establishedAt      DateTime?
+  isDashboardEnabled Boolean            @default(true)
+  customHtml         String?
+  pageConfig         String?
+  aiPrompt           String?
+  aiTheme            String?            @default("default")
+  theme              String?
+  ownerOrganizerId   String?
+  eventId            String?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  createdByUserId    String?
+  ownerUserId        String?
+  type               CommunityType      @default(NORMAL)
+  inviteRewardPoints Int                @default(0)
+  channels           Channel[]
+  event              Event?             @relation(fields: [eventId], references: [id])
+  owner              User?              @relation("OrganizerCommunities", fields: [ownerOrganizerId], references: [id])
+  members            CommunityMember[]
+  roles              CommunityRole[]
+  Entitlement        Entitlement[]
+  attachedEvents     Event[]            @relation("AttachedCommunity")
+  organizedEvents    Event[]            @relation("CommunityEvents")
+  favorites          Favorite[]
+  inviteCodes        InviteCode[]
+  MemberFact         MemberFact[]
+  pointTransactions  PointTransaction[]
+  posts              Post[]
+  projects           Project[]
+  quests             Quest[]
+  RoleGrant          RoleGrant[]
+  RolePolicy         RolePolicy[]
+  personalUser       User?              @relation("UserPersonalCommunity")
+  coOrganizedEvents  Event[]            @relation("EventCoOrganizerCommunities")
+  resources          CommunityResource[]
+  page               Page?
+  referralTiers      Json?              // [{ n: 1, label: "特典A", emoji: "🎁" }, ...]
+}
+
+
+model CommunityResource {
+  id          String   @id @default(cuid())
+  communityId String
+  name        String
+  description String?
+  type        String   @default("SPACE")
+  capacity    Int?
+  imageUrl    String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  bookings    ResourceBooking[]
+
+  @@map("community_resources")
+}
+
+model ResourceBooking {
+  id          String   @id @default(cuid())
+  resourceId  String
+  userId      String
+  startAt     DateTime
+  endAt       DateTime
+  title       String?
+  description String?
+  status      String   @default("CONFIRMED")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  resource    CommunityResource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@index([resourceId, startAt, endAt])
+  @@map("resource_bookings")
+}
+
+model CommunityMember {
+  id           String         @id @default(cuid())
+  communityId  String
+  userId       String
+  role         String         @default("MEMBER")
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  roleId       String?
+  points       Int            @default(0)
+  inviteCodeId String?
+  community    Community      @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  inviteCode   InviteCode?    @relation(fields: [inviteCodeId], references: [id])
+  customRole   CommunityRole? @relation(fields: [roleId], references: [id])
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, communityId])
+  @@map("community_members")
+}
+
+model InviteCode {
+  id          String            @id @default(cuid())
+  code        String            @unique
+  communityId String
+  issuerId    String
+  usedCount   Int               @default(0)
+  maxUses     Int?
+  expiresAt   DateTime?
+  createdAt   DateTime          @default(now())
+  members     CommunityMember[]
+  community   Community         @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  issuer      User              @relation(fields: [issuerId], references: [id], onDelete: Cascade)
+
+  @@map("invite_codes")
+}
+
+model CommunityRole {
+  id            String            @id @default(cuid())
+  communityId   String
+  name          String
+  color         String            @default("#000000")
+  permissions   String[]
+  isSystem      Boolean           @default(false)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  description   String?
+  isPlatform    Boolean           @default(false)
+  slug          String?
+  members       CommunityMember[]
+  community     Community         @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  grants        RoleGrant[]
+  policies      RolePolicy[]
+  allowedEvents Event[]           @relation("EventAllowedRoles")
+
+  @@unique([communityId, slug])
+  @@index([communityId, isPlatform])
+  @@map("community_roles")
+}
+
+model Post {
+  id          String     @id @default(cuid())
+  communityId String?
+  projectId   String?
+  userId      String
+  content     String
+  imageUrl    String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  campaignId  String?
+  comments    Comment[]
+  favorites   Favorite[]
+  campaign    Campaign?  @relation("CampaignUpdates", fields: [campaignId], references: [id])
+  community   Community? @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  project     Project?   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([communityId, createdAt])
+  @@map("posts")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
+}
+
+model Contest {
+  id               String         @id @default(cuid())
+  title            String
+  description      String?
+  imageUrl         String?
+  scope            String         @default("OFFICIAL")
+  isOfficial       Boolean        @default(false)
+  ownerOrganizerId String?
+  eventId          String?
+  startAt          DateTime
+  endAt            DateTime
+  status           String         @default("DRAFT")
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  entries          ContestEntry[]
+  event            Event?         @relation(fields: [eventId], references: [id])
+  owner            User?          @relation("OrganizerContests", fields: [ownerOrganizerId], references: [id])
+
+  @@map("contests")
+}
+
+model ContestEntry {
+  id        String        @id @default(cuid())
+  contestId String
+  userId    String
+  title     String?
+  content   String
+  imageUrl  String?
+  status    String        @default("PUBLISHED")
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  contest   Contest       @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  votes     ContestVote[]
+
+  @@map("contest_entries")
+}
+
+model ContestVote {
+  id        String       @id @default(cuid())
+  entryId   String
+  userId    String
+  createdAt DateTime     @default(now())
+  entry     ContestEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([entryId, userId])
+  @@map("contest_votes")
+}
+
+model Quest {
+  id              String             @id @default(cuid())
+  title           String
+  description     String?
+  imageUrl        String?
+  deadline        DateTime?
+  requesterId     String?
+  resourceType    String             @default("individual")
+  status          String             @default("open")
+  userId          String?
+  communityId     String
+  membersOnly     Boolean            @default(false)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  createdByUserId String?
+  applications    QuestApplication[]
+  favorites       Favorite[]
+  community       Community          @relation(fields: [communityId], references: [id])
+  user            User?              @relation(fields: [userId], references: [id])
+
+  @@map("quests")
+}
+
+model QuestApplication {
+  id        String         @id @default(cuid())
+  questId   String
+  userId    String
+  status    String         @default("PENDING")
+  message   String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  quest     Quest          @relation(fields: [questId], references: [id], onDelete: Cascade)
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  QuestMessage[]
+  claimedById String?
+  claimedAt   DateTime?
+  claimedBy   User?        @relation("ClaimedQuests", fields: [claimedById], references: [id])
+
+  @@unique([questId, userId])
+  @@map("quest_applications")
+}
+
+model Channel {
+  id          String             @id @default(cuid())
+  name        String
+  type        String             @default("text")
+  description String?
+  communityId String
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  sortOrder   Int                @default(0)
+  writePolicy ChannelWritePolicy @default(ANYONE)
+  community   Community          @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  messages    Message[]
+
+  @@map("channels")
+}
+
+model ChannelStar {
+  userId    String
+  channelId String
+  createdAt DateTime @default(now())
+
+  @@id([userId, channelId])
+  @@map("channel_stars")
+}
+
+model ChannelRead {
+  userId            String
+  channelId         String
+  lastReadMessageId String?
+  updatedAt         DateTime @updatedAt
+
+  @@id([userId, channelId])
+  @@map("channel_reads")
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  content   String
+  imageUrl  String?
+  userId    String
+  channelId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  channel   Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([channelId, createdAt])
+  @@map("messages")
+}
+
+model ChatConversation {
+  id                   String       @id @default(cuid())
+  provider             ChatProvider @default(OPENAI)
+  userId               String?
+  summary              String?
+  lastMessageAt        DateTime?
+  openaiPrevResponseId String?
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+  user                 User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  messages             ChatMessage[]
+  toolCalls            ChatToolCall[]
+
+  @@index([userId, lastMessageAt])
+  @@map("chat_conversations")
+}
+
+model ChatMessage {
+  id             String     @id @default(cuid())
+  conversationId String
+  role           ChatRole
+  content        String
+  createdAt      DateTime   @default(now())
+  conversation   ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@map("chat_messages")
+}
+
+model ChatToolCall {
+  id             String     @id @default(cuid())
+  conversationId String
+  toolCallId     String
+  toolName       String
+  input          Json
+  output         Json
+  isError        Boolean    @default(false)
+  createdAt      DateTime   @default(now())
+  conversation   ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@index([toolCallId])
+  @@map("chat_tool_calls")
+}
+
+enum JoinIntentType {
+  EVENT
+  COMMUNITY
+}
+
+model JoinIntent {
+  id             String         @id @default(cuid())
+  type           JoinIntentType
+  targetId       String
+  referrerUserId String?
+  src            String?
+  createdAt      DateTime       @default(now())
+  consumedAt     DateTime?
+  consumedByUserId String?
+
+  @@index([referrerUserId])
+  @@index([type, targetId])
+  @@map("join_intents")
+}
+
+enum AttributionAction {
+  INTENT_CREATED
+  JOIN_COMPLETED
+  AUTO_FOLLOW
+  AUTO_COMMUNITY_JOIN
+  COMMUNITY_REFERRAL
+  PROFILE_SAVE_REFERRAL
+}
+
+model AttributionLog {
+  id             String            @id @default(cuid())
+  action         AttributionAction
+  referrerUserId String?
+  userId         String?
+  eventId        String?
+  communityId    String?
+  src            String?
+  createdAt      DateTime          @default(now())
+
+  @@index([referrerUserId, createdAt])
+  @@index([userId, createdAt])
+  @@map("attribution_logs")
+}
+
+model QuestMessage {
+  id            String           @id @default(cuid())
+  applicationId String
+  senderId      String
+  content       String
+  createdAt     DateTime         @default(now())
+  application   QuestApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId, createdAt])
+  @@map("quest_messages")
+}
+
+model Place {
+  id            String   @id @default(cuid()) @map("place_id")
+  communityId   String   @map("community_id")
+  title         String
+  description   String?
+  tags          String?
+  status        String?
+  lat           Float?
+  lng           Float?
+  address       String?
+  googleMapsUrl String?  @map("google_maps_url")
+  yahooMapsUrl  String?  @map("yahoo_maps_url")
+  source        String?
+  createdBy     String?  @map("created_by")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("places")
+}
+
+model Product {
+  id             String      @id @default(cuid())
+  communityId    String
+  sellerId       String
+  name           String
+  description    String?
+  price          Int
+  stock          Int
+  imageUrl       String?
+  images         String[]    @default([])
+  status         String      @default("draft")
+  tags           String[]    @default([])
+  metadata       Json?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  priceYen       Int?
+  unlimitedStock Boolean     @default(false)
+  orderItems     OrderItem[]
+
+  @@map("products")
+}
+
+model Order {
+  id              String       @id @default(cuid())
+  orderNumber     String       @unique @default(cuid())
+  userId          String
+  communityId     String
+  productId       String?
+  amount          Int?
+  priceAtPurchase Int?
+  totalPrice      Int          @default(0)
+  status          String
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  currency        String       @default("POINT")
+  fulfillment     Fulfillment?
+  items           OrderItem[]
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  claimedById     String?
+  claimedAt       DateTime?
+  claimedBy       User?        @relation("ClaimedOrders", fields: [claimedById], references: [id])
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  productId String
+  name      String
+  price     Int
+  quantity  Int
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}
+
+model Fulfillment {
+  id             String   @id @default(cuid())
+  orderId        String   @unique
+  status         String
+  trackingNumber String?
+  carrier        String?
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  order          Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("fulfillments")
+}
+
+model IntakeItem {
+  id           String   @id @default(cuid())
+  projectId    String
+  symptom      String
+  expectation  String
+  relatedLinks String?
+  priority     String
+  category     String
+  dod          String
+  status       String   @default("PENDING")
+  ticketId     String?  @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  project      Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  ticket       Ticket?  @relation(fields: [ticketId], references: [id])
+
+  @@map("intake_items")
+}
+
+model Ticket {
+  id        String      @id @default(cuid())
+  projectId String
+  title     String
+  status    String      @default("NOT_STARTED")
+  priority  String
+  category  String
+  context   String?
+  dod       String?
+  links     String?
+  intakeId  String?     @unique
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  intake    IntakeItem?
+  project   Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("tickets")
+}
+
+model Decision {
+  id        String   @id @default(cuid())
+  projectId String
+  title     String
+  content   String
+  date      DateTime @default(now())
+  status    String   @default("DECIDED")
+  tags      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("decisions")
+}
+
+model Waitlist {
+  id             String   @id @default(cuid())
+  email          String
+  name           String?
+  role           String?
+  comment        String?
+  joinedDiscord  Boolean  @default(false)
+  joinedOpenChat Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  @@map("waitlist")
+}
+
+model SkillSeed {
+  id             String    @id @default(cuid())
+  userId         String
+  skill          String
+  description    String?
+  category       String?
+  sourceType     String?
+  sourceId       String?
+  messageSnippet String?
+  confidence     Float?
+  status         String
+  timestamp      DateTime
+  confirmedAt    DateTime?
+
+  @@map("skill_seeds")
+}
+
+model QuestSeed {
+  id            String   @id @default(cuid())
+  submitterName String?
+  description   String?
+  category      String?
+  status        String
+  timestamp     DateTime
+
+  @@map("quest_seeds")
+}
+
+model RolePolicy {
+  id            String        @id @default(cuid())
+  communityId   String
+  roleId        String
+  policyJson    Json
+  priority      Int           @default(100)
+  status        String        @default("ACTIVE")
+  effectiveFrom DateTime?
+  effectiveTo   DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  community     Community     @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  role          CommunityRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@index([communityId, roleId, priority])
+  @@map("role_policies")
+}
+
+model RoleGrant {
+  id           String          @id @default(cuid())
+  communityId  String
+  roleId       String
+  userId       String
+  status       RoleGrantStatus @default(ACTIVE)
+  grantedAt    DateTime        @default(now())
+  revokedAt    DateTime?
+  expiresAt    DateTime?
+  reasonType   String
+  reasonFactId String?
+  reasonRefId  String?
+  issuedVcJwt  String?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  community    Community       @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  role         CommunityRole   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([communityId, roleId, userId])
+  @@index([communityId, userId, status])
+  @@index([communityId, roleId, status])
+  @@map("role_grants")
+}
+
+model MemberFact {
+  id             String      @id @default(cuid())
+  communityId    String
+  userId         String
+  type           FactType
+  refType        FactRefType @default(NONE)
+  refId          String?
+  occurredAt     DateTime    @default(now())
+  metaJson       Json        @default("{}")
+  idempotencyKey String
+  createdAt      DateTime    @default(now())
+  community      Community   @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([communityId, idempotencyKey])
+  @@index([communityId, userId, type, occurredAt])
+  @@index([communityId, type, occurredAt])
+  @@map("member_facts")
+}
+
+model Entitlement {
+  id          String             @id @default(cuid())
+  communityId String
+  userId      String
+  sku         String
+  quantity    Int                @default(1)
+  status      EntitlementStatus  @default(ACTIVE)
+  source      EntitlementSource  @default(MANUAL)
+  validFrom   DateTime           @default(now())
+  validUntil  DateTime?
+  metaJson    Json               @default("{}")
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  events      EntitlementEvent[]
+  community   Community          @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([communityId, userId, status])
+  @@index([communityId, sku, status])
+  @@map("entitlements")
+}
+
+model EntitlementEvent {
+  id            String      @id @default(cuid())
+  entitlementId String
+  communityId   String
+  userId        String
+  type          FactType
+  occurredAt    DateTime    @default(now())
+  metaJson      Json        @default("{}")
+  factId        String?
+  createdAt     DateTime    @default(now())
+  entitlement   Entitlement @relation(fields: [entitlementId], references: [id], onDelete: Cascade)
+
+  @@index([communityId, userId, occurredAt])
+  @@index([entitlementId, occurredAt])
+  @@map("entitlement_events")
+}
+
+model Campaign {
+  id               String              @id @default(cuid())
+  title            String
+  description      String
+  currentAmount    Int                 @default(0)
+  imageUrl         String?
+  status           String              @default("draft")
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  endAt            DateTime?
+  goalAmount       Int
+  projectId        String
+  startAt          DateTime?
+  type             String              @default("donation")
+  bufferBps        Int                 @default(0)
+  collectionEndsAt DateTime?
+  mode             String              @default("KEEP_IT_ALL")
+  platformFeeBps   Int                 @default(1000)
+  favoriteCount    Int                 @default(0)
+  supporterCount   Int                 @default(0)
+  allocations      Allocation[]
+  campaignComments CampaignComment[]
+  supporters       CampaignSupporter[]
+  campaignUpdates  CampaignUpdate[]
+  project          Project             @relation(fields: [projectId], references: [id])
+  favorites        Favorite[]
+  payments         Payment[]
+  payoutBatches    PayoutBatch[]
+  pledges          Pledge[]
+  updates          Post[]              @relation("CampaignUpdates")
+  rewards          Reward[]
+
+  @@map("campaigns")
+}
+
+model Reward {
+  id                String              @id @default(cuid())
+  campaignId        String
+  title             String
+  description       String?
+  price             Int
+  limit             Int?
+  type              String              @default("product")
+  metadata          Json                @default("{}")
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  estimatedDelivery String?
+  imageUrl          String?
+  questions         Json?
+  requiresShipping  Boolean             @default(false)
+  soldCount         Int                 @default(0)
+  fulfillments      PledgeFulfillment[]
+  pledges           Pledge[]
+  campaign          Campaign            @relation(fields: [campaignId], references: [id])
+
+  @@map("rewards")
+}
+
+model Pledge {
+  id                    String             @id @default(cuid())
+  campaignId            String
+  rewardId              String
+  userId                String
+  amount                Int
+  status                String             @default("PENDING")
+  transactionId         String?
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+  stripeCustomerId      String?
+  stripePaymentMethodId String?
+  stripeSetupIntentId   String?
+  additionalAmount      Int                @default(0)
+  isAnonymous           Boolean            @default(false)
+  quantity              Int                @default(1)
+  comments              CampaignComment[]
+  payments              Payment[]
+  fulfillment           PledgeFulfillment?
+  campaign              Campaign           @relation(fields: [campaignId], references: [id])
+  reward                Reward             @relation(fields: [rewardId], references: [id])
+  user                  User               @relation(fields: [userId], references: [id])
+  shippingAddress       ShippingAddress?
+
+  @@map("pledges")
+}
+
+model CampaignSupporter {
+  id         String   @id @default(cuid())
+  campaignId String
+  userId     String
+  amount     Int
+  pledge     String?
+  createdAt  DateTime @default(now())
+  campaign   Campaign @relation(fields: [campaignId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@map("campaign_supporters")
+}
+
+model Payment {
+  id                    String           @id @default(cuid())
+  pledgeId              String
+  campaignId            String
+  userId                String
+  amount                Int
+  currency              String           @default("jpy")
+  status                String
+  stripePaymentIntentId String?          @unique
+  stripeChargeId        String?
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+  failureCode           String?
+  failureMessage        String?
+  allocation            Allocation?
+  attempts              PaymentAttempt[]
+  campaign              Campaign         @relation(fields: [campaignId], references: [id])
+  pledge                Pledge           @relation(fields: [pledgeId], references: [id])
+  user                  User             @relation(fields: [userId], references: [id])
+  refunds               Refund[]
+
+  @@map("payments")
+}
+
+model PaymentAttempt {
+  id             String    @id @default(cuid())
+  paymentId      String
+  attemptNo      Int       @default(1)
+  status         String
+  failureCode    String?
+  failureMessage String?
+  nextRetryAt    DateTime?
+  createdAt      DateTime  @default(now())
+  payment        Payment   @relation(fields: [paymentId], references: [id])
+
+  @@map("payment_attempts")
+}
+
+model Refund {
+  id             String   @id @default(cuid())
+  paymentId      String
+  amount         Int
+  status         String
+  stripeRefundId String   @unique
+  createdAt      DateTime @default(now())
+  payment        Payment  @relation(fields: [paymentId], references: [id])
+
+  @@map("refunds")
+}
+
+model StripeEvent {
+  id            String   @id @default(cuid())
+  stripeEventId String   @unique
+  type          String
+  processedAt   DateTime @default(now())
+  rawJson       Json?
+  createdAt     DateTime @default(now())
+
+  @@map("stripe_events")
+}
+
+model Allocation {
+  id                String   @id @default(cuid())
+  paymentId         String   @unique
+  campaignId        String
+  projectId         String
+  grossAmount       Int
+  platformFeeAmount Int
+  netAmount         Int
+  createdAt         DateTime @default(now())
+  campaign          Campaign @relation(fields: [campaignId], references: [id])
+  payment           Payment  @relation(fields: [paymentId], references: [id])
+
+  @@map("allocations")
+}
+
+model PayoutBatch {
+  id         String   @id @default(cuid())
+  campaignId String
+  projectId  String
+  status     String   @default("READY")
+  totalGross Int
+  totalFee   Int
+  totalNet   Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  campaign   Campaign @relation(fields: [campaignId], references: [id])
+  payouts    Payout[]
+
+  @@map("payout_batches")
+}
+
+model Payout {
+  id              String      @id @default(cuid())
+  payoutBatchId   String
+  amount          Int
+  method          String      @default("BANK_TRANSFER")
+  bankTransferRef String?
+  executedAt      DateTime?
+  status          String      @default("EXECUTED")
+  createdAt       DateTime    @default(now())
+  payoutBatch     PayoutBatch @relation(fields: [payoutBatchId], references: [id])
+
+  @@map("payouts")
+}
+
+model CampaignUpdate {
+  id          String   @id @default(cuid())
+  campaignId  String
+  authorId    String
+  title       String
+  body        String
+  visibility  String   @default("PUBLIC")
+  publishedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  author      User     @relation(fields: [authorId], references: [id])
+  campaign    Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@map("campaign_updates")
+}
+
+model CampaignComment {
+  id          String                 @id @default(cuid())
+  campaignId  String
+  userId      String
+  pledgeId    String?
+  body        String
+  isAnonymous Boolean                @default(false)
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+  replies     CampaignCommentReply[]
+  campaign    Campaign               @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  pledge      Pledge?                @relation(fields: [pledgeId], references: [id])
+  user        User                   @relation(fields: [userId], references: [id])
+
+  @@map("campaign_comments")
+}
+
+model CampaignCommentReply {
+  id        String          @id @default(cuid())
+  commentId String
+  authorId  String
+  body      String
+  createdAt DateTime        @default(now())
+  author    User            @relation(fields: [authorId], references: [id])
+  comment   CampaignComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@map("campaign_comment_replies")
+}
+
+model ShippingAddress {
+  id         String   @id @default(cuid())
+  userId     String
+  pledgeId   String   @unique
+  name       String
+  postalCode String
+  prefecture String
+  city       String
+  address1   String
+  address2   String?
+  phone      String
+  createdAt  DateTime @default(now())
+  pledge     Pledge   @relation(fields: [pledgeId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@map("shipping_addresses")
+}
+
+model PledgeFulfillment {
+  id             String    @id @default(cuid())
+  pledgeId       String    @unique
+  rewardId       String
+  status         String    @default("PENDING")
+  trackingNumber String?
+  shippedAt      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  pledge         Pledge    @relation(fields: [pledgeId], references: [id])
+  reward         Reward    @relation(fields: [rewardId], references: [id])
+
+  @@map("pledge_fulfillments")
+}
+
+model ProcessedStripeEvent {
+  id          String   @id
+  type        String
+  processedAt DateTime @default(now())
+
+  @@map("processed_stripe_events")
+}
+
+enum FactType {
+  FAN_JOINED
+  FAN_LEFT
+  ROLE_GRANTED_MANUAL
+  TICKET_ISSUED
+  CHECKED_IN
+  TICKET_COMPLETED
+  LEDGER_EARNED
+  LEDGER_SPENT
+  ENTITLEMENT_GRANTED
+  ENTITLEMENT_REVOKED
+}
+
+enum FactRefType {
+  NONE
+  FAN_MEMBERSHIP
+  TICKET
+  LEDGER_TX
+  ENTITLEMENT
+  MANUAL
+}
+
+enum RoleGrantStatus {
+  ACTIVE
+  REVOKED
+  EXPIRED
+}
+
+enum EntitlementSource {
+  MANUAL
+  EXTERNAL
+  NFT
+  ADMIN
+  SYSTEM
+}
+
+enum EntitlementStatus {
+  ACTIVE
+  REVOKED
+  EXPIRED
+}
+
+enum CommunityType {
+  NORMAL
+  PERSONAL
+}
+
+enum TutorialStatus {
+  PENDING
+  COMPLETED
+}
+
+enum ChannelWritePolicy {
+  ANYONE
+  ORGANIZER_ADMIN
+  ADMIN_ONLY
+}
+
+enum ChatProvider {
+  OPENAI
+}
+
+enum ChatRole {
+  USER
+  ASSISTANT
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("push_subscriptions")
+}
+
+model Authenticator {
+  id                   String  @id @default(cuid())
+  credentialID         String  @unique
+  userId               String
+  providerAccountId    String
+  credentialPublicKey  String
+  counter              Int
+  credentialDeviceType String
+  credentialBackedUp   Boolean
+  transports           String?
+  user                 User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("authenticators")
+}
+
+// Rate Limiting for AI features
+model DailyActionLimit {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String   // e.g., "ai_thumbnail"
+  date      DateTime @db.Date
+  count     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, action, date])
+  @@map("daily_action_limits")
+}
+
+model EventReview {
+  id        String   @id @default(cuid())
+  eventId   String
+  userId    String
+  rating    Int      // 1-5
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+  @@index([eventId])
+  @@map("event_reviews")
+}
+
+
+model ProfileDraft {
+  id              String    @id @default(cuid())
+  userId          String?   // Nullable for anonymous drafts
+  state           String    @default("DRAFT") // DRAFT, COMPLETED
+  sourceArtifacts Json?     // Array of { type, url, manualText }
+  inference       Json?     // Inferred data with confidence
+  finalFields     Json?     // User edited fields
+  privacy         String?   // PUBLIC, PRIVATE, etc.
+  expiresAt       DateTime
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user            User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@map("profile_drafts")
+}
+
+// Community Homepage System
+model Page {
+  id                  String     @id @default(cuid())
+  communityId         String     @unique
+  slug                String     @default("home")
+  publishedRevisionId String?    @unique
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+
+  community         Community  @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  publishedRevision Revision?  @relation("PublishedRevision", fields: [publishedRevisionId], references: [id])
+  revisions         Revision[] @relation("PageRevisions")
+
+  @@index([communityId, slug])
+  @@map("pages")
+}
+
+model Revision {
+  id            String   @id @default(cuid())
+  pageId        String
+  schemaVersion Int      @default(1)
+  content       Json // The UI Tree
+  status        String // DRAFT, PUBLISHED, ARCHIVED
+  createdAt     DateTime @default(now())
+
+  page          Page  @relation("PageRevisions", fields: [pageId], references: [id], onDelete: Cascade)
+  publishedPage Page? @relation("PublishedRevision")
+
+  @@map("revisions")
+}

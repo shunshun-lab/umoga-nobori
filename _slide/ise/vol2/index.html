@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>伊勢神宮 参拝ガイド ｜ 常磐会</title>
+  <style>
+    :root {
+      --gold: #b8860b;
+      --gold-light: #d4a838;
+      --crimson: #8b2500;
+      --ink: #1a1a1a;
+      --paper: #faf8f5;
+      --paper-warm: #f5f0e8;
+      --border: #d4c5a9;
+      --text: #333;
+      --text-light: #666;
+      --accent-green: #2d5016;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+      color: var(--text);
+      background: var(--paper);
+      line-height: 1.9;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(135deg, #1a0a00 0%, #2d1810 40%, #1a1a2e 100%);
+      color: #fff;
+      text-align: center;
+      padding: 5rem 1.5rem 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 80%, rgba(184,134,11,0.15) 0%, transparent 70%);
+    }
+    .hero-sub {
+      font-size: 0.85rem;
+      letter-spacing: 0.4em;
+      color: var(--gold-light);
+      margin-bottom: 1rem;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(1.8rem, 5vw, 3rem);
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      margin-bottom: 0.5rem;
+      position: relative;
+    }
+    .hero-tagline {
+      font-size: 1rem;
+      color: rgba(255,255,255,0.7);
+      margin-top: 0.8rem;
+      position: relative;
+    }
+
+    /* ── Section basics ── */
+    .container {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    section {
+      padding: 3.5rem 0;
+    }
+
+    section + section {
+      border-top: 1px solid var(--border);
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      letter-spacing: 0.1em;
+      color: var(--ink);
+      margin-bottom: 1.8rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--gold);
+      display: inline-block;
+    }
+
+    h3 {
+      font-size: 1.15rem;
+      color: var(--crimson);
+      margin: 1.8rem 0 0.8rem;
+      letter-spacing: 0.05em;
+    }
+
+    p { margin-bottom: 1rem; }
+
+    strong { color: var(--ink); }
+
+    /* ── Intro numbers ── */
+    .intro-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1.2rem;
+      margin: 1.5rem 0;
+    }
+    .intro-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1.2rem;
+      text-align: center;
+    }
+    .intro-card .num {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--gold);
+      display: block;
+      line-height: 1.2;
+    }
+    .intro-card .label {
+      font-size: 0.82rem;
+      color: var(--text-light);
+      margin-top: 0.3rem;
+    }
+
+    /* ── Table ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.2rem 0;
+      font-size: 0.92rem;
+    }
+    th, td {
+      padding: 0.7rem 0.8rem;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+    th {
+      background: var(--paper-warm);
+      font-weight: 600;
+      color: var(--ink);
+      font-size: 0.85rem;
+      letter-spacing: 0.05em;
+    }
+    td strong {
+      color: var(--crimson);
+    }
+
+    /* ── Blockquote ── */
+    blockquote {
+      border-left: 3px solid var(--gold);
+      padding: 1rem 1.2rem;
+      margin: 1.2rem 0;
+      background: var(--paper-warm);
+      font-style: italic;
+      color: var(--ink);
+    }
+
+    /* ── Route flow ── */
+    .route-box {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--gold);
+      border-radius: 4px;
+      padding: 1rem 1.2rem;
+      margin: 1.2rem 0;
+      font-size: 0.95rem;
+      line-height: 1.8;
+    }
+    .route-box .arrow {
+      color: var(--gold);
+      font-weight: 700;
+    }
+
+    /* ── Step cards ── */
+    .step-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+      margin: 1.2rem 0;
+    }
+    .step-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem;
+      text-align: center;
+    }
+    .step-card .step-num {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--gold);
+      display: block;
+    }
+    .step-card .step-text {
+      font-size: 0.85rem;
+      color: var(--text);
+      margin-top: 0.3rem;
+    }
+
+    /* ── Wow cards ── */
+    .wow-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      margin: 1.2rem 0;
+    }
+    .wow-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--gold);
+      border-radius: 4px;
+      padding: 1rem 1.2rem;
+    }
+    .wow-card .wow-title {
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 0.3rem;
+      font-size: 0.95rem;
+    }
+    .wow-card .wow-body {
+      font-size: 0.88rem;
+      color: var(--text-light);
+      line-height: 1.7;
+    }
+
+    /* ── Divider ── */
+    .part-divider {
+      background: linear-gradient(135deg, #2d1810 0%, #1a1a2e 100%);
+      color: #fff;
+      text-align: center;
+      padding: 3rem 1.5rem;
+    }
+    .part-divider h2 {
+      color: #fff;
+      border-bottom-color: var(--gold-light);
+      font-size: 1.6rem;
+    }
+    .part-divider p {
+      color: rgba(255,255,255,0.75);
+      font-size: 0.95rem;
+    }
+
+    /* ── Course cards ── */
+    .course-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+    .course-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+    }
+    .course-card.recommended {
+      border-color: var(--gold);
+      border-width: 2px;
+      position: relative;
+    }
+    .course-card.recommended::after {
+      content: "おすすめ";
+      position: absolute;
+      top: -0.6rem;
+      right: 1rem;
+      background: var(--gold);
+      color: #fff;
+      font-size: 0.7rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 3px;
+      font-weight: 600;
+    }
+    .course-card h4 {
+      font-size: 1.1rem;
+      color: var(--ink);
+      margin-bottom: 0.5rem;
+    }
+    .course-card .meta {
+      font-size: 0.82rem;
+      color: var(--text-light);
+      margin-bottom: 0.6rem;
+    }
+    .course-card p {
+      font-size: 0.9rem;
+      margin-bottom: 0;
+    }
+
+    /* ── Season cards ── */
+    .season-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1.2rem;
+      margin: 1.2rem 0;
+    }
+    .season-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1.2rem;
+    }
+    .season-card h4 {
+      font-size: 1rem;
+      color: var(--crimson);
+      margin-bottom: 0.5rem;
+    }
+    .season-card p {
+      font-size: 0.88rem;
+      color: var(--text-light);
+      margin-bottom: 0;
+    }
+
+    /* ── CTA ── */
+    .cta-section {
+      background: linear-gradient(135deg, #2d1810 0%, #1a1a2e 100%);
+      color: #fff;
+      text-align: center;
+      padding: 3.5rem 1.5rem;
+    }
+    .cta-section h2 {
+      color: #fff;
+      border-bottom-color: var(--gold-light);
+    }
+    .cta-section p {
+      color: rgba(255,255,255,0.8);
+      max-width: 560px;
+      margin: 0 auto 1.5rem;
+    }
+    .cta-btn {
+      display: inline-block;
+      background: var(--gold);
+      color: #fff;
+      text-decoration: none;
+      padding: 0.8rem 2.5rem;
+      border-radius: 4px;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      transition: background 0.2s;
+    }
+    .cta-btn:hover { background: var(--gold-light); }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 2rem 1.5rem;
+      font-size: 0.8rem;
+      color: var(--text-light);
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      .hero { padding: 3.5rem 1rem 3rem; }
+      section { padding: 2.5rem 0; }
+      .intro-grid { grid-template-columns: repeat(2, 1fr); }
+      .step-grid { grid-template-columns: repeat(2, 1fr); }
+      h2 { font-size: 1.3rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ━━━━━━━ HERO ━━━━━━━ -->
+<header class="hero">
+  <p class="hero-sub">ISE JINGU SANPAI GUIDE</p>
+  <h1>伊勢神宮 参拝ガイド</h1>
+  <p class="hero-tagline">外宮から内宮へ — 作法と歩き方の実践ガイド</p>
+</header>
+
+<main>
+
+<!-- ━━━━━━━ 第一部: 参拝の基本 ━━━━━━━ -->
+
+<section>
+  <div class="container">
+    <h2>外宮先祭 — なぜ外宮から参るのか</h2>
+    <p>伊勢神宮の参拝は<strong>外宮→内宮</strong>の順番が正式。これを「外宮先祭（げくうせんさい）」と言います。</p>
+    <p>外宮の御祭神・<strong>豊受大御神</strong>は天照大御神のお食事を司る神。まず豊受大御神に「お膳立て」していただき、それから天照大御神のもとへ向かう。すべての祭事もこの順番で行われます。</p>
+    <blockquote>時間がない場合に内宮だけ参拝することは問題ありません。ただ「できれば外宮から」を心がけると、参拝がより深いものになります。</blockquote>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>外宮の歩き方</h2>
+    <div class="intro-grid">
+      <div class="intro-card">
+        <span class="num">左側通行</span>
+        <span class="label">手水舎側を歩く</span>
+      </div>
+      <div class="intro-card">
+        <span class="num">30〜40分</span>
+        <span class="label">所要時間の目安</span>
+      </div>
+    </div>
+
+    <div class="route-box">
+      <strong>火除橋</strong> <span class="arrow">→</span> <strong>手水舎</strong> <span class="arrow">→</span> <strong>正宮</strong> <span class="arrow">→</span> <strong>多賀宮</strong>（98段） <span class="arrow">→</span> 土宮 <span class="arrow">→</span> 風宮 <span class="arrow">→</span> <strong>せんぐう館</strong>
+    </div>
+
+    <h3>主な見どころ</h3>
+    <table>
+      <tr><th>スポット</th><th>ポイント</th></tr>
+      <tr><td><strong>正宮</strong></td><td>豊受大御神を祀る。ここで二拝二拍手一拝</td></tr>
+      <tr><td><strong>多賀宮</strong></td><td>外宮最大の別宮。98段の石段。個人の祈願はここで</td></tr>
+      <tr><td><strong>せんぐう館</strong></td><td>式年遷宮の博物館。原寸大の正殿模型あり（入館料300円）</td></tr>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>外宮から内宮への移動</h2>
+    <div class="intro-grid">
+      <div class="intro-card">
+        <span class="num">バス 15分</span>
+        <span class="label">三重交通バス・頻繁運行</span>
+      </div>
+      <div class="intro-card">
+        <span class="num">タクシー 10分</span>
+        <span class="label">グループなら割り勘がお得</span>
+      </div>
+      <div class="intro-card">
+        <span class="num">徒歩 50分</span>
+        <span class="label">御幸道路経由</span>
+      </div>
+    </div>
+    <p>寄り道: <strong>月夜見宮</strong>（外宮北御門から徒歩5分）。月読命を祀る別宮で、大きなクスノキが見事。穴場スポットです。</p>
+  </div>
+</section>
+
+<!-- ━━━━━━━ 第二部: 参拝の作法 ━━━━━━━ -->
+
+<div class="part-divider">
+  <h2>参拝の作法</h2>
+  <p>二拝二拍手一拝・手水・祈願の正しい作法</p>
+</div>
+
+<section>
+  <div class="container">
+    <h2>内宮の歩き方</h2>
+    <div class="intro-grid">
+      <div class="intro-card">
+        <span class="num">右側通行</span>
+        <span class="label">外宮と逆</span>
+      </div>
+      <div class="intro-card">
+        <span class="num">1〜1.5時間</span>
+        <span class="label">所要時間の目安</span>
+      </div>
+    </div>
+
+    <div class="route-box">
+      <strong>宇治橋</strong>（101.8m） <span class="arrow">→</span> 神苑 <span class="arrow">→</span> <strong>五十鈴川 御手洗場</strong> <span class="arrow">→</span> <strong>正宮</strong>（感謝の場） <span class="arrow">→</span> <strong>荒祭宮</strong>（祈願の場） <span class="arrow">→</span> 風日祈宮 <span class="arrow">→</span> <strong>神楽殿</strong>
+    </div>
+
+    <table>
+      <tr><th>スポット</th><th>ポイント</th></tr>
+      <tr><td><strong>宇治橋</strong></td><td>俗界と聖界をつなぐ橋。渡る前に一礼</td></tr>
+      <tr><td><strong>五十鈴川</strong></td><td>御裳濯川（みもすそがわ）。倭姫命の伝説の地。手を清められる</td></tr>
+      <tr><td><strong>正宮</strong></td><td>天照大御神を祀る。ここは「感謝」の場</td></tr>
+      <tr><td><strong>荒祭宮</strong></td><td>天照大御神の荒御魂を祀る。個人的な「祈願」はここで</td></tr>
+      <tr><td><strong>風日祈宮</strong></td><td>元寇のとき神風を吹かせたとされる風の神。橋を渡った静かな場所</td></tr>
+      <tr><td><strong>神楽殿</strong></td><td>お札・お守り・御祈祷・御神楽の受付</td></tr>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>二拝二拍手一拝</h2>
+    <p>伊勢神宮の参拝作法。一般の神社と同じ作法です。</p>
+
+    <div class="step-grid">
+      <div class="step-card">
+        <span class="step-num">①②</span>
+        <span class="step-text">深く2回お辞儀<br>（二拝）</span>
+      </div>
+      <div class="step-card">
+        <span class="step-num">③④</span>
+        <span class="step-text">胸の高さで2回<br>手を打つ（二拍手）</span>
+      </div>
+      <div class="step-card">
+        <span class="step-num">⑤</span>
+        <span class="step-text">手を合わせて<br>感謝・祈り</span>
+      </div>
+      <div class="step-card">
+        <span class="step-num">⑥</span>
+        <span class="step-text">深く1回お辞儀<br>（一拝）</span>
+      </div>
+    </div>
+
+    <blockquote><strong>正宮では「感謝」</strong>を。「いつもありがとうございます」でOK。個人的なお願いは<strong>荒祭宮</strong>で。正宮は国家・天皇の平安を祈る場です。</blockquote>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>手水の作法</h2>
+    <p>参拝前に手水舎（てみずしゃ）で身を清めます。すべて<strong>一杯の水</strong>で行うのがスマートです。</p>
+
+    <div class="step-grid" style="grid-template-columns: repeat(5, 1fr);">
+      <div class="step-card">
+        <span class="step-num">①</span>
+        <span class="step-text">右手で柄杓<br>左手を洗う</span>
+      </div>
+      <div class="step-card">
+        <span class="step-num">②</span>
+        <span class="step-text">持ち替え<br>右手を洗う</span>
+      </div>
+      <div class="step-card">
+        <span class="step-num">③</span>
+        <span class="step-text">左手に水<br>口をすすぐ</span>
+      </div>
+      <div class="step-card">
+        <span class="step-num">④</span>
+        <span class="step-text">もう一度<br>左手を洗う</span>
+      </div>
+      <div class="step-card">
+        <span class="step-num">⑤</span>
+        <span class="step-text">柄杓を立て<br>柄を清め戻す</span>
+      </div>
+    </div>
+
+    <h3>五十鈴川での清め</h3>
+    <p>内宮には手水舎のほかに<strong>五十鈴川の御手洗場</strong>があります。正式名称は<strong>御裳濯川（みもすそがわ）</strong>。倭姫命が裳の裾の汚れを濯いだという伝説の場所です。川の水で手を清めることもできますが、<strong>足は入れないでください</strong>（聖域の川です）。</p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>お賽銭と正式参拝</h2>
+    <p>お賽銭の金額に決まりはありません。金額より<strong>気持ち</strong>が大切です。</p>
+
+    <table>
+      <tr><th>方法</th><th>費用</th><th>特徴</th></tr>
+      <tr><td><strong>通常参拝</strong></td><td>お賽銭のみ</td><td>二拝二拍手一拝で参拝</td></tr>
+      <tr><td><strong>御祈祷</strong></td><td>5,000円〜</td><td>神楽殿で申し込み。御垣の中で正式参拝（20〜30分）</td></tr>
+      <tr><td><strong>御神楽</strong></td><td>15,000円〜</td><td>雅楽の奏楽・倭舞や人長舞付きの格式高い参拝</td></tr>
+      <tr><td><strong>御垣内参拝</strong></td><td>—</td><td>特別参拝。正装（スーツ・和装）必須。御正宮の垣根の内側へ</td></tr>
+    </table>
+    <p>いずれも<strong>予約不要</strong>。当日、神楽殿で申し込めます。</p>
+  </div>
+</section>
+
+<!-- ━━━━━━━ 第三部: 見どころ巡り ━━━━━━━ -->
+
+<div class="part-divider">
+  <h2>見どころ巡り</h2>
+  <p>別宮・門前町・二見 — 伊勢をもっと深く楽しむ</p>
+</div>
+
+<section>
+  <div class="container">
+    <h2>参拝のマナーと心得</h2>
+    <div class="wow-grid">
+      <div class="wow-card">
+        <p class="wow-title">撮影ルール</p>
+        <p class="wow-body">御正宮の石段より上は<strong>撮影禁止</strong>。石段の手前までは問題ありません。</p>
+      </div>
+      <div class="wow-card">
+        <p class="wow-title">服装</p>
+        <p class="wow-body">普段着で参拝OK。御垣内参拝をする場合は<strong>スーツまたは和装</strong>が必須。サンダル・短パンは避けるのが無難。</p>
+      </div>
+      <div class="wow-card">
+        <p class="wow-title">正中を避ける</p>
+        <p class="wow-body">参道の中央は<strong>神様の通り道</strong>。端を歩くのが作法。</p>
+      </div>
+      <div class="wow-card">
+        <p class="wow-title">鳥居で一礼</p>
+        <p class="wow-body">鳥居をくぐるときは<strong>入退場とも一礼</strong>。帽子を取る。飲食は参道ではしない。</p>
+      </div>
+    </div>
+    <blockquote>「敬意を持って、静かに」— それだけで十分です。堅苦しく考えすぎる必要はありません。</blockquote>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>別宮めぐり — 14の「もうひとつの伊勢」</h2>
+    <p>伊勢神宮には正宮のほかに<strong>14の別宮</strong>があります。正宮とは異なる静けさと深さがあり、時間が許せばぜひ巡ってみてください。</p>
+
+    <table>
+      <tr><th>別宮</th><th>場所</th><th>特徴</th></tr>
+      <tr><td><strong>月読宮</strong></td><td>内宮から徒歩20分</td><td>月読尊を祀る。4つの社殿が横に並ぶ珍しい構成</td></tr>
+      <tr><td><strong>倭姫宮</strong></td><td>内宮近く</td><td>伊勢への旅をした倭姫命を祀る。大正12年創建</td></tr>
+      <tr><td><strong>月夜見宮</strong></td><td>外宮から徒歩5分</td><td>樹齢数百年の楠木が見事。穴場スポット</td></tr>
+      <tr><td><strong>瀧原宮</strong></td><td>内宮から車40分</td><td>「遥宮」。深い杉木立の中。伊勢神宮の原初の空気</td></tr>
+      <tr><td><strong>伊雑宮</strong></td><td>志摩市</td><td>御田植祭は日本三大田植祭のひとつ（重要無形民俗文化財）</td></tr>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>おはらい町・おかげ横丁</h2>
+    <p>内宮の前に広がる約<strong>800m</strong>の門前町。江戸時代の町並みを再現した<strong>おかげ横丁</strong>（1993年、赤福が約140億円で復元）を含め、約60店舗が並びます。1〜2時間は余裕で過ごせます。</p>
+
+    <h3>食べておきたいもの</h3>
+    <table>
+      <tr><th>名物</th><th>ポイント</th></tr>
+      <tr><td><strong>赤福</strong></td><td>本店は朝5時開店。夏は赤福氷、冬は赤福ぜんざい。毎月1日は月替わりの朔日餅（行列覚悟）</td></tr>
+      <tr><td><strong>伊勢うどん</strong></td><td>太くて柔らかい麺にたまり醤油のタレ。初体験は驚くが、ハマる人続出</td></tr>
+      <tr><td><strong>てこね寿司</strong></td><td>カツオの漬け丼。漁師飯が起源</td></tr>
+      <tr><td><strong>松阪牛コロッケ</strong></td><td>食べ歩きに最高。メンチカツも人気</td></tr>
+      <tr><td><strong>伊勢海老</strong></td><td>少し奮発するなら。刺身・焼き・味噌汁</td></tr>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>二見興玉神社と夫婦岩</h2>
+    <p>古来「<strong>お伊勢参りは二見から</strong>」が正式なしきたり。外宮からバスで20分の海沿いに鎮座。御祭神は<strong>猿田彦大神</strong>（道を導く神）。</p>
+
+    <h3>夫婦岩</h3>
+    <p>大注連縄で結ばれた2つの岩。夏至の日の出には、夫婦岩の先<strong>約200km</strong>に<strong>富士山</strong>が一直線に並びます。古代の人はこれを知っていて、ここを「禊の浜」にしたとされています。</p>
+
+    <h3>その他の見どころ</h3>
+    <div class="wow-grid">
+      <div class="wow-card">
+        <p class="wow-title">天の岩屋</p>
+        <p class="wow-body">天照大御神が籠もったとされる伝承地のひとつ。境内にある小さな洞窟。</p>
+      </div>
+      <div class="wow-card">
+        <p class="wow-title">蛙の像</p>
+        <p class="wow-body">猿田彦大神の使い。「無事かえる」「お金がかえる」「貸したものがかえる」の縁起物。境内のあちこちに。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ━━━━━━━ 第四部: モデルコースとCTA ━━━━━━━ -->
+
+<div class="part-divider">
+  <h2>モデルコース</h2>
+  <p>半日・1日・1泊2日 — あなたに合った伊勢の旅</p>
+</div>
+
+<section>
+  <div class="container">
+    <h2>季節ごとの伊勢</h2>
+    <div class="season-grid">
+      <div class="season-card">
+        <h4>春</h4>
+        <p>宮川堤・五十鈴川の桜。2026年〜お木曳きは5月〜8月。</p>
+      </div>
+      <div class="season-card">
+        <h4>夏</h4>
+        <p>夏至祭（6月）は二見の海で禊。7月は花火大会。</p>
+      </div>
+      <div class="season-card">
+        <h4>秋</h4>
+        <p>神嘗祭（10月15-17日）。年間最重要の祭事。新米を天照大御神に捧げる。</p>
+      </div>
+      <div class="season-card">
+        <h4>冬</h4>
+        <p>初詣は約50万人。冬の早朝参拝が最高。神域の空気が一番澄む。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>モデルコース</h2>
+
+    <div class="course-grid">
+      <div class="course-card">
+        <h4>半日コース（3〜4時間）</h4>
+        <p class="meta">時間がないけど、しっかり参拝したい方</p>
+        <div class="route-box">
+          外宮(40分) <span class="arrow">→</span> バス移動 <span class="arrow">→</span> 内宮(1.5h) <span class="arrow">→</span> おかげ横丁(1h)
+        </div>
+      </div>
+
+      <div class="course-card">
+        <h4>1日コース（6〜8時間）</h4>
+        <p class="meta">別宮も含めて、じっくり巡りたい方</p>
+        <div class="route-box">
+          外宮(1h) <span class="arrow">→</span> 月夜見宮(20min) <span class="arrow">→</span> バス移動 <span class="arrow">→</span> 内宮(1.5h) <span class="arrow">→</span> おかげ横丁(1.5h) <span class="arrow">→</span> 月読宮(30min)
+        </div>
+      </div>
+
+      <div class="course-card recommended">
+        <h4>1泊2日コース</h4>
+        <p class="meta">本来のお伊勢参り。早朝参拝が体験できる</p>
+        <div class="route-box">
+          <strong>1日目:</strong> 二見興玉神社(2h) <span class="arrow">→</span> 外宮(1h) <span class="arrow">→</span> せんぐう館 <span class="arrow">→</span> 伊勢市内泊<br>
+          <strong>2日目:</strong> 早朝内宮(1.5h・6時台) <span class="arrow">→</span> 別宮めぐり <span class="arrow">→</span> おかげ横丁
+        </div>
+        <p style="margin-top: 0.8rem;"><strong>早朝の内宮は別世界</strong> — 人がほとんどいない神域を歩ける。泊まる価値はここにあります。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-section">
+  <h2>次の一歩</h2>
+  <p>この参拝ガイドの内容を<strong>実際に体験するツアー</strong>を常磐会が企画しています。<br>2026年は<strong>お木曳き元年</strong>、そして<strong>夏至祭が土日</strong>。伊勢に関わる絶好のタイミングです。<br>一緒に「常若」のこころを、伊勢から未来へつないでいきましょう。</p>
+  <a href="https://www.isetokiwa.jp/" class="cta-btn">常磐会 HP を見る</a>
+</div>
+
+</main>
+
+<footer>
+  <p>&copy; 常磐会（ときわかい） ｜ <a href="https://www.isetokiwa.jp/" style="color:var(--gold);">isetokiwa.jp</a></p>
+</footer>
+
+</body>
+</html>

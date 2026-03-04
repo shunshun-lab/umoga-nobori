@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>伊勢神宮基礎講座 — 常磐会プレゼンテーション</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --gold: #b8860b;
+    --gold-light: #d4a838;
+    --crimson: #8b2500;
+    --dark: #1a0a00;
+    --dark-blue: #1a1a2e;
+    --bg-warm: #faf8f5;
+    --text-light: rgba(255,255,255,0.92);
+    --text-dim: rgba(255,255,255,0.6);
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: #000;
+    font-family: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Slide container ── */
+  .deck { width: 100vw; height: 100vh; position: relative; }
+
+  .slide {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    text-align: center;
+    opacity: 0; visibility: hidden;
+    transition: opacity 0.6s ease, visibility 0.6s ease;
+    background-size: cover; background-position: center;
+    color: var(--text-light);
+    padding: 6vh 8vw;
+  }
+  .slide.active { opacity: 1; visibility: visible; }
+
+  /* Dark overlay on photo slides */
+  .slide.photo::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(26,10,0,0.72) 0%, rgba(26,26,46,0.68) 100%);
+    z-index: 0;
+  }
+  .slide.photo > * { position: relative; z-index: 1; }
+
+  /* Solid-background slides */
+  .slide.solid {
+    background: linear-gradient(135deg, var(--dark) 0%, #2d1810 50%, var(--dark-blue) 100%);
+  }
+
+  /* Photo-only slides (full-screen image + caption) */
+  .slide.photo-only {
+    background-size: cover;
+    background-position: center;
+    justify-content: flex-end;
+    align-items: center;
+    padding-bottom: 8vh;
+  }
+  .slide.photo-only::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(0,0,0,0.05) 0%,
+      rgba(0,0,0,0.15) 50%,
+      rgba(0,0,0,0.70) 85%,
+      rgba(0,0,0,0.85) 100%
+    );
+    z-index: 0;
+  }
+  .slide.photo-only > * { position: relative; z-index: 1; }
+  .slide.photo-only .photo-caption {
+    font-size: clamp(0.9rem, 1.6vw, 1.3rem);
+    color: rgba(255,255,255,0.92);
+    text-shadow: 0 2px 12px rgba(0,0,0,0.8);
+    letter-spacing: 0.05em;
+    line-height: 1.6;
+    text-align: center;
+    max-width: 80%;
+  }
+  .slide.photo-only .photo-caption .caption-sub {
+    display: block;
+    font-size: 0.75em;
+    color: rgba(255,255,255,0.55);
+    margin-top: 0.5vh;
+  }
+
+  /* Credit slide */
+  .slide.credits {
+    background: #111;
+    justify-content: flex-start;
+    padding-top: 6vh;
+    text-align: left;
+  }
+  .slide.credits h2 {
+    font-size: clamp(1.2rem, 2.5vw, 2rem);
+    margin-bottom: 3vh;
+    text-align: center;
+    width: 100%;
+  }
+  .slide.credits .credit-list {
+    font-size: clamp(0.55rem, 0.9vw, 0.75rem);
+    color: rgba(255,255,255,0.5);
+    line-height: 2;
+    max-width: 90%;
+    margin: 0 auto;
+    column-count: 2;
+    column-gap: 4vw;
+  }
+  .slide.credits .credit-list p {
+    break-inside: avoid;
+    margin-bottom: 0.5vh;
+  }
+
+  /* ── Typography ── */
+  .slide-sub {
+    font-size: clamp(0.7rem, 1.4vw, 1.1rem);
+    letter-spacing: 0.5em;
+    color: var(--gold-light);
+    text-transform: uppercase;
+    margin-bottom: 1.5vh;
+  }
+
+  h1 {
+    font-size: clamp(2rem, 5.5vw, 4.5rem);
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    line-height: 1.25;
+    margin-bottom: 2vh;
+    text-shadow: 0 4px 30px rgba(0,0,0,0.5);
+  }
+
+  h2 {
+    font-size: clamp(1.6rem, 4vw, 3.2rem);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    line-height: 1.3;
+    margin-bottom: 2.5vh;
+    text-shadow: 0 3px 20px rgba(0,0,0,0.4);
+  }
+
+  .tagline {
+    font-size: clamp(0.9rem, 1.8vw, 1.4rem);
+    color: var(--text-dim);
+    line-height: 1.6;
+    max-width: 70%;
+    margin: 0 auto;
+  }
+
+  .body-text {
+    font-size: clamp(1rem, 2vw, 1.5rem);
+    line-height: 1.8;
+    max-width: 80%;
+    text-align: left;
+    margin: 0 auto;
+  }
+
+  .body-text li {
+    margin-bottom: 1vh;
+    list-style: none;
+    padding-left: 1.5em;
+    position: relative;
+  }
+  .body-text li::before {
+    content: "◆";
+    color: var(--gold);
+    position: absolute;
+    left: 0;
+    font-size: 0.7em;
+    top: 0.2em;
+  }
+
+  .quote-block {
+    border-left: 4px solid var(--gold);
+    padding: 2vh 3vw;
+    margin: 3vh auto;
+    max-width: 75%;
+    text-align: left;
+    font-style: italic;
+    font-size: clamp(1.1rem, 2.2vw, 1.8rem);
+    line-height: 1.7;
+    background: rgba(184,134,11,0.08);
+    border-radius: 0 8px 8px 0;
+  }
+
+  .flyer-cue {
+    display: inline-block;
+    background: var(--gold);
+    color: #fff;
+    font-size: clamp(0.65rem, 1.1vw, 0.85rem);
+    padding: 0.4em 1.2em;
+    border-radius: 2em;
+    margin-top: 2vh;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+  }
+
+  /* ── Table ── */
+  .slide-table {
+    border-collapse: collapse;
+    margin: 2vh auto;
+    font-size: clamp(0.9rem, 1.6vw, 1.3rem);
+    text-align: left;
+  }
+  .slide-table th, .slide-table td {
+    padding: 1.2vh 2vw;
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+  }
+  .slide-table th {
+    color: var(--gold-light);
+    font-weight: 700;
+  }
+  .slide-table td { color: var(--text-light); }
+
+  /* ── Gold accent ── */
+  .gold { color: var(--gold-light); }
+  .big-num {
+    font-size: clamp(3rem, 8vw, 7rem);
+    font-weight: 900;
+    color: var(--gold-light);
+    line-height: 1;
+    display: block;
+    margin-bottom: 1vh;
+  }
+
+  /* ── Fact cards ── */
+  .fact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 2vw;
+    max-width: 90%;
+    margin: 2vh auto 0;
+    text-align: left;
+  }
+  .fact-card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(184,134,11,0.3);
+    border-radius: 12px;
+    padding: 3vh 2vw;
+  }
+  .fact-card h3 {
+    font-size: clamp(0.9rem, 1.5vw, 1.2rem);
+    color: var(--gold-light);
+    margin-bottom: 1vh;
+    font-weight: 700;
+  }
+  .fact-card p {
+    font-size: clamp(0.75rem, 1.2vw, 1rem);
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  /* ── CTA ── */
+  .cta-url {
+    display: inline-block;
+    background: var(--gold);
+    color: #fff;
+    font-size: clamp(1.2rem, 2.5vw, 2rem);
+    font-weight: 700;
+    padding: 1.5vh 4vw;
+    border-radius: 8px;
+    text-decoration: none;
+    letter-spacing: 0.05em;
+    margin: 2vh 0;
+  }
+  .qr-area {
+    margin-top: 3vh;
+    text-align: center;
+  }
+  .qr-area img {
+    width: clamp(100px, 15vw, 200px);
+    height: auto;
+    filter: drop-shadow(0 0 20px rgba(184,134,11,0.3));
+  }
+  .qr-label {
+    display: block;
+    font-size: clamp(0.6rem, 1vw, 0.8rem);
+    color: var(--text-dim);
+    margin-top: 0.5vh;
+  }
+
+  /* ── Progress bar ── */
+  .progress {
+    position: fixed; bottom: 0; left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    transition: width 0.4s ease;
+    z-index: 100;
+  }
+
+  /* ── Slide number ── */
+  .slide-num {
+    position: fixed;
+    bottom: 1.5vh; right: 2vw;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    z-index: 100;
+    font-family: sans-serif;
+  }
+
+  /* ── Controls hint ── */
+  .hint {
+    position: fixed;
+    bottom: 1.5vh; left: 2vw;
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.25);
+    z-index: 100;
+    font-family: sans-serif;
+  }
+
+  /* ── Responsive tweaks ── */
+  @media (max-aspect-ratio: 4/3) {
+    .fact-grid { grid-template-columns: 1fr; max-width: 80%; }
+    .slide { padding: 4vh 6vw; }
+  }
+</style>
+</head>
+<body>
+<div class="deck">
+
+  <!-- ======== SLIDE 1: Title ======== -->
+  <div class="slide photo active" style="background-image: url('https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=1920&q=80');">
+    <p class="slide-sub">ISE JINGU &amp; TOKIWAKAI</p>
+    <h1>伊勢神宮基礎講座</h1>
+    <p class="tagline">1,300年の「常若」が息づく<br>日本の心のふるさとへ</p>
+  </div>
+
+  <!-- ======== SLIDE 2: Agenda ======== -->
+  <div class="slide solid">
+    <h2>今日の流れ</h2>
+    <div class="body-text">
+      <ul>
+        <li><span class="gold">第一部</span>　古事記と伊勢 — 神話から神宮へ</li>
+        <li><span class="gold">第二部</span>　式年遷宮と「常若」の哲学</li>
+        <li><span class="gold">第三部</span>　常磐会 — なぜ今、伊勢なのか</li>
+      </ul>
+    </div>
+    <p style="margin-top:3vh; font-size: clamp(0.8rem,1.3vw,1rem); color: var(--text-dim);">各パートの詳細データはお手元のチラシにまとめてあります</p>
+  </div>
+
+  <!-- ======== SLIDE 3: お伊勢さんって？ ======== -->
+  <div class="slide photo" style="background-image: url('https://images.unsplash.com/photo-1478436127897-769e1b3f0f36?w=1920&q=80');">
+    <h2>「お伊勢さん」って？</h2>
+    <p class="tagline">正式名称はただの一言<br><span class="gold" style="font-size:1.4em; font-weight:900;">「神宮」</span></p>
+    <p style="margin-top:2vh; font-size: clamp(0.9rem,1.6vw,1.2rem); color: var(--text-light);">全国約8万社の頂点に立つ、日本の「心のふるさと」</p>
+    <p class="flyer-cue">📄 お手元のチラシ左側 — 基本データをご覧ください</p>
+  </div>
+
+  <!-- ======== PHOTO A: 内宮正宮 ======== -->
+  <div class="slide photo-only" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/1/10/Naiku_Ise-jingu_Grand_Shrine_01.JPG');">
+    <p class="photo-caption">内宮 正宮 — 石段の先に、御神体が祀られている<span class="caption-sub">皇大神宮（三重県伊勢市）</span></p>
+  </div>
+
+  <!-- ======== SLIDE 4: 天照大御神の誕生 ======== -->
+  <div class="slide photo" style="background-image: url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=1920&q=80');">
+    <p class="slide-sub">第一部 — 古事記と伊勢</p>
+    <h2>天照大御神の誕生</h2>
+    <div class="body-text" style="text-align:center; max-width:70%;">
+      <p>イザナギが黄泉の国から戻り、禊をしたとき</p>
+      <p style="margin-top:2vh;">
+        <span class="gold" style="font-size:1.3em; font-weight:700;">左目</span> → 天照大御神（太陽の女神）<br>
+        右目 → 月読命（月の神）<br>
+        鼻 → 須佐之男命（嵐の神）
+      </p>
+      <p style="margin-top:2vh; color: var(--gold-light); font-weight:700;">三貴子（みはしらのうずのみこ）の物語</p>
+    </div>
+  </div>
+
+  <!-- ======== PHOTO B: 天照大御神の浮世絵 ======== -->
+  <div class="slide photo-only" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/e/e5/Amaterasu_cave.JPG'); background-color: #1a1a1a;">
+    <p class="photo-caption">岩戸神楽之起顕 — 春斎年昌画（19世紀）<span class="caption-sub">天照大御神が岩戸から姿を現す瞬間</span></p>
+  </div>
+
+  <!-- ======== SLIDE 5: 天の岩戸 ======== -->
+  <div class="slide photo" style="background-image: url('https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=1920&q=80');">
+    <h2>天の岩戸</h2>
+    <div class="body-text" style="text-align:center; max-width:75%;">
+      <p>弟スサノオの乱暴に怒り、天照大御神が岩屋に籠もる<br>
+      世界は<span class="gold">暗闇</span>に包まれた</p>
+      <p style="margin-top:2vh;">八百万の神々が集まり、アメノウズメが踊り、大笑い<br>
+      不思議に思い岩戸を少し開けた瞬間 —</p>
+      <p style="margin-top:2vh; font-size:1.2em; font-weight:700; color: var(--gold-light);">
+        このとき岩戸に掛けられた鏡が「八咫鏡」<br>
+        そのまま伊勢神宮の御神体に
+      </p>
+    </div>
+  </div>
+
+  <!-- ======== PHOTO C: 五十鈴川 ======== -->
+  <div class="slide photo-only" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/f/ff/Isuzu_River_-_Naiku%2C_Ise_Shrine_-_Ise%2C_Mie%2C_Japan_-_DSC07653.jpg');">
+    <p class="photo-caption">五十鈴川 御手洗場 — 倭姫命がたどり着いた聖地<span class="caption-sub">参拝前に手を清める場所</span></p>
+  </div>
+
+  <!-- ======== SLIDE 6: 倭姫命の旅路 ======== -->
+  <div class="slide photo" style="background-image: url('https://images.unsplash.com/photo-1528164344705-47542687000d?w=1920&q=80');">
+    <h2>倭姫命の旅路</h2>
+    <div class="body-text" style="text-align:center; max-width:75%;">
+      <p>天照大御神の御霊代（八咫鏡）を<br>永遠に祀る場所を探す旅</p>
+      <p style="margin-top:2vh;">大和国 → 伊賀 → 近江 → 美濃 → …<br>
+      諸国を巡幸し、ついに伊勢国へ</p>
+    </div>
+    <div class="quote-block">
+      「この神風の伊勢の国は<br>常世から波が寄せる美しい国。<br>ここにいたい」
+    </div>
+  </div>
+
+  <!-- ======== PHOTO D: 宇治橋 ======== -->
+  <div class="slide photo-only" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/4/43/Ise_Ise-jingu_Ujibashi_Bridge_1.jpg');">
+    <p class="photo-caption">宇治橋 — 俗界と聖界をつなぐ橋<span class="caption-sub">内宮参道の入口</span></p>
+  </div>
+
+  <!-- ======== SLIDE 7: 三種の神器 ======== -->
+  <div class="slide solid">
+    <h2>三種の神器と伊勢</h2>
+    <p style="font-size: clamp(0.85rem,1.4vw,1.1rem); color: var(--text-dim); margin-bottom: 3vh;">天孫降臨の際、天照大御神が孫・ニニギノミコトに授けた</p>
+    <table class="slide-table">
+      <tr><th>神器</th><th>現在の所在</th></tr>
+      <tr><td><span class="gold" style="font-weight:700;">八咫鏡（やたのかがみ）</span></td><td><strong style="color:var(--gold-light);">伊勢神宮 内宮</strong>（御神体）</td></tr>
+      <tr><td>草薙剣（くさなぎのつるぎ）</td><td>熱田神宮（名古屋）</td></tr>
+      <tr><td>八尺瓊勾玉（やさかにのまがたま）</td><td>皇居</td></tr>
+    </table>
+    <div class="quote-block" style="margin-top:3vh;">
+      「この鏡を私だと思って祀りなさい」<br>
+      <span style="font-size:0.8em; color: var(--text-dim); font-style:normal;">— 天照大御神</span>
+    </div>
+  </div>
+
+  <!-- ======== SLIDE 8: 式年遷宮とは ======== -->
+  <div class="slide photo" style="background-image: url('https://images.unsplash.com/photo-1480796927426-f609979314bd?w=1920&q=80');">
+    <p class="slide-sub">第二部 — 式年遷宮</p>
+    <h2>1,300年つづく<br>「建て替え」の大事業</h2>
+    <div class="body-text" style="text-align:center; max-width:70%;">
+      <p><span class="gold" style="font-weight:700; font-size:1.2em;">20年ごと</span>に社殿を建て替え、神様にお遷りいただく</p>
+      <p style="margin-top:1.5vh;">65棟を建て替え ／ 714種 1,576点の神宝を全て新調</p>
+      <p style="margin-top:1.5vh;">次回 <span class="gold" style="font-weight:700;">第63回は 2033年秋</span></p>
+    </div>
+    <p class="flyer-cue">📄 お手元のチラシ左側 — 式年遷宮の詳細データをご覧ください</p>
+  </div>
+
+  <!-- ======== PHOTO E: 式年遷宮の新宮 ======== -->
+  <div class="slide photo-only" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/7/70/Ise_Shrine_Geku_%28New_shrine%29.jpg');">
+    <p class="photo-caption">第62回式年遷宮（2013年） — 新宮（外宮）<span class="caption-sub">20年ごとに全てを新しく建て替える</span></p>
+  </div>
+
+  <!-- ======== SLIDE 9: なぜ20年？ ======== -->
+  <div class="slide solid">
+    <h2>なぜ「20年」ごとなのか？</h2>
+    <p style="font-size: clamp(1rem,1.8vw,1.4rem); color: var(--text-light); margin-bottom: 3vh;">宮大工が一生のうちに<span class="gold" style="font-weight:700;">最大3回</span>携わるサイクル</p>
+    <div class="body-text" style="max-width:65%;">
+      <ul>
+        <li><span class="gold">1回目（青年期）</span> — 見習いとして参加</li>
+        <li><span class="gold">2回目（壮年期）</span> — 中堅として技術を発揮</li>
+        <li><span class="gold">3回目（熟年期）</span> — ベテランとして若手を指導</li>
+      </ul>
+    </div>
+    <p style="margin-top:3vh; font-size: clamp(0.9rem,1.5vw,1.2rem); color: var(--gold-light); font-weight:700;">
+      図面ではなく「身体知」として<br>1,300年間、技術が途切れることなく受け継がれてきた
+    </p>
+  </div>
+
+  <!-- ======== PHOTO F: 宮大工の歴史画 ======== -->
+  <div class="slide photo-only" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/e/ec/Daiku_drawn_by_Kitao_Shigemitsu.jpg'); background-color: #1a1a1a;">
+    <p class="photo-caption">大工の絵馬画（1864年） — 身体知の継承<span class="caption-sub">北尾重光画</span></p>
+  </div>
+
+  <!-- ======== SLIDE 10: 古材のリレー ======== -->
+  <div class="slide photo" style="background-image: url('https://images.unsplash.com/photo-1504198453319-5ce911bafcde?w=1920&q=80');">
+    <h2>古材の「壮大なリレー」</h2>
+    <div class="body-text" style="text-align:center; max-width:75%;">
+      <p>伊勢神宮の木材は決して捨てられない</p>
+      <p style="margin-top:2vh;">
+        <span class="gold">正殿で20年</span> →
+        <span class="gold">宇治橋の鳥居で20年</span><br>→
+        <span class="gold">関の追分・七里の渡で20年</span> →
+        <span class="gold">全国の神社へ</span>
+      </p>
+      <p style="margin-top:2vh; font-size:1.2em; font-weight:700; color: var(--gold-light);">
+        1本の柱が60年以上<br>木材全体では100〜200年にわたり使い続けられる
+      </p>
+    </div>
+  </div>
+
+  <!-- ======== PHOTO G: 宇治橋鳥居 ======== -->
+  <div class="slide photo-only" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/a/a1/Ise_Shrine_Uji-bashi1.jpg');">
+    <p class="photo-caption">宇治橋の鳥居 — 正殿の棟持柱が20年後にここに立つ<span class="caption-sub">古材リレーの実例</span></p>
+  </div>
+
+  <!-- ======== SLIDE 11: 「常若」の哲学 ======== -->
+  <div class="slide photo" style="background-image: url('https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=1920&q=80');">
+    <h2>「常若（とこわか）」の思想</h2>
+    <div class="body-text" style="text-align:center; max-width:75%;">
+      <p>本質を守るために<span class="gold" style="font-weight:700;">形を変え続ける</span></p>
+      <p style="margin-top:2vh;">
+        朽ちやすい木で作り、定期的に作り替えることで<br>
+        <span class="gold" style="font-weight:700; font-size:1.2em;">永遠を実現する</span>
+      </p>
+      <p style="margin-top:3vh; font-size:0.9em; color: var(--text-dim);">
+        ピラミッドやパルテノン神殿は廃墟だが<br>
+        伊勢神宮は<span style="color:var(--gold-light); font-weight:700;">常にピカピカの新築</span>
+      </p>
+      <p style="margin-top:2vh; font-size:0.9em; color: var(--text-dim);">
+        SDGsの遥か以前、1,300年前から存在する<br>
+        <span class="gold" style="font-weight:700;">「和のサステナビリティ」</span>
+      </p>
+    </div>
+  </div>
+
+  <!-- ======== PHOTO H: 外宮 ======== -->
+  <div class="slide photo-only" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/1/1b/Entrance_of_Toyouke_Grand_Shrine.jpg');">
+    <p class="photo-caption">外宮（豊受大神宮） — 衣食住・産業の守り神<span class="caption-sub">内宮の話が多いが、外宮も伊勢神宮の重要な柱</span></p>
+  </div>
+
+  <!-- ======== SLIDE 12: 驚きの事実 ======== -->
+  <div class="slide solid">
+    <h2>驚きの事実</h2>
+    <div class="fact-grid">
+      <div class="fact-card">
+        <h3>御神体を誰も見たことがない</h3>
+        <p>遷御の儀は完全な闇の中で行われる。八咫鏡は天皇ですら直接見ることができない。</p>
+      </div>
+      <div class="fact-card">
+        <h3>犬が単独でお伊勢参り</h3>
+        <p>江戸時代、首に旅費とメモをくくりつけた犬を、道中の人々がリレーで世話。「おかげ犬」と呼ばれた。</p>
+      </div>
+      <div class="fact-card">
+        <h3>6人に1人が伊勢を目指した</h3>
+        <p>1830年、半年で460万人が殺到。当時の人口は約3,000万人。「抜け参り」でもお咎めなし。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== PHOTO I: お伊勢参りの浮世絵 ======== -->
+  <div class="slide photo-only" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/8/8a/Ando_hiroshige_miyakawanowatashi.jpg');">
+    <p class="photo-caption">宮川の渡し — 歌川広重画<span class="caption-sub">460万人が目指した伊勢への道</span></p>
+  </div>
+
+  <!-- ======== SLIDE 13: なぜ今「伊勢」なのか ======== -->
+  <div class="slide solid" style="background: linear-gradient(135deg, #0a0a0a 0%, #1a0a00 50%, #0a0a1e 100%);">
+    <p style="font-size: clamp(0.9rem,1.5vw,1.2rem); color: var(--text-dim); margin-bottom: 3vh;">ここまでは、伊勢神宮の物語でした。</p>
+    <h1 style="font-size: clamp(1.8rem,4.5vw,3.5rem);">なぜ今<br><span class="gold">「伊勢」</span>なのか</h1>
+    <p style="font-size: clamp(1rem,1.8vw,1.4rem); color: var(--text-dim); margin-top: 3vh;">
+      1,300年つづく「常若」は<br>現代の私たちに何を教えてくれるのか？
+    </p>
+    <p style="font-size: clamp(1rem,1.8vw,1.4rem); color: var(--text-light); margin-top: 3vh; font-weight:700;">
+      その問いにこたえるために生まれた場が<br><span class="gold" style="font-size:1.3em;">「常磐会」</span>です
+    </p>
+  </div>
+
+  <!-- ======== SLIDE 14: 常磐会とは ======== -->
+  <div class="slide photo" style="background-image: url('https://images.unsplash.com/photo-1529693662653-9d480530a697?w=1920&q=80');">
+    <p class="slide-sub">第三部 — 常磐会</p>
+    <h2>常磐会（ときわかい）</h2>
+    <div class="body-text" style="text-align:center; max-width:70%;">
+      <p>伊勢の地から未来を育むコミュニティ</p>
+      <p style="margin-top:2vh;">
+        <span class="gold">「常磐」</span> ＝ いつまでも揺るがないもの<br>
+        祝詞のことば「常磐尓堅磐尓」に由来
+      </p>
+      <p style="margin-top:2vh;">
+        日本の伝統文化の継承<br>
+        若い世代・子どもたちの健全な育ち<br>
+        世代をこえた温かなつながり
+      </p>
+    </div>
+    <p class="flyer-cue">📄 お手元のチラシ右側 — 常磐会 &amp; イベント一覧をご覧ください</p>
+  </div>
+
+  <!-- ======== PHOTO J: 夫婦岩 ======== -->
+  <div class="slide photo-only" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/b/bc/Meoto_Iwa_3.JPG');">
+    <p class="photo-caption">夫婦岩 — この先200kmに富士山が一直線<span class="caption-sub">二見興玉神社（三重県伊勢市）</span></p>
+  </div>
+
+  <!-- ======== SLIDE 15: 2026年 — 絶好のタイミング ======== -->
+  <div class="slide photo" style="background-image: url('https://images.unsplash.com/photo-1542640244-7e672d6cef4e?w=1920&q=80');">
+    <h2>2026年 — 絶好のタイミング</h2>
+    <div class="body-text" style="text-align:center; max-width:75%;">
+      <p><span class="gold" style="font-weight:700; font-size:1.2em;">お木曳き元年</span><br>
+        2033年遷宮に向けて、550年以上の伝統行事がいよいよ始動<br>
+        <span style="color: var(--text-dim);">第一次：2026年5月〜8月 ／ 伊勢現地</span>
+      </p>
+      <p style="margin-top:3vh;">
+        <span class="gold" style="font-weight:700; font-size:1.2em;">夏至祭が土日開催！</span><br>
+        6月20日（土）〜 21日（日）<br>
+        夫婦岩から昇る朝日を浴びながら海で禊<br>
+        <span style="color: var(--text-dim);">夫婦岩の先200kmに富士山が一直線</span>
+      </p>
+    </div>
+  </div>
+
+  <!-- ======== PHOTO K: お木曳き ======== -->
+  <div class="slide photo-only" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/9/95/Enyabiki_of_Okihikigyoji_at_Geku01.jpg');">
+    <p class="photo-caption">お木曳き — 550年以上つづく奉仕の行事<span class="caption-sub">御木曳行事・外宮（川曳）</span></p>
+  </div>
+
+  <!-- ======== SLIDE 16: CTA ======== -->
+  <div class="slide solid">
+    <h2>次の一歩</h2>
+    <div class="body-text" style="text-align:center; max-width:70%;">
+      <p style="text-align:center;">まずはHPから年間の祭り・イベント日程をチェック</p>
+    </div>
+    <a href="https://www.isetokiwa.jp/" class="cta-url">isetokiwa.jp</a>
+    <div class="qr-area">
+      <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MSIgaGVpZ2h0PSI4MSIgY2xhc3M9InNlZ25vIj48cGF0aCB0cmFuc2Zvcm09InNjYWxlKDMpIiBjbGFzcz0icXJsaW5lIiBzdHJva2U9IiNmZmYiIGQ9Ik0xIDEuNWg3bTMgMGgybTEgMGgzbTIgMGg3bS0yNSAxaDFtNSAwaDFtMSAwaDFtMiAwaDJtMiAwaDJtMSAwaDFtNSAwaDFtLTI1IDFoMW0xIDBoM20xIDBoMW0yIDBoMm00IDBoMW0yIDBoMW0xIDBoM20xIDBoMW0tMjUgMWgxbTEgMGgzbTEgMGgxbTIgMGgzbTIgMGgxbTMgMGgxbTEgMGgzbTEgMGgxbS0yNSAxaDFtMSAwaDNtMSAwaDFtMSAwaDFtMyAwaDRtMiAwaDFtMSAwaDNtMSAwaDFtLTI1IDFoMW01IDBoMW0yIDBoM20xIDBoMW0xIDBoMW0yIDBoMW01IDBoMW0tMjUgMWg3bTEgMGgxbTEgMGgxbTEgMGgxbTEgMGgxbTEgMGgxbTEgMGg3bS0xMyAxaDVtLTE3IDFoMW0xIDBoMW0xIDBoMW0xIDBoMW0yIDBoM20xIDBoMW02IDBoMW0yIDBoMW0tMjMgMWgxbTEgMGgxbTQgMGgybTEgMGgxbTEgMGgybTEgMGgxbTEgMGgxbTUgMGgxbS0yNSAxaDJtMSAwaDFtMiAwaDFtMyAwaDJtMSAwaDFtMyAwaDNtMiAwaDNtLTI1IDFoM20xIDBoMm0yIDBoM20xIDBoNW0xIDBoMW00IDBoMW0tMjIgMWgzbTEgMGgxbTEgMGgxbTEgMGg0bTIgMGg0bTEgMGgxbTEgMGgybS0yNCAxaDFtMSAwaDFtMyAwaDJtMSAwaDJtMSAwaDFtMiAwaDFtMSAwaDFtMiAwaDFtMiAwaDFtLTI1IDFoMW0xIDBoN20xIDBoMW0xIDBoMW0xIDBoMW0yIDBoM20yIDBoM20tMjQgMWgybTQgMGgxbTEgMGgxbTEgMGgxbTEgMGgybTMgMGgxbTEgMGgxbTIgMGgxbS0yNCAxaDFtMSAwaDFtMSAwaDFtMSAwaDJtMSAwaDFtMiAwaDNtMSAwaDZtLTE0IDFoMW0yIDBoMW00IDBoMW0zIDBoMm0xIDBoMm0tMjUgMWg3bTIgMGgybTIgMGgxbTEgMGgybTEgMGgxbTEgMGgybTEgMGgybS0yNSAxaDFtNSAwaDFtMiAwaDFtMiAwaDJtMiAwaDFtMyAwaDJtLTIyIDFoMW0xIDBoM20xIDBoMW0xIDBoMm0xIDBoM20yIDBoNm0tMjIgMWgxbTEgMGgzbTEgMGgxbTIgMGgxbTcgMGgxbTEgMGg0bS0yMyAxaDFtMSAwaDNtMSAwaDFtMSAwaDNtMSAwaDNtNSAwaDFtMyAwaDFtLTI1IDFoMW01IDBoMW0zIDBoMm0xIDBoMW0xIDBoMm0xIDBoMW0xIDBoMm0xIDBoMW0tMjQgMWg3bTEgMGgybTMgMGgxbTEgMGgybTIgMGgxbTMgMGgyIi8+PC9zdmc+Cg==" alt="QR Code - isetokiwa.jp">
+      <span class="qr-label">QRコードでHPにアクセス</span>
+    </div>
+    <div style="margin-top:3vh; font-size: clamp(0.8rem,1.3vw,1rem); color: var(--text-dim); line-height: 1.8;">
+      <p><span class="gold">朔日餅の会</span>（毎月・東京）で気軽に雰囲気を<br>
+      <span class="gold">夏至祭</span>（6/20-21 土日）で特別な体験を<br>
+      <span class="gold">お木曳き</span>（5月〜）で遷宮に参加する</p>
+    </div>
+    <p style="margin-top:2vh; font-size: clamp(0.8rem,1.3vw,1rem); color: var(--text-light); font-weight:700;">
+      一緒に「常若」のこころを、伊勢から未来へつないでいきましょう
+    </p>
+  </div>
+
+  <!-- ======== SLIDE: Credits ======== -->
+  <div class="slide credits">
+    <h2>写真クレジット</h2>
+    <div class="credit-list">
+      <p>内宮 正宮 — Wikimedia Commons / CC BY-SA 3.0</p>
+      <p>岩戸神楽之起顕（春斎年昌画） — Wikimedia Commons / Public Domain</p>
+      <p>五十鈴川 御手洗場 — Wikimedia Commons / CC BY-SA 3.0</p>
+      <p>宇治橋 — Wikimedia Commons / CC BY-SA 3.0</p>
+      <p>第62回式年遷宮 新宮（外宮） — Wikimedia Commons / CC BY-SA 3.0</p>
+      <p>大工の絵馬画（北尾重光・1864年） — Wikimedia Commons / Public Domain</p>
+      <p>宇治橋の鳥居 — Wikimedia Commons / CC BY-SA 3.0</p>
+      <p>外宮（豊受大神宮） — Wikimedia Commons / CC BY-SA 3.0</p>
+      <p>宮川の渡し（歌川広重画） — Wikimedia Commons / Public Domain</p>
+      <p>夫婦岩（二見興玉神社） — Wikimedia Commons / CC BY-SA 3.0</p>
+      <p>お木曳き（川曳） — Wikimedia Commons / CC BY-SA 3.0</p>
+      <p>その他の写真 — Unsplash License</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- Progress bar -->
+<div class="progress" id="progress"></div>
+<div class="slide-num" id="slideNum"></div>
+<div class="hint">← → キーで操作 ／ F でフルスクリーン</div>
+
+<script>
+(function() {
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let current = 0;
+
+  function show(n) {
+    if (n < 0 || n >= total) return;
+    slides[current].classList.remove('active');
+    current = n;
+    slides[current].classList.add('active');
+    document.getElementById('progress').style.width = ((current + 1) / total * 100) + '%';
+    document.getElementById('slideNum').textContent = (current + 1) + ' / ' + total;
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+      e.preventDefault();
+      show(current + 1);
+    } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+      e.preventDefault();
+      show(current - 1);
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      show(0);
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      show(total - 1);
+    } else if (e.key === 'f' || e.key === 'F') {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(function(){});
+      } else {
+        document.exitFullscreen();
+      }
+    }
+  });
+
+  // Touch support
+  let touchStartX = 0;
+  document.addEventListener('touchstart', function(e) {
+    touchStartX = e.changedTouches[0].screenX;
+  });
+  document.addEventListener('touchend', function(e) {
+    const diff = e.changedTouches[0].screenX - touchStartX;
+    if (Math.abs(diff) > 50) {
+      if (diff < 0) show(current + 1);
+      else show(current - 1);
+    }
+  });
+
+  // Click to advance (right half) / go back (left half)
+  document.addEventListener('click', function(e) {
+    if (e.target.tagName === 'A') return;
+    if (e.clientX > window.innerWidth / 2) show(current + 1);
+    else show(current - 1);
+  });
+
+  show(0);
+})();
+</script>
+</body>
+</html>

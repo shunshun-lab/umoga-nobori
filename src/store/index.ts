@@ -64,8 +64,8 @@ export interface CartItem {
     id: string;
     specs: NoboriSpecs;
     price: PriceBreakdown;
+    deliveryMode: 'standard' | 'rush';
     addedAt: number;
-    deliveryMode?: 'standard' | 'rush';
 }
 
 export interface DiscountRule {
@@ -98,7 +98,7 @@ interface StoreState {
 
     updateInventory: (fabricId: string, count: number) => void;
     updateCustomUnitPrice: (price: number) => void;
-    addToCart: (item: Omit<CartItem, 'id' | 'addedAt'>) => void;
+    addToCart: (item: Omit<CartItem, 'id' | 'addedAt' | 'deliveryMode'>) => void;
     removeFromCart: (id: string) => void;
     clearCart: () => void;
     discountRules: DiscountRule[];
@@ -108,10 +108,8 @@ interface StoreState {
         rushDays: number;
         rushSurchargeRate: number;
     };
-    cartDeliveryMode: 'standard' | 'rush';
     updateDeliverySettings: (settings: Partial<StoreState['deliverySettings']>) => void;
-    setCartDeliveryMode: (mode: 'standard' | 'rush') => void;
-    setItemDeliveryMode: (id: string, mode: 'standard' | 'rush') => void;
+    setItemDeliveryMode: (itemId: string, mode: 'standard' | 'rush') => void;
 
     // Logic Editing
     updateDiscountRule: (index: number, newRule: DiscountRule) => void;
@@ -163,7 +161,6 @@ export const useStore = create<StoreState>()(
             optionVisibility: initialOptionVisibility,
 
             deliverySettings: initialDeliverySettings,
-            cartDeliveryMode: 'standard',
 
             updateBasePrice: (sizeId, newPrice) => set((state) => ({
                 sizes: { ...state.sizes, [sizeId]: { ...state.sizes[sizeId], basePrice: newPrice } }
@@ -211,6 +208,7 @@ export const useStore = create<StoreState>()(
             addToCart: (item) => set((state) => ({
                 cart: [...state.cart, {
                     ...item,
+                    deliveryMode: 'standard',
                     id: Math.random().toString(36).substring(2, 9),
                     addedAt: Date.now()
                 }]
@@ -230,11 +228,10 @@ export const useStore = create<StoreState>()(
                 deliverySettings: { ...state.deliverySettings, ...settings }
             })),
 
-            setCartDeliveryMode: (mode) => set({ cartDeliveryMode: mode }),
-            setItemDeliveryMode: (id, mode) => set((state) => ({
+            setItemDeliveryMode: (itemId, mode) => set((state) => ({
                 cart: state.cart.map(item =>
-                    item.id === id ? { ...item, deliveryMode: mode } : item
-                ),
+                    item.id === itemId ? { ...item, deliveryMode: mode } : item
+                )
             })),
 
             updateDiscountRule: (index, newRule) => set((state) => {
@@ -279,7 +276,6 @@ export const useStore = create<StoreState>()(
                 discountRules: state.discountRules,
                 pricingTables: state.pricingTables, // Persist segment factors etc
                 cart: state.cart,
-                cartDeliveryMode: state.cartDeliveryMode,
             }),
         }
     )
