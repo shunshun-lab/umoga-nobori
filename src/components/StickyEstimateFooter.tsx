@@ -11,11 +11,15 @@ interface Props {
 
 const WEEKDAY_NAMES = ['日', '月', '火', '水', '木', '金', '土'];
 
-function getDeliveryDateStr(rushSchedule: boolean) {
+function getDeliveryDateStr(specs: NoboriSpecs) {
+    if (specs.desiredShipDate) {
+        const d = new Date(specs.desiredShipDate + 'T00:00:00');
+        return `${d.getMonth() + 1}/${d.getDate()}(${WEEKDAY_NAMES[d.getDay()]})（仮）`;
+    }
     const base = new Date();
-    const days = rushSchedule ? 3 : 7;
+    const days = specs.rushSchedule ? 3 : 7;
     base.setDate(base.getDate() + days);
-    return `${base.getMonth() + 1}/${base.getDate()}(${WEEKDAY_NAMES[base.getDay()]})`;
+    return `${base.getMonth() + 1}/${base.getDate()}(${WEEKDAY_NAMES[base.getDay()]}) 頃`;
 }
 
 export function StickyEstimateFooter({ price, specs, onOpenDetail, onAddToCart, disabled }: Props) {
@@ -66,7 +70,7 @@ export function StickyEstimateFooter({ price, specs, onOpenDetail, onAddToCart, 
                         <div className="flex items-center justify-between py-2">
                             <span className="text-sm text-gray-500">お届け予定日</span>
                             <span className="font-bold text-gray-900">
-                                {getDeliveryDateStr(specs.rushSchedule || false)} 頃
+                                {getDeliveryDateStr(specs)}
                             </span>
                         </div>
                     </div>

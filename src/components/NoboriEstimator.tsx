@@ -109,19 +109,28 @@ export function NoboriEstimator({ onAddToCart }: Props) {
               <div className="text-sm space-y-1">
                 <div className="font-bold text-green-900">
                   {specs.rushSchedule
-                    ? 'お急ぎ納期：3〜5営業日'
+                    ? 'お急ぎ納期：3〜5営業日（特急料金あり）'
                     : '通常納期：7〜10営業日'
                   }
                 </div>
                 <div className="text-green-700">
                   {(() => {
                     const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
+                    if (specs.desiredShipDate) {
+                      const d = new Date(specs.desiredShipDate + 'T00:00:00');
+                      return `発送予定日: ${d.getMonth() + 1}/${d.getDate()}(${WEEKDAYS[d.getDay()]})（仮）`;
+                    }
                     const base = new Date();
                     const days = specs.rushSchedule ? 3 : 7;
                     base.setDate(base.getDate() + days);
                     return `発送予定日: ${base.getMonth() + 1}/${base.getDate()}(${WEEKDAYS[base.getDay()]}) 頃`;
                   })()}
                 </div>
+                {specs.desiredShipDate && (
+                  <div className="text-xs text-green-600 mt-1">
+                    ※ 実際の出荷可否はご注文後にご連絡します
+                  </div>
+                )}
               </div>
             </div>
 
