@@ -11,14 +11,22 @@ interface Props {
 
 const WEEKDAY_NAMES = ['日', '月', '火', '水', '木', '金', '土'];
 
+function addBusinessDays(from: Date, bizDays: number) {
+    const d = new Date(from);
+    let added = 0;
+    while (added < bizDays) {
+        d.setDate(d.getDate() + 1);
+        if (d.getDay() !== 0 && d.getDay() !== 6) added++;
+    }
+    return d;
+}
+
 function getDeliveryDateStr(specs: NoboriSpecs) {
     if (specs.desiredShipDate) {
         const d = new Date(specs.desiredShipDate + 'T00:00:00');
         return `${d.getMonth() + 1}/${d.getDate()}(${WEEKDAY_NAMES[d.getDay()]})（仮）`;
     }
-    const base = new Date();
-    const days = specs.rushSchedule ? 3 : 7;
-    base.setDate(base.getDate() + days);
+    const base = addBusinessDays(new Date(), specs.rushSchedule ? 3 : 7);
     return `${base.getMonth() + 1}/${base.getDate()}(${WEEKDAY_NAMES[base.getDay()]}) 頃`;
 }
 

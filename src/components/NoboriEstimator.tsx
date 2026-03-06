@@ -109,10 +109,19 @@ export function NoboriEstimator({ onAddToCart }: Props) {
               <div className="text-sm space-y-2">
                 {(() => {
                   const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
-                  const normalDate = new Date();
-                  normalDate.setDate(normalDate.getDate() + 7);
-                  const rushDate = new Date();
-                  rushDate.setDate(rushDate.getDate() + 3);
+                  const addBusinessDays = (from: Date, bizDays: number) => {
+                    const d = new Date(from);
+                    let added = 0;
+                    while (added < bizDays) {
+                      d.setDate(d.getDate() + 1);
+                      const dow = d.getDay();
+                      if (dow !== 0 && dow !== 6) added++;
+                    }
+                    return d;
+                  };
+                  const today = new Date();
+                  const normalDate = addBusinessDays(today, 7);
+                  const rushDate = addBusinessDays(today, 3);
                   const fmtDate = (d: Date) => `${d.getMonth() + 1}/${d.getDate()}(${WEEKDAYS[d.getDay()]})`;
 
                   return (
@@ -216,9 +225,13 @@ export function NoboriEstimator({ onAddToCart }: Props) {
                       <div className="text-sm text-gray-700">
                         {(() => {
                           const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
-                          const base = new Date();
-                          const days = specs.rushSchedule ? 3 : 7;
-                          base.setDate(base.getDate() + days);
+                          const addBizDays = (from: Date, n: number) => {
+                            const d = new Date(from);
+                            let added = 0;
+                            while (added < n) { d.setDate(d.getDate() + 1); if (d.getDay() !== 0 && d.getDay() !== 6) added++; }
+                            return d;
+                          };
+                          const base = addBizDays(new Date(), specs.rushSchedule ? 3 : 7);
                           return `${base.getMonth() + 1}/${base.getDate()}(${WEEKDAYS[base.getDay()]}) 頃`;
                         })()}
                       </div>
