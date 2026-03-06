@@ -13,7 +13,6 @@ const FALLBACK_TEMPLATES: TemplateItem[] = [
 export function TemplateDownload() {
     const [templates, setTemplates] = useState<TemplateItem[]>([]);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         let mounted = true;
@@ -29,7 +28,7 @@ export function TemplateDownload() {
                 setTemplates(activeTemplates);
             } catch (e: any) {
                 if (!mounted) return;
-                setError(e.message || 'テンプレートの読み込みに失敗しました');
+                console.warn('TemplateDownload: API error, using fallback', e.message);
             } finally {
                 if (mounted) setLoading(false);
             }
@@ -39,6 +38,7 @@ export function TemplateDownload() {
         };
     }, []);
 
+    // エラー時はフォールバックを静かに使う
     const displayTemplates = templates.length > 0 ? templates : (loading ? [] : FALLBACK_TEMPLATES);
 
     return (
@@ -52,10 +52,6 @@ export function TemplateDownload() {
 
             {loading && (
                 <p className="text-xs text-gray-500">テンプレートを読み込み中です...</p>
-            )}
-
-            {error && (
-                <p className="text-xs text-red-600">{error}</p>
             )}
 
             {displayTemplates.length > 0 && (

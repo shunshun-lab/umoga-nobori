@@ -96,7 +96,7 @@ export function NoboriEstimator({ onAddToCart }: Props) {
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content Column */}
-          <div className="lg:col-span-2 space-y-12 pb-40 lg:pb-24">
+          <div className="lg:col-span-2 space-y-12 pb-96 lg:pb-24">
 
             {/* お届け予定 */}
             <div className="bg-green-50 border border-green-200 rounded-xl p-4">
