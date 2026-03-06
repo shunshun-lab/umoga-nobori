@@ -14,6 +14,7 @@ import { ScheduleSelector } from './ScheduleSelector';
 import { AccessoriesSelector } from './AccessoriesSelector';
 import { TemplateDownload } from './TemplateDownload';
 import { uiConfigService } from '@/utils/uiConfigService';
+import { getDeliveryDates, formatDateWithWeekday, getShipDateLabel } from '@/utils/deliveryDate';
 import type { NoboriSpecs } from '@/types/nobori.types';
 import type { NoboriTextSettings } from '@/utils/uiConfigTypes';
 
@@ -108,22 +109,7 @@ export function NoboriEstimator({ onAddToCart }: Props) {
               </div>
               <div className="text-sm space-y-2">
                 {(() => {
-                  const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
-                  const addBusinessDays = (from: Date, bizDays: number) => {
-                    const d = new Date(from);
-                    let added = 0;
-                    while (added < bizDays) {
-                      d.setDate(d.getDate() + 1);
-                      const dow = d.getDay();
-                      if (dow !== 0 && dow !== 6) added++;
-                    }
-                    return d;
-                  };
-                  const today = new Date();
-                  const normalDate = addBusinessDays(today, 7);
-                  const rushDate = addBusinessDays(today, 3);
-                  const fmtDate = (d: Date) => `${d.getMonth() + 1}/${d.getDate()}(${WEEKDAYS[d.getDay()]})`;
-
+                  const { normalDate, rushDate } = getDeliveryDates();
                   return (
                     <>
                       <div className="flex items-start gap-2">
@@ -131,7 +117,7 @@ export function NoboriEstimator({ onAddToCart }: Props) {
                           通常納期：7〜10営業日
                         </span>
                         <span className="text-green-600 whitespace-nowrap">
-                          発送 {fmtDate(normalDate)} 頃
+                          発送 {formatDateWithWeekday(normalDate)} 頃
                         </span>
                       </div>
                       <div className="flex items-start gap-2">
@@ -139,7 +125,7 @@ export function NoboriEstimator({ onAddToCart }: Props) {
                           特急納期：3〜5営業日
                         </span>
                         <span className="text-green-600 whitespace-nowrap">
-                          発送 {fmtDate(rushDate)} 頃
+                          発送 {formatDateWithWeekday(rushDate)} 頃
                         </span>
                       </div>
                     </>
@@ -148,11 +134,7 @@ export function NoboriEstimator({ onAddToCart }: Props) {
                 {specs.desiredShipDate && (
                   <div className="pt-1 border-t border-green-200">
                     <div className="text-green-800 font-bold">
-                      {(() => {
-                        const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
-                        const d = new Date(specs.desiredShipDate + 'T00:00:00');
-                        return `希望出荷日: ${d.getMonth() + 1}/${d.getDate()}(${WEEKDAYS[d.getDay()]})（仮）`;
-                      })()}
+                      希望出荷日: {getShipDateLabel({ rushSchedule: specs.rushSchedule || false, desiredShipDate: specs.desiredShipDate })}
                     </div>
                     <div className="text-xs text-green-600">
                       ※ 実際の出荷可否はご注文後にご連絡します
@@ -223,17 +205,7 @@ export function NoboriEstimator({ onAddToCart }: Props) {
                     <div>
                       <div className="text-xs font-bold text-gray-600">出荷予定日の目安</div>
                       <div className="text-sm text-gray-700">
-                        {(() => {
-                          const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
-                          const addBizDays = (from: Date, n: number) => {
-                            const d = new Date(from);
-                            let added = 0;
-                            while (added < n) { d.setDate(d.getDate() + 1); if (d.getDay() !== 0 && d.getDay() !== 6) added++; }
-                            return d;
-                          };
-                          const base = addBizDays(new Date(), specs.rushSchedule ? 3 : 7);
-                          return `${base.getMonth() + 1}/${base.getDate()}(${WEEKDAYS[base.getDay()]}) 頃`;
-                        })()}
+                        {getShipDateLabel({ rushSchedule: specs.rushSchedule || false })}
                       </div>
                     </div>
                     <button

@@ -1,22 +1,12 @@
+import { getDeliveryDates, formatDateWithWeekday } from '@/utils/deliveryDate';
 
 interface Props {
     value: boolean;
     onChange: (isRush: boolean) => void;
 }
 
-const WEEKDAY_NAMES = ['日', '月', '火', '水', '木', '金', '土'];
-
 export function ScheduleSelector({ value, onChange }: Props) {
-    const deliveryDateNormal = new Date();
-    deliveryDateNormal.setDate(deliveryDateNormal.getDate() + 7);
-
-    const deliveryDateRush = new Date();
-    deliveryDateRush.setDate(deliveryDateRush.getDate() + 3);
-
-    const formatDate = (date: Date) => {
-        const weekday = WEEKDAY_NAMES[date.getDay()];
-        return `${date.getMonth() + 1}/${date.getDate()}(${weekday})`;
-    };
+    const { normalDate, rushDate } = getDeliveryDates();
 
     return (
         <div className="bg-white rounded-2xl shadow-md p-6">
@@ -58,7 +48,7 @@ export function ScheduleSelector({ value, onChange }: Props) {
                         )}
                         <div>
                             <div className="font-bold text-base text-gray-900">通常納期</div>
-                            <div className="text-sm text-gray-500">発送予定: {formatDate(deliveryDateNormal)}頃</div>
+                            <div className="text-sm text-gray-500">発送予定: {formatDateWithWeekday(normalDate)}頃</div>
                         </div>
                     </div>
                 </label>
@@ -94,7 +84,7 @@ export function ScheduleSelector({ value, onChange }: Props) {
                                 特急出荷
                                 <span className="ml-2 text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded">要相談</span>
                             </div>
-                            <div className="text-sm text-gray-500">発送予定: {formatDate(deliveryDateRush)}頃</div>
+                            <div className="text-sm text-gray-500">発送予定: {formatDateWithWeekday(rushDate)}頃</div>
                         </div>
                     </div>
                 </label>

@@ -1,5 +1,6 @@
 import type { PriceBreakdown, NoboriSpecs } from '@/types/nobori.types';
 import { SIZES, FABRICS } from '@/utils/constants';
+import { getShipDateLabel } from '@/utils/deliveryDate';
 
 interface Props {
     price: PriceBreakdown;
@@ -7,27 +8,6 @@ interface Props {
     onOpenDetail: () => void;
     onAddToCart: () => void;
     disabled: boolean;
-}
-
-const WEEKDAY_NAMES = ['日', '月', '火', '水', '木', '金', '土'];
-
-function addBusinessDays(from: Date, bizDays: number) {
-    const d = new Date(from);
-    let added = 0;
-    while (added < bizDays) {
-        d.setDate(d.getDate() + 1);
-        if (d.getDay() !== 0 && d.getDay() !== 6) added++;
-    }
-    return d;
-}
-
-function getDeliveryDateStr(specs: NoboriSpecs) {
-    if (specs.desiredShipDate) {
-        const d = new Date(specs.desiredShipDate + 'T00:00:00');
-        return `${d.getMonth() + 1}/${d.getDate()}(${WEEKDAY_NAMES[d.getDay()]})（仮）`;
-    }
-    const base = addBusinessDays(new Date(), specs.rushSchedule ? 3 : 7);
-    return `${base.getMonth() + 1}/${base.getDate()}(${WEEKDAY_NAMES[base.getDay()]}) 頃`;
 }
 
 export function StickyEstimateFooter({ price, specs, onOpenDetail, onAddToCart, disabled }: Props) {
@@ -78,7 +58,7 @@ export function StickyEstimateFooter({ price, specs, onOpenDetail, onAddToCart, 
                         <div className="flex items-center justify-between py-2">
                             <span className="text-sm text-gray-500">お届け予定日</span>
                             <span className="font-bold text-gray-900">
-                                {getDeliveryDateStr(specs)}
+                                {getShipDateLabel({ rushSchedule: specs.rushSchedule || false, desiredShipDate: specs.desiredShipDate })}
                             </span>
                         </div>
                     </div>

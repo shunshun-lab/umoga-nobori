@@ -1,5 +1,6 @@
 import type { PriceBreakdown, NoboriSpecs } from '@/types/nobori.types';
 import { useStore } from '@/store';
+import { getShipDateLabel } from '@/utils/deliveryDate';
 
 interface Props {
   price: PriceBreakdown;
@@ -118,7 +119,7 @@ export function PriceDisplay({ price, specs }: Props) {
           <div className={`text-sm font-bold ${specs.rushSchedule ? 'text-orange-800' : 'text-green-800'}`}>お届け予定</div>
         </div>
         <div className={`text-lg font-bold ${specs.rushSchedule ? 'text-orange-900' : 'text-green-900'}`}>
-          {specs.rushSchedule ? '特急対応：3〜5営業日' : '通常納期：7〜10営業日'}
+          {specs.rushSchedule ? '特急対応：3〜5営業日' : '通常納期：7〜10営業日'} — 発送 {getShipDateLabel({ rushSchedule: specs.rushSchedule || false, desiredShipDate: specs.desiredShipDate })}
         </div>
       </div>
     </div>
