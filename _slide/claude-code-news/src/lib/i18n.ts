@@ -25,6 +25,21 @@ const dict = {
   "digest.itemsFrom": { en: "items from", ja: "件 ソース:" },
   "digest.items": { en: "items", ja: "件" },
   "digest.clear": { en: "Clear", ja: "解除" },
+
+  // Newsletter
+  "nl.title": { en: "Daily Newsletter", ja: "デイリーニュースレター" },
+  "nl.subtitle": {
+    en: "Your daily briefing on Claude Code ecosystem",
+    ja: "Claude Code エコシステムの日次ブリーフィング",
+  },
+  "nl.highlights": { en: "Today's Highlights", ja: "本日のハイライト" },
+  "nl.releases": { en: "Release Updates", ja: "リリース情報" },
+  "nl.community": { en: "Community & Blog Posts", ja: "コミュニティ & ブログ記事" },
+  "nl.allLinks": { en: "All Links", ja: "全リンク一覧" },
+  "nl.readMore": { en: "Read more", ja: "続きを読む" },
+  "nl.backToDigest": { en: "Back to digest", ja: "ダイジェストに戻る" },
+  "nl.viewNewsletter": { en: "Newsletter", ja: "ニュースレター" },
+  "nl.noHighlights": { en: "No highlights for today.", ja: "本日のハイライトはありません。" },
 } as const;
 
 type Key = keyof typeof dict;

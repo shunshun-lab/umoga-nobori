@@ -1,6 +1,7 @@
 import { getAllDates, getDigestByDate } from "@/lib/content";
 import { DigestContent } from "@/components/DigestContent";
 import { BackLink } from "@/components/BackLink";
+import { NewsletterLink } from "@/components/NewsletterLink";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -36,7 +37,10 @@ export default async function DigestPage({ params }: PageProps) {
     <div>
       <BackLink />
 
-      <time className="block text-lg font-mono text-accent font-medium mb-2">{digest.date}</time>
+      <div className="flex items-center justify-between mb-2">
+        <time className="text-lg font-mono text-accent font-medium">{digest.date}</time>
+        <NewsletterLink date={date} />
+      </div>
 
       <DigestContent
         items={digest.items}
