@@ -1,5 +1,6 @@
 import { getAllDates, getDigestByDate } from "@/lib/content";
-import { NewsContent } from "@/components/NewsItem";
+import { DigestContent } from "@/components/DigestContent";
+import { BackLink } from "@/components/BackLink";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -29,35 +30,37 @@ export default async function DigestPage({ params }: PageProps) {
   const prevDate = currentIdx < allDates.length - 1 ? allDates[currentIdx + 1] : null;
   const nextDate = currentIdx > 0 ? allDates[currentIdx - 1] : null;
 
+  const sources = [...new Set(digest.items.map((i) => i.source))];
+
   return (
     <div>
-      <Link
-        href="/"
-        className="inline-block mb-6 text-sm text-text-muted hover:text-text-secondary transition-colors"
-      >
-        &larr; Back to all digests
-      </Link>
+      <BackLink />
 
-      <div className="mb-6">
-        <time className="text-sm font-mono text-accent">{digest.date}</time>
-        <div className="mt-1 text-xs text-text-muted">
-          {digest.itemCount} items collected
-        </div>
-      </div>
+      <time className="block text-lg font-mono text-accent font-medium mb-2">{digest.date}</time>
 
-      <NewsContent html={digest.html} />
+      <DigestContent
+        items={digest.items}
+        sources={sources}
+        itemCount={digest.itemCount}
+      />
 
       <nav className="mt-12 pt-6 border-t border-border flex justify-between text-sm">
         {prevDate ? (
-          <Link href={`/${prevDate}`} className="text-link hover:text-link-hover">
-            &larr; {prevDate}
+          <Link href={`/${prevDate}`} className="flex items-center gap-1 text-link hover:text-link-hover transition-colors">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+            {prevDate}
           </Link>
         ) : (
           <span />
         )}
         {nextDate ? (
-          <Link href={`/${nextDate}`} className="text-link hover:text-link-hover">
-            {nextDate} &rarr;
+          <Link href={`/${nextDate}`} className="flex items-center gap-1 text-link hover:text-link-hover transition-colors">
+            {nextDate}
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
           </Link>
         ) : (
           <span />

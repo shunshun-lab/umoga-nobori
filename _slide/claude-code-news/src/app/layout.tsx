@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Header } from "@/components/Header";
+import { LocaleProvider } from "@/components/LocaleProvider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -16,7 +17,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Claude Code News",
   description:
-    "Claude Code に関する最新ニュースを毎日自動収集。Anthropic Blog, GitHub Releases, Hacker News, Reddit, Dev.to から厳選。",
+    "Daily auto-collected Claude Code news from Anthropic Blog, GitHub Releases, Hacker News, Reddit, Dev.to.",
 };
 
 export default function RootLayout({
@@ -25,12 +26,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ja" className="dark">
+    <html lang="en" className="dark">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-bg-primary text-text-primary min-h-screen`}
       >
-        <Header />
-        <main className="max-w-3xl mx-auto px-4 py-8">{children}</main>
+        <LocaleProvider>
+          <Header />
+          <main className="max-w-3xl mx-auto px-4 py-8">{children}</main>
+        </LocaleProvider>
       </body>
     </html>
   );
