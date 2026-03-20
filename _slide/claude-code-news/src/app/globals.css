@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg-primary: #0a0a0f;
+  --color-bg-secondary: #12121a;
+  --color-bg-card: rgba(20, 20, 35, 0.6);
+  --color-bg-card-hover: rgba(25, 25, 45, 0.8);
+
+  --color-text-primary: #f0f0f5;
+  --color-text-secondary: #b0b0c0;
+  --color-text-muted: #6b6b80;
+
+  --color-border: #1e1e30;
+  --color-border-light: #2d2d45;
+
+  --color-accent: #d4a574;
+  --color-accent-hover: #e0b88a;
+  --color-link: #7eb8da;
+  --color-link-hover: #a0d4f0;
+
+  --color-source-anthropic: #d97757;
+  --color-source-github: #7ee7a0;
+  --color-source-hackernews: #ff8c00;
+  --color-source-reddit: #ff6b35;
+  --color-source-devto: #6366f1;
+}
+
+body {
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.prose-dark {
+  max-width: 720px;
+  line-height: 1.8;
+  color: var(--color-text-secondary);
+}
+
+.prose-dark h1,
+.prose-dark h2,
+.prose-dark h3 {
+  color: var(--color-text-primary);
+  font-weight: 600;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+
+.prose-dark h1 { font-size: 1.5rem; }
+.prose-dark h2 { font-size: 1.25rem; border-bottom: 1px solid var(--color-border); padding-bottom: 0.3em; }
+.prose-dark h3 { font-size: 1.1rem; }
+
+.prose-dark p { margin-bottom: 1em; }
+
+.prose-dark a {
+  color: var(--color-link);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.prose-dark a:hover {
+  color: var(--color-link-hover);
+}
+
+.prose-dark strong {
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+.prose-dark ul {
+  padding-left: 1.5em;
+  margin-bottom: 1em;
+  list-style-type: disc;
+}
+.prose-dark li {
+  margin-bottom: 0.4em;
+}
+
+.prose-dark hr {
+  border-color: var(--color-border);
+  margin: 1.5em 0;
+}

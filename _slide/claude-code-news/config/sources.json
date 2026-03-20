@@ -1,0 +1,36 @@
+{
+  "sources": [
+    {
+      "name": "Anthropic Blog",
+      "type": "rss",
+      "url": "https://www.anthropic.com/feed.xml",
+      "filter": "claude",
+      "maxItems": 10
+    },
+    {
+      "name": "GitHub claude-code Releases",
+      "type": "github-releases",
+      "repo": "anthropics/claude-code",
+      "maxItems": 5
+    },
+    {
+      "name": "Hacker News",
+      "type": "rss",
+      "url": "https://hnrss.org/newest?q=%22claude+code%22",
+      "maxItems": 15
+    },
+    {
+      "name": "Reddit r/ClaudeAI",
+      "type": "rss",
+      "url": "https://www.reddit.com/r/ClaudeAI/new.rss",
+      "filter": "claude code",
+      "maxItems": 10
+    },
+    {
+      "name": "Dev.to",
+      "type": "rss",
+      "url": "https://dev.to/feed/tag/claudecode",
+      "maxItems": 10
+    }
+  ]
+}
