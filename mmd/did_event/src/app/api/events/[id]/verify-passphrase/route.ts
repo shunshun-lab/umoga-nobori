@@ -10,10 +10,8 @@ import { issueEventCredential } from "@/lib/kyosoVc";
  * 合言葉を検証してVCを発行
  * Updated to use 'keyword' instead of legacy 'passphrase'
  */
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const session = await getServerSession(authOptions);
 

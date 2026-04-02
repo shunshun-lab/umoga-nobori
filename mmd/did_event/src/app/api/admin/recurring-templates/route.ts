@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { findNthWeekdayOfMonth } from "@/lib/recurring-events";
 
 /**
  * 繰り返しパターンに基づいて次のN回分の開催日を計算
@@ -94,33 +95,6 @@ function calculateOccurrences(
   }
 
   return dates;
-}
-
-/**
- * 指定された月の第N週の指定曜日を取得
- */
-function findNthWeekdayOfMonth(
-  startDate: Date,
-  dayOfWeek: number,
-  weekOfMonth: number,
-  monthsAhead: number = 0
-): Date {
-  const date = new Date(startDate);
-  date.setMonth(date.getMonth() + monthsAhead);
-  date.setDate(1);
-
-  // 月初が何曜日か
-  const firstDayOfMonth = date.getDay();
-
-  // 目的の曜日の第1週目の日付を計算
-  let daysUntilTarget = dayOfWeek - firstDayOfMonth;
-  if (daysUntilTarget < 0) daysUntilTarget += 7;
-
-  // 第N週目の日付を計算
-  const targetDate = 1 + daysUntilTarget + (weekOfMonth - 1) * 7;
-  date.setDate(targetDate);
-
-  return date;
 }
 
 /**

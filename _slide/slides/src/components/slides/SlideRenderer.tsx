@@ -43,12 +43,12 @@ function SlideFrame({
   const bgAlt = theme.backgroundAlt ?? theme.background;
   const hasImage = !!slideStyle?.backgroundImage;
   const overlay = slideStyle?.overlayOpacity ?? 0.65;
-  const align = slideStyle?.align ?? "left";
+  const centered = className.includes("items-center") || slideStyle?.align === "center";
 
   return (
     <div
       className={`relative flex h-full w-full flex-col justify-center overflow-hidden ${
-        align === "center" ? "items-center text-center" : ""
+        centered ? "items-center text-center" : ""
       } ${className}`}
       style={{
         background: hasImage
@@ -68,7 +68,7 @@ function SlideFrame({
       )}
       <div
         className={`relative z-10 flex h-full w-full flex-col justify-center px-5 py-4 sm:px-16 sm:py-12 ${
-          align === "center" ? "items-center text-center" : ""
+          centered ? "items-center text-center" : ""
         }`}
       >
         {children}

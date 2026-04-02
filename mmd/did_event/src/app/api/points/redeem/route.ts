@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getUserBalance } from "@/lib/point-system";
+
+// プラットフォームコミュニティ: グローバルスコープの操作の帰属先 (公理 A6)
+const PLATFORM_COMMUNITY_ID = process.env.PLATFORM_COMMUNITY_ID || "community-1766217011278";
 
 /**
  * ポイント交換処理
@@ -40,13 +44,19 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Out of stock" }, { status: 400 });
         }
 
-        if (user.points < item.points) {
-            return NextResponse.json({ error: "Insufficient points" }, { status: 400 });
+        // 公理 A3: spend(u, c, n) ⟹ bal(u, c) ≥ n
+        // Item はプラットフォーム共通なので c_platform の残高でチェック
+        const redeemCommunityId = body.communityId || PLATFORM_COMMUNITY_ID;
+        const communityBalance = await getUserBalance(user.id, redeemCommunityId);
+        if (communityBalance < item.points) {
+            return NextResponse.json({
+                error: "Insufficient points",
+                detail: { have: communityBalance, need: item.points, communityId: redeemCommunityId },
+            }, { status: 400 });
         }
 
-        // トランザクションでポイント消費、在庫減少、履歴記録を実行
         const result = await prisma.$transaction(async (tx: typeof prisma) => {
-            // 1. ポイント消費
+            // 1. ポイント消費 (User.points キャッシュ更新)
             const updatedUser = await tx.user.update({
                 where: { id: user.id },
                 data: { points: { decrement: item.points } },
@@ -58,13 +68,13 @@ export async function POST(req: NextRequest) {
                 data: { stock: { decrement: 1 } },
             });
 
-            // 3. 履歴記録
+            // 3. 履歴記録 (コミュニティスコープ)
             await tx.pointTransaction.create({
                 data: {
                     userId: user.id,
                     amount: -item.points,
                     description: `アイテム交換: ${item.name}`,
-                    communityId: user.personalCommunityId || "fallback-system",
+                    communityId: redeemCommunityId,
                     createdByUserId: user.id,
                 },
             });

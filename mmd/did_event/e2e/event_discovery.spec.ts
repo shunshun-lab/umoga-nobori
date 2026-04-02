@@ -4,6 +4,11 @@ import { loginAsTestUser } from './helpers/auth';
 test.describe('Events Flow', () => {
   test.setTimeout(120000); // loginAsTestUser 用
 
+  async function goToPublicEventsBrowse(page: import('@playwright/test').Page) {
+    await page.goto('/events');
+    await page.getByRole('button', { name: 'イベント一覧' }).click();
+  }
+
   test.beforeEach(async ({ page }) => {
     await page.route('**/api/events*', async route => {
       if (route.request().method() === 'GET') {
@@ -15,23 +20,24 @@ test.describe('Events Flow', () => {
   });
 
   test('should display events list', async ({ page }) => {
-    await page.goto('/events');
+    await goToPublicEventsBrowse(page);
 
-    await expect(page.locator('h1')).toContainText('イベント一覧');
-    await expect(page.locator('button:has-text("すべて")')).toBeVisible();
-    await expect(page.locator('button:has-text("開催予定")')).toBeVisible();
-    await expect(page.locator('button:has-text("過去のイベント")')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'すべて' })).toBeVisible();
+    await expect(page.getByRole('button', { name: '開催予定' })).toBeVisible();
+    await expect(page.getByRole('button', { name: '過去のイベント' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'イベントが見つかりません' })).toBeVisible();
   });
 
   test('should filter events', async ({ page }) => {
-    await page.goto('/events');
+    await goToPublicEventsBrowse(page);
 
     // 「開催予定」フィルターをクリック
     await page.getByRole('button', { name: '開催予定' }).click();
 
-    // フィルターがアクティブになることを確認（indigo）
+    // アクティブなフィルタは白背景 + shadow（セグメントUI）
     const upcomingButton = page.getByRole('button', { name: '開催予定' });
-    await expect(upcomingButton).toHaveClass(/bg-indigo-600/);
+    await expect(upcomingButton).toHaveClass(/bg-white/);
+    await expect(upcomingButton).toHaveClass(/shadow-sm/);
   });
 
   test('should navigate to event detail', async ({ page }) => {
@@ -58,7 +64,7 @@ test.describe('Events Flow', () => {
         await route.continue();
       }
     });
-    await page.goto('/events');
+    await goToPublicEventsBrowse(page);
 
     await page.waitForSelector('a[href*="/events/event-e2e-1"]', { timeout: 10000 });
     await page.locator('a[href*="/events/event-e2e-1"]').first().click();
@@ -75,7 +81,7 @@ test.describe('Events Flow', () => {
     const futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + 7);
     await page.fill('input[name="startAt"]', futureDate.toISOString().slice(0, 16));
-    const createBtn = page.getByRole('button', { name: /イベントを作成/ });
+    const createBtn = page.getByRole('button', { name: /イベントを作成する/ });
     await createBtn.scrollIntoViewIfNeeded();
     await createBtn.click({ force: true });
     await expect(page).toHaveURL(/\/events\/.+/);
@@ -85,9 +91,10 @@ test.describe('Events Flow', () => {
   test('should validate required fields when creating event', async ({ page }) => {
     await loginAsTestUser(page);
     await page.goto('/events/create');
+    await page.getByText('全て展開').click();
 
     // タイトルと開始日時を入力せずに送信
-    const createBtn = page.getByRole('button', { name: /イベントを作成/ });
+    const createBtn = page.getByRole('button', { name: /イベントを作成する/ });
     await createBtn.scrollIntoViewIfNeeded();
     await createBtn.click({ force: true });
 

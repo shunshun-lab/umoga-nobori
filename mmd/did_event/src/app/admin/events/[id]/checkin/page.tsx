@@ -6,13 +6,16 @@ import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import Header from "@/components/Header";
+import PageLoading from "@/components/PageLoading";
 import { Download, QrCode, X } from "lucide-react";
 import ParticipantQRScanner from "@/components/events/ParticipantQRScanner";
+import { useTranslation } from "@/lib/i18n/context";
 
 export default function CheckinPage() {
     const params = useParams();
     const router = useRouter();
     const { data: session, status } = useSession();
+    const { t } = useTranslation();
     const [participants, setParticipants] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [eventTitle, setEventTitle] = useState("");
@@ -22,14 +25,12 @@ export default function CheckinPage() {
 
     const fetchEventAndParticipants = useCallback(async () => {
         try {
-            // イベント情報取得
             const eventRes = await fetch(`/api/events/${params.id}`);
             if (eventRes.ok) {
                 const eventData = await eventRes.json();
                 setEventTitle(eventData.title);
             }
 
-            // 参加者一覧取得
             const res = await fetch(`/api/events/${params.id}/participants`);
             if (res.ok) {
                 const data = await res.json();
@@ -46,7 +47,7 @@ export default function CheckinPage() {
 
     useEffect(() => {
         if (status === "unauthenticated") {
-            router.push("/auth/signin");
+            router.push(`/auth/signin?callbackUrl=${encodeURIComponent(window.location.pathname)}`);
             return;
         }
 
@@ -68,16 +69,15 @@ export default function CheckinPage() {
 
             if (res.ok) {
                 const data = await res.json();
-                alert(`チェックイン完了！\n${data.pointsAwarded}ポイント付与されました。`);
-                // リストを更新
+                alert(t("admin.checkin.checkinSuccess", { points: data.pointsAwarded }));
                 fetchEventAndParticipants();
             } else {
-                const error = await res.json();
-                alert(`エラー: ${error.error}`);
+                const error = await res.json().catch(() => ({}));
+                alert(t("admin.checkin.error", { error: error.error || "不明なエラー" }));
             }
         } catch (error) {
             console.error("Error checking in:", error);
-            alert("エラーが発生しました");
+            alert(t("admin.checkin.errorGeneric"));
         } finally {
             setProcessingId(null);
         }
@@ -98,33 +98,32 @@ export default function CheckinPage() {
                 a.remove();
                 window.URL.revokeObjectURL(url);
             } else {
-                alert("エクスポートに失敗しました");
+                alert(t("admin.checkin.exportFailed"));
             }
         } catch (error) {
             console.error("Error exporting:", error);
-            alert("エクスポートに失敗しました");
+            alert(t("admin.checkin.exportFailed"));
         } finally {
             setIsExporting(false);
         }
     };
 
     const handleQRScan = async (userId: string) => {
-        // ユーザーIDから参加者を見つける
         const participant = participants.find(p => p.user.id === userId);
 
         if (participant) {
-            if (participant.status === "completed") {
-                alert("この参加者は既にチェックイン済みです");
+            if (participant.status === "ATTENDED" || participant.status === "COMPLETED") {
+                alert(t("admin.checkin.alreadyCheckedIn"));
             } else {
                 handleCheckin(participant.id);
             }
         } else {
-            alert("この参加者は見つかりませんでした");
+            alert(t("admin.checkin.participantNotFound"));
         }
     };
 
     if (loading) {
-        return <div className="p-8 text-center">読み込み中...</div>;
+        return <PageLoading showHeader={false} />;
     }
 
     return (
@@ -136,11 +135,11 @@ export default function CheckinPage() {
                         href={`/events/${params.id}`}
                         className="text-blue-600 hover:underline mb-2 inline-block"
                     >
-                        ← イベント詳細に戻る
+                        {t("admin.checkin.backToEvent")}
                     </Link>
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <h1 className="text-2xl font-bold text-gray-900">
-                            チェックイン管理: {eventTitle}
+                            {t("admin.checkin.title", { title: eventTitle })}
                         </h1>
                         <div className="flex gap-2">
                             <button
@@ -148,7 +147,7 @@ export default function CheckinPage() {
                                 className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                             >
                                 <QrCode className="w-4 h-4" />
-                                QRスキャン
+                                {t("admin.checkin.qrScan")}
                             </button>
                             <button
                                 onClick={handleExportCSV}
@@ -156,12 +155,12 @@ export default function CheckinPage() {
                                 className="inline-flex items-center gap-2 bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
                             >
                                 <Download className="w-4 h-4" />
-                                {isExporting ? "エクスポート中..." : "CSVダウンロード"}
+                                {isExporting ? t("admin.checkin.exporting") : t("admin.checkin.csvDownload")}
                             </button>
                         </div>
                     </div>
                     <p className="text-sm text-gray-500 mt-2">
-                        参加者数: {participants.length}名 / チェックイン済み: {participants.filter(p => p.status === "completed").length}名
+                        {t("admin.checkin.participantCount", { count: participants.length })} / {t("admin.checkin.checkedInCount", { count: participants.filter(p => p.status === "ATTENDED" || p.status === "COMPLETED").length })}
                     </p>
                 </div>
 
@@ -170,13 +169,13 @@ export default function CheckinPage() {
                         <thead className="bg-gray-50">
                             <tr>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    参加者
+                                    {t("admin.checkin.colParticipant")}
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    ステータス
+                                    {t("admin.checkin.colStatus")}
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    アクション
+                                    {t("admin.checkin.colAction")}
                                 </th>
                             </tr>
                         </thead>
@@ -204,7 +203,7 @@ export default function CheckinPage() {
                                             </div>
                                             <div className="ml-4">
                                                 <div className="text-sm font-medium text-gray-900">
-                                                    {p.user.name || "匿名ユーザー"}
+                                                    {p.user.name || t("admin.checkin.anonymous")}
                                                 </div>
                                                 <div className="text-sm text-gray-500">
                                                     {p.user.email}
@@ -214,25 +213,25 @@ export default function CheckinPage() {
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <span
-                                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${p.status === "completed"
+                                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${p.status === "ATTENDED" || p.status === "COMPLETED"
                                                 ? "bg-green-100 text-green-800"
                                                 : "bg-yellow-100 text-yellow-800"
                                                 }`}
                                         >
-                                            {p.status === "completed" ? "完了済み" : "参加予定"}
+                                            {p.status === "ATTENDED" || p.status === "COMPLETED" ? t("admin.checkin.checkedIn") : t("admin.checkin.scheduled")}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        {p.status !== "completed" ? (
+                                        {p.status !== "ATTENDED" && p.status !== "COMPLETED" ? (
                                             <button
                                                 onClick={() => handleCheckin(p.id)}
                                                 disabled={processingId === p.id}
                                                 className="text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-md disabled:bg-gray-400"
                                             >
-                                                {processingId === p.id ? "処理中..." : "チェックイン"}
+                                                {processingId === p.id ? t("admin.checkin.processing") : t("admin.checkin.checkinButton")}
                                             </button>
                                         ) : (
-                                            <span className="text-gray-400">処理完了</span>
+                                            <span className="text-gray-400">{t("admin.checkin.completed")}</span>
                                         )}
                                     </td>
                                 </tr>
@@ -240,7 +239,7 @@ export default function CheckinPage() {
                             {participants.length === 0 && (
                                 <tr>
                                     <td colSpan={3} className="px-6 py-4 text-center text-gray-500">
-                                        参加者がいません
+                                        {t("admin.checkin.noParticipants")}
                                     </td>
                                 </tr>
                             )}
@@ -258,4 +257,3 @@ export default function CheckinPage() {
         </div>
     );
 }
-

@@ -58,7 +58,7 @@ export async function GET(req: NextRequest) {
       prisma.participant.count({
         where: {
           eventId: { in: eventIds },
-          status: "joined",
+          status: "JOINED",
         },
       }),
 

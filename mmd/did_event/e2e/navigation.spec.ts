@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { loginAsTestUser } from './helpers/auth';
+import { openGuestLandingAbout } from './helpers/landing';
 
 test.describe('Navigation', () => {
   test.setTimeout(120000); // loginAsTestUser 使用テスト用
@@ -7,8 +8,10 @@ test.describe('Navigation', () => {
   test('should navigate to home page', async ({ page }) => {
     await page.goto('/');
 
-    await expect(page.locator('h1')).toContainText('出会いを');
-    await expect(page.locator('a:has-text("ログイン")')).toBeVisible();
+    await expect(page.getByRole('link', { name: 'ログイン' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'イベント一覧' }).first()).toBeVisible();
+    await openGuestLandingAbout(page);
+    await expect(page.getByText(/出会いを/)).toBeVisible();
   });
 
   test('should navigate between pages using header', async ({ page }) => {

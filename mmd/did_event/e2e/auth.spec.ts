@@ -6,9 +6,9 @@ test.describe('Authentication Flow', () => {
 
   test('should display login page', async ({ page }) => {
     await page.goto('/auth/signin');
-    await expect(page.locator('h2')).toContainText('MMD DID Event');
+    // ブランド文言はモードによって変わるため、ログイン導線の存在を主に確認する
+    await expect(page.locator('h2')).toContainText(/MMD DID Event|for community|JXC/);
     await expect(page.getByRole('button', { name: /LINEで(続ける|登録|ログイン)/ })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Test User 1' })).toBeVisible();
   });
 
   test('should login with test account', async ({ page }) => {

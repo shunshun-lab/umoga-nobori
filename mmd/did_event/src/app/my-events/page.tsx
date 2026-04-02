@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Link from "next/link";
+import { useTranslation } from "@/lib/i18n/context";
 
 interface Event {
     id: string;
@@ -22,12 +23,13 @@ interface Event {
 export default function MyEventsPage() {
     const { data: session, status } = useSession();
     const router = useRouter();
+    const { t } = useTranslation();
     const [events, setEvents] = useState<Event[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (status === "unauthenticated") {
-            router.push("/auth/signin");
+            router.push(`/auth/signin?callbackUrl=${encodeURIComponent(window.location.pathname)}`);
         } else if (status === "authenticated") {
             fetchMyEvents();
         }
@@ -65,15 +67,15 @@ export default function MyEventsPage() {
 
             <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <div className="text-center mb-12">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">マイカレンダー</h1>
-                    <p className="text-gray-500">参加予定のイベントと過去の履歴を一括管理</p>
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">{t("events.myEvents.title")}</h1>
+                    <p className="text-gray-500">{t("events.myEvents.subtitle")}</p>
                 </div>
 
                 {/* Upcoming Events Section (Custom Display Matching Public Profile) */}
                 <section className="mb-16">
                     <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
                         <span className="text-2xl">🚀</span>
-                        これからのイベント (参加予定)
+                        {t("events.myEvents.upcoming")}
                     </h2>
 
                     {upcomingEvents.length === 0 ? (
@@ -81,10 +83,10 @@ export default function MyEventsPage() {
                             <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-500 text-2xl">
                                 📅
                             </div>
-                            <h3 className="text-lg font-bold text-gray-900 mb-2">予定されているイベントはありません</h3>
-                            <p className="text-gray-500 mb-6 text-sm">気になるイベントを見つけて、参加登録しましょう！</p>
+                            <h3 className="text-lg font-bold text-gray-900 mb-2">{t("events.myEvents.noUpcoming")}</h3>
+                            <p className="text-gray-500 mb-6 text-sm">{t("events.myEvents.noUpcomingHint")}</p>
                             <Link href="/events" className="inline-block bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-full font-bold shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all">
-                                イベントを探す
+                                {t("events.myEvents.findEvents")}
                             </Link>
                         </div>
                     ) : (
@@ -118,7 +120,7 @@ export default function MyEventsPage() {
                                                     {event.format === "online" ? "ONLINE" : event.format === "offline" ? "OFFLINE" : "HYBRID"}
                                                 </span>
                                                 {event.ownerId === session?.user?.id && (
-                                                    <span className="bg-blue-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">主催</span>
+                                                    <span className="bg-blue-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">{t("events.myEvents.hosting")}</span>
                                                 )}
                                             </div>
 
@@ -134,12 +136,12 @@ export default function MyEventsPage() {
 
                                             <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-gray-100/50">
                                                 <Link href={`/events/${event.id}`} className="text-sm font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1">
-                                                    詳細を見る <span className="text-xs">→</span>
+                                                    {t("events.myEvents.viewDetail")} <span className="text-xs">→</span>
                                                 </Link>
                                                 {(event.format === "online" || event.format === "hybrid") && event.onlineUrl && (
                                                     <a href={event.onlineUrl} target="_blank" rel="noopener noreferrer" className="ml-auto flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white text-xs font-bold px-4 py-2 rounded-full transition-colors shadow-sm">
                                                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
-                                                        参加リンク (Meet)
+                                                        {t("events.myEvents.meetLink")}
                                                     </a>
                                                 )}
                                             </div>
@@ -155,7 +157,7 @@ export default function MyEventsPage() {
                 {pastEvents.length > 0 && (
                     <section>
                         <h2 className="text-lg font-bold text-gray-500 mb-6 uppercase tracking-wider pl-2 border-l-4 border-gray-300">
-                            過去のイベント履歴
+                            {t("events.myEvents.past")}
                         </h2>
                         <div className="space-y-4">
                             {pastEvents.map((event) => (
@@ -173,7 +175,7 @@ export default function MyEventsPage() {
                                         <p className="text-xs text-gray-500 truncate">{event.location || event.format}</p>
                                     </div>
                                     <div className="bg-gray-100 text-gray-500 text-[10px] px-2 py-1 rounded-full font-bold">
-                                        参加済
+                                        {t("events.myEvents.attended")}
                                     </div>
                                 </Link>
                             ))}

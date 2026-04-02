@@ -1,11 +1,15 @@
 // src/app/api/test/seed/route.ts
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireInternalSecret } from "@/lib/internal-guard";
 
 /**
  * テストデータ投入
  */
-export async function POST() {
+export async function POST(req: NextRequest) {
+  const guard = requireInternalSecret(req);
+  if (guard) return guard;
+
   try {
     // テストユーザー作成
     const user = await prisma.user.upsert({

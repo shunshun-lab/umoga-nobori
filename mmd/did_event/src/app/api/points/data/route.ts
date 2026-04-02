@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getPointsByUserId } from "@/lib/sheets";
+import { getUserBalance } from "@/lib/point-system";
 
 export async function GET(req: NextRequest) {
     try {
@@ -44,30 +45,61 @@ export async function GET(req: NextRequest) {
             });
         }
 
-        // Real DB Mode (Prisma)
-        const user = await prisma.user.findUnique({
-            where: session.user.id ? { id: session.user.id } : { email: session.user.email as string },
-            include: {
-                pointTransactions: {
-                    orderBy: { createdAt: "desc" },
-                    take: 20,
+        // Real DB Mode (Prisma) — 並列化で高速化
+        const { searchParams } = new URL(req.url);
+        const cursor = searchParams.get("cursor");
+        const take = 50;
+        const userId = session.user.id || "";
+        const userWhere = session.user.id ? { id: session.user.id } : { email: session.user.email as string };
+
+        // User+Transactions と Items を並列取得
+        const [user, items] = await Promise.all([
+            prisma.user.findUnique({
+                where: userWhere,
+                include: {
+                    pointTransactions: {
+                        orderBy: { createdAt: "desc" },
+                        take: take + 1,
+                        ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+                        include: {
+                            community: { select: { name: true } },
+                        },
+                    },
                 },
-            },
-        });
+            }),
+            prisma.item.findMany({
+                orderBy: { points: "asc" },
+                where: { stock: { gt: 0 } },
+            }),
+        ]);
 
         if (!user) {
             return NextResponse.json({ error: "User not found" }, { status: 404 });
         }
 
-        const items = await prisma.item.findMany({
-            orderBy: { points: "asc" },
-            where: { stock: { gt: 0 } },
-        });
+        const balance = await getUserBalance(user.id);
+
+        const hasMore = user.pointTransactions.length > take;
+        const rawTransactions = hasMore ? user.pointTransactions.slice(0, take) : user.pointTransactions;
+        const nextCursor = hasMore ? rawTransactions[rawTransactions.length - 1].id : null;
+
+        // createdByUser を一括取得（N+1防止）
+        const createdByUserIds = [...new Set(rawTransactions.map((tx) => tx.createdByUserId).filter((id): id is string => id != null))];
+        const createdByUsers = createdByUserIds.length > 0
+            ? await prisma.user.findMany({ where: { id: { in: createdByUserIds } }, select: { id: true, name: true, image: true } })
+            : [];
+        const createdByUserMap = new Map(createdByUsers.map((u) => [u.id, { name: u.name, image: u.image }]));
+
+        const transactions = rawTransactions.map((tx) => ({
+            ...tx,
+            createdByUser: tx.createdByUserId ? (createdByUserMap.get(tx.createdByUserId) ?? null) : null,
+        }));
 
         return NextResponse.json({
-            points: user.points,
-            transactions: user.pointTransactions,
+            points: balance,
+            transactions,
             items,
+            nextCursor,
         });
     } catch (error) {
         console.error("Error fetching points data:", error);

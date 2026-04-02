@@ -3,14 +3,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { hasCommunityPermission } from "@/lib/community-auth";
 
 /**
  * イベントの参加者詳細リストを取得（主催者のみ）
  */
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const session = await getServerSession(authOptions);
 
@@ -35,8 +34,12 @@ export async function GET(
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
 
-    // 主催者またはAdminのみアクセス可能
-    if (event.ownerId !== user.id && !user.isAdmin) {
+    // 主催者・プラットフォームAdmin・コミュニティAdmin（MANAGE_EVENTS権限）のみアクセス可能
+    let canAccess = event.ownerId === user.id || !!user.isAdmin;
+    if (!canAccess && event.organizerCommunityId) {
+      canAccess = await hasCommunityPermission(user.id, event.organizerCommunityId, "MANAGE_EVENTS");
+    }
+    if (!canAccess) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -54,6 +57,12 @@ export async function GET(
             image: true,
             lineUserId: true,
             did: true,
+          },
+        },
+        answers: {
+          select: {
+            questionId: true,
+            value: true,
           },
         },
       },

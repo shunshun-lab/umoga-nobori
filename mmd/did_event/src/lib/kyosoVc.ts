@@ -216,3 +216,60 @@ export async function issueEventCredential(user: any, event: any) {
 
   return job;
 }
+
+/**
+ * Fan Membership VC を発行
+ * RoleGrant が ACTIVE になったときに呼ぶ。
+ */
+export async function issueMembershipCredential(params: {
+  user: { id: string; name: string | null; did?: string | null };
+  community: { id: string; name: string };
+  role: { id: string; name: string };
+  grantedAt: Date;
+  expiresAt?: Date | null;
+}) {
+  const claims = {
+    type: "FanMembershipCredential",
+    communityId: params.community.id,
+    communityName: params.community.name,
+    roleId: params.role.id,
+    roleName: params.role.name,
+    holderId: params.user.id,
+    holderName: params.user.name,
+    grantedAt: params.grantedAt.toISOString(),
+    expiresAt: params.expiresAt?.toISOString() ?? null,
+    issuedAt: new Date().toISOString(),
+  };
+
+  if (params.user.did) {
+    return issueEventVcToDid(params.user.did, claims);
+  }
+  return issueEventVcToUser({ claims });
+}
+
+/**
+ * Skill VC を発行
+ * スキルが確認 (confirmed) されたときに呼ぶ。
+ */
+export async function issueSkillCredential(params: {
+  user: { id: string; name: string | null; did?: string | null };
+  skill: string;
+  category?: string | null;
+  confirmedBy?: { id: string; name: string | null };
+}) {
+  const claims = {
+    type: "SkillCredential",
+    holderId: params.user.id,
+    holderName: params.user.name,
+    skill: params.skill,
+    category: params.category ?? null,
+    confirmedById: params.confirmedBy?.id ?? null,
+    confirmedByName: params.confirmedBy?.name ?? null,
+    issuedAt: new Date().toISOString(),
+  };
+
+  if (params.user.did) {
+    return issueEventVcToDid(params.user.did, claims);
+  }
+  return issueEventVcToUser({ claims });
+}

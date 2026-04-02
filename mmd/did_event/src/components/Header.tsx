@@ -35,13 +35,13 @@ export default function Header() {
   }, []);
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40 relative">
+    <header className="main-header bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40 relative">
       <div className="flex items-center h-16 w-full px-4">
         {/* Left: Hamburger (mobile only) */}
-        <div className="flex items-center gap-2 min-w-0 flex-1 relative z-10">
+        <div className="flex items-center gap-2 min-w-0 flex-1">
           <button
             onClick={toggleSidebar}
-            className="md:hidden flex-shrink-0 p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            className="md:hidden flex-shrink-0 p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors relative z-10"
             aria-label="メニューを開く"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -50,16 +50,14 @@ export default function Header() {
           </button>
         </div>
 
-        {/* Center: ロゴ（アイコンのみ）→ タイムライン（スマホでもタップ可能に z-10 で前面に） */}
-        <div className="absolute left-1/2 top-0 bottom-0 -translate-x-1/2 flex items-center justify-center pointer-events-none [&>a]:pointer-events-auto z-10">
-          <Link
-            href={status === "authenticated" ? "/timeline" : "/"}
-            className="flex items-center justify-center min-h-[44px] min-w-[44px] px-2 py-1.5 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition-colors"
-            aria-label="タイムラインへ"
-          >
-            <img src="/logo-100dao.png" alt="100万人DAO" className="h-8 w-8 object-contain" />
-          </Link>
-        </div>
+        {/* Center: ロゴ（アイコンのみ）→ タイムライン（スマホでもタップ可能に z-20 で前面に） */}
+        <Link
+          href={status === "authenticated" ? "/timeline" : "/"}
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex items-center justify-center min-h-[44px] min-w-[44px] px-2 py-1.5 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition-colors"
+          aria-label="タイムラインへ"
+        >
+          <img src="/logo-100dao.png" alt="100万人DAO" className="h-8 w-8 object-contain" />
+        </Link>
 
         {/* Right: Icons */}
         <div className="flex-shrink-0 flex items-center gap-2 md:gap-4 ml-auto relative z-10">

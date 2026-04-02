@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Header from "@/components/Header";
+import PageLoading from "@/components/PageLoading";
 import ShareButton from "@/components/ShareButton";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -135,7 +136,7 @@ export default function ContestDetailPage() {
         }
     };
 
-    if (loading) return <div className="p-8 text-center">読み込み中...</div>;
+    if (loading) return <PageLoading />;
     if (!contest) return <div className="p-8 text-center">コンテストが見つかりません</div>;
 
     const isOpen = contest.status === "OPEN";

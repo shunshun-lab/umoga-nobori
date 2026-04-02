@@ -8,54 +8,108 @@ import { hasCommunityPermission } from "@/lib/community-auth";
 /**
  * イベント詳細取得
  */
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
-    const event = await prisma.event.findUnique({
-      where: { id: params.id },
-      include: {
-        owner: {
-          select: {
-            id: true,
-            name: true,
-            image: true,
+    // Session と Event を並列取得
+    const [event, session] = await Promise.all([
+      prisma.event.findUnique({
+        where: { id: params.id },
+        include: {
+          owner: {
+            select: { id: true, name: true, image: true },
           },
-        },
-        organizerCommunity: {
-          select: {
-            id: true,
-            name: true,
-            hpUrl: true,
-            imageUrl: true,
+          organizerCommunity: {
+            select: { id: true, name: true, hpUrl: true, imageUrl: true },
           },
-        },
-        participants: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                image: true,
-              },
+          // participants は _count のみ（全件includeは重い）
+          // 詳細は /api/events/[id]/participants で別途取得
+          participants: {
+            select: {
+              id: true,
+              userId: true,
+              status: true,
+              user: { select: { id: true, name: true, image: true } },
             },
+            take: 20, // 最初の20件だけ（一覧表示用）
+          },
+          coOrganizers: {
+            select: { id: true, name: true, image: true },
+          },
+          coOrganizerCommunities: {
+            select: { id: true, name: true, imageUrl: true },
+          },
+          _count: {
+            select: { participants: true },
+          },
+          tickets: {
+            select: { id: true, name: true, price: true, limit: true, description: true },
+          },
+          questions: {
+            select: { id: true, type: true, label: true, options: true, required: true, order: true },
+            orderBy: { order: "asc" },
+          },
+          allowedRoles: {
+            select: { id: true, name: true, slug: true, color: true },
           },
         },
-        _count: {
-          select: {
-            participants: true,
-          },
-        },
-        tickets: true,
-      },
-    });
+      }),
+      getServerSession(authOptions),
+    ]);
 
     if (!event) {
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
 
-    return NextResponse.json(event);
+    // 管理者判定をサーバーサイドで（クライアントでの追加API呼び出しを削減）
+    let isOwnerOrAdmin = false;
+    // isOrganizer: 主催者・共催者（参加ボタンを非表示にする対象）
+    let isOrganizer = false;
+    if (session?.user?.id) {
+      const userId = session.user.id;
+      const isOwner = event.ownerId === userId;
+      const isCoOrganizer = event.coOrganizers?.some((co: { id: string }) => co.id === userId) ?? false;
+      const isPlatformAdmin = !!(session.user as any).isAdmin;
+
+      isOrganizer = isOwner || isCoOrganizer;
+      isOwnerOrAdmin = isOrganizer || isPlatformAdmin;
+
+      if (!isOwnerOrAdmin && event.organizerCommunityId) {
+        isOwnerOrAdmin = await hasCommunityPermission(userId, event.organizerCommunityId, "MANAGE_EVENTS");
+      }
+    }
+
+    // Visibility アクセス制御
+    // public: 誰でもアクセス可
+    // unlisted: URLを知っていれば誰でもアクセス可（一覧に出ないだけ）
+    // private: オーナー/共催者/管理者/allowedRoles メンバーのみ
+    const visibility = (event as any).visibility || "public";
+    if (visibility === "private" && !isOwnerOrAdmin) {
+      // allowedRoles のメンバーかチェック
+      const allowedRoleIds = (event as any).allowedRoles?.map((r: { id: string }) => r.id) ?? [];
+      let hasAccess = false;
+
+      if (session?.user?.id && allowedRoleIds.length > 0) {
+        const [memberRole, grantedRole] = await Promise.all([
+          prisma.communityMember.findFirst({
+            where: { userId: session.user.id, roleId: { in: allowedRoleIds } },
+          }),
+          prisma.roleGrant.findFirst({
+            where: { userId: session.user.id, roleId: { in: allowedRoleIds }, status: "ACTIVE" },
+          }),
+        ]);
+        hasAccess = !!(memberRole || grantedRole);
+      }
+
+      if (!hasAccess) {
+        return NextResponse.json(
+          { error: "このイベントは招待制です。アクセス権限がありません。", code: "PRIVATE_EVENT" },
+          { status: 403 }
+        );
+      }
+    }
+
+    return NextResponse.json({ ...event, isOwnerOrAdmin, isOrganizer });
   } catch (error) {
     console.error("Error fetching event:", error);
     return NextResponse.json(
@@ -68,10 +122,8 @@ export async function GET(
 /**
  * イベント更新
  */
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PATCH(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id && !session?.user?.email) {
@@ -109,62 +161,59 @@ export async function PATCH(
     // Whitelist allowed fields to prevent "Unknown argument" errors from relations or extra props
     const {
       title, description, imageUrl, location, format, onlineUrl, website,
-      capacity, isPublic, status, category, tags, keyword,
+      capacity, offlineCapacity, onlineCapacity, isPublic, status, category, tags, keyword,
       projectId, theme, concept, target, needs,
       venueTitle, venueLat, venueLng, venueAddress, googleMapsUrl,
       acceptedPaymentMethods, bankDetails,
       tickets, // Add tickets to destructured body
-      generateMeet // New field
+      questions, // Add questions (RegistrationQuestion) to destructured body
+      generateMeet, // New field
+      visibility, // "public" | "unlisted" | "private"
+      allowedRoleIds, // string[]
     } = body;
 
     let finalOnlineUrl = onlineUrl;
 
     // Google Meet automatic generation
     if (generateMeet && (format === "online" || format === "hybrid")) {
-      try {
-        const { createGoogleMeetEvent, createGoogleMeetEventWithToken } = await import("@/lib/google-calendar");
+      const { createGoogleCalendarEventWithMeet } = await import("@/lib/googleMeet");
+      const { createGoogleMeetEvent } = await import("@/lib/google-calendar");
+      const { getValidGoogleToken } = await import("@/lib/google-token");
 
-        // Get user's Google account for token
-        const account = await prisma.account.findFirst({
-          where: {
-            userId: user.id,
-            provider: "google"
-          }
-        });
+      const googleToken = await getValidGoogleToken(user.id);
+      const meetStartAt = body.startAt ? new Date(body.startAt) : event.startAt;
+      const meetEndAt = body.endAt ? new Date(body.endAt) : event.endAt || new Date(new Date(body.startAt || event.startAt).getTime() + 60 * 60 * 1000);
 
-        let meetResult: string | null = null;
-        if (account?.access_token) {
-          meetResult = await createGoogleMeetEventWithToken(
-            account.access_token,
-            title || event.title,
-            description || event.description || "",
-            body.startAt ? new Date(body.startAt) : event.startAt,
-            body.endAt ? new Date(body.endAt) : event.endAt || new Date(new Date(body.startAt || event.startAt).getTime() + 60 * 60 * 1000)
-          );
-        }
+      // user token → system token → service account の順で試行
+      let meetResult = await createGoogleCalendarEventWithMeet(
+        {
+          title: title || event.title,
+          description: description || event.description || "",
+          startAt: meetStartAt,
+          endAt: meetEndAt,
+        },
+        googleToken ?? undefined
+      );
 
-        // Fallback to service account if token fails or doesn't exist
-        if (!meetResult) {
-          meetResult = await createGoogleMeetEvent(
-            title || event.title,
-            description || event.description || "",
-            body.startAt ? new Date(body.startAt) : event.startAt,
-            body.endAt ? new Date(body.endAt) : event.endAt || new Date(new Date(body.startAt || event.startAt).getTime() + 60 * 60 * 1000)
-          );
-        }
+      if (!meetResult) {
+        meetResult = await createGoogleMeetEvent(title || event.title, description || event.description || "", meetStartAt, meetEndAt);
+      }
 
-        if (meetResult) {
-          finalOnlineUrl = meetResult;
-        }
-      } catch (meetErr) {
-        console.error("Failed to generate Meet for update:", meetErr);
+      if (meetResult) {
+        finalOnlineUrl = meetResult;
+      } else {
+        console.error("[Event Update] All Meet generation methods failed.");
       }
     }
 
     const updateData: any = {
       title, description, imageUrl, location, format, onlineUrl: finalOnlineUrl, website,
       capacity: capacity ? Number(capacity) : null,
-      isPublic, status, category, tags, keyword,
+      offlineCapacity: offlineCapacity != null ? Number(offlineCapacity) || null : undefined,
+      onlineCapacity: onlineCapacity != null ? Number(onlineCapacity) || null : undefined,
+      isPublic: visibility ? visibility === "public" : isPublic,
+      visibility,
+      status, category, tags, keyword,
       projectId: projectId || null,
       theme, concept, target, needs: needs ? (typeof needs === 'string' ? needs : JSON.stringify(needs)) : undefined,
       venueTitle, venueLat, venueLng, venueAddress, googleMapsUrl,
@@ -197,7 +246,26 @@ export async function PATCH(
         },
       });
 
-      // 2. Handle Tickets
+      // 2. Handle allowedRoles update
+      if (allowedRoleIds !== undefined) {
+        // Disconnect all existing, then connect new ones
+        await tx.event.update({
+          where: { id: params.id },
+          data: {
+            allowedRoles: { set: [] }, // disconnect all
+          },
+        });
+        if (allowedRoleIds.length > 0) {
+          await tx.event.update({
+            where: { id: params.id },
+            data: {
+              allowedRoles: { connect: allowedRoleIds.map((id: string) => ({ id })) },
+            },
+          });
+        }
+      }
+
+      // 3. Handle Tickets
       if (tickets && Array.isArray(tickets)) {
         // Get existing tickets
         const existingTickets = await tx.eventTicket.findMany({
@@ -248,6 +316,46 @@ export async function PATCH(
         }
       }
 
+      // 3. Handle Questions (RegistrationQuestion)
+      if (questions && Array.isArray(questions)) {
+        const existingQuestions = await tx.registrationQuestion.findMany({
+          where: { eventId: params.id },
+          select: { id: true, answers: { select: { id: true } } },
+        });
+
+        const existingQIds = existingQuestions.map(q => q.id);
+        const incomingQIds = questions.map((q: any) => q.id).filter((id: string) => id);
+
+        // Delete questions not in incoming list (cascade deletes answers)
+        const questionsToDelete = existingQuestions.filter(q => !incomingQIds.includes(q.id));
+        for (const q of questionsToDelete) {
+          await tx.registrationQuestion.delete({ where: { id: q.id } });
+        }
+
+        // Upsert questions
+        for (let i = 0; i < questions.length; i++) {
+          const q = questions[i];
+          const data = {
+            type: (q.type || "TEXT").toUpperCase(),
+            label: q.label,
+            options: q.options || [],
+            required: q.required || false,
+            order: i,
+          };
+
+          if (q.id && existingQIds.includes(q.id)) {
+            await tx.registrationQuestion.update({
+              where: { id: q.id },
+              data,
+            });
+          } else {
+            await tx.registrationQuestion.create({
+              data: { ...data, eventId: params.id },
+            });
+          }
+        }
+      }
+
       return event;
     });
 
@@ -263,6 +371,63 @@ export async function PATCH(
       console.error("Failed to sync updated event to sheets:", e);
     }
 
+    // 参加者への変更通知
+    if (body.notifyParticipants) {
+      try {
+        const participants = await prisma.participant.findMany({
+          where: { eventId: params.id, status: { notIn: ["REJECTED", "CANCELLED"] } },
+          include: { user: { select: { id: true, name: true } } },
+        });
+
+        const { sendNotification } = await import("@/lib/notifications");
+        const notifyMsg = body.notifyMessage || "イベント情報が更新されました";
+
+        for (const p of participants) {
+          try {
+            await sendNotification(
+              p.userId,
+              "event_message",
+              `「${updatedEvent.title}」の情報が更新されました`,
+              notifyMsg,
+              { eventId: params.id, link: `/events/${params.id}`, actorUserId: user.id }
+            );
+          } catch (notifyErr) {
+            console.error(`Failed to notify participant ${p.userId}:`, notifyErr);
+          }
+        }
+        console.log(`[EventUpdate] Notified ${participants.length} participants about changes`);
+      } catch (notifyErr) {
+        console.error("[EventUpdate] Failed to send update notifications:", notifyErr);
+      }
+    }
+
+    // タイトルまたは説明が変更された場合、短縮サマリーを再生成（fire-and-forget）
+    if (title !== undefined || description !== undefined) {
+      (async () => {
+        try {
+          const eventTitle = title || updatedEvent.title;
+          const eventDesc = (description || updatedEvent.description || "").replace(/<[^>]*>?/gm, "").trim();
+          const summaryText = `${eventTitle}\n${eventDesc}`.slice(0, 1000);
+          const { openai } = await import("@/lib/openai");
+          const completion = await openai.chat.completions.create({
+            model: "gpt-4o-mini",
+            messages: [
+              { role: "system", content: "あなたはイベント告知の要約アシスタントです。与えられたイベント情報を50文字以内で魅力的に要約してください。絵文字を1-2個使い、参加したくなるような簡潔なキャッチコピーにしてください。URLは含めないでください。" },
+              { role: "user", content: summaryText },
+            ],
+            max_tokens: 100,
+            temperature: 0.7,
+          });
+          const summary = completion.choices?.[0]?.message?.content?.trim();
+          if (summary) {
+            await prisma.event.update({ where: { id: params.id }, data: { shortSummary: summary } });
+          }
+        } catch (e) {
+          console.error("[Event Update] Short summary generation failed:", e);
+        }
+      })();
+    }
+
     return NextResponse.json(updatedEvent);
   } catch (error: any) {
     console.error("Error updating event:", error);
@@ -276,10 +441,8 @@ export async function PATCH(
 /**
  * イベント削除
  */
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id && !session?.user?.email) {

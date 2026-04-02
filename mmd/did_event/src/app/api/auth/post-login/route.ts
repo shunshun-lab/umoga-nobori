@@ -114,11 +114,23 @@ export async function POST(req: NextRequest) {
         where: { name: defaultCommunityName }
       });
 
-      if (community) {
-        // Check membership
+      // Upsert community to avoid race-condition duplicates
+      const targetCommunity = community ?? await prisma.community.upsert({
+        where: { slug: "100-man-dao" },
+        update: {},
+        create: {
+          name: defaultCommunityName,
+          slug: "100-man-dao",
+          description: "初期コミュニティ",
+          hpUrl: "https://mmdao.org",
+        } as any,
+      });
+
+      // Ensure membership exists; handle P2002 (unique constraint) from concurrent requests
+      try {
         const membership = await prisma.communityMember.findUnique({
           where: {
-            userId_communityId: { userId, communityId: community.id }
+            userId_communityId: { userId, communityId: targetCommunity.id }
           }
         });
 
@@ -126,30 +138,18 @@ export async function POST(req: NextRequest) {
           await prisma.communityMember.create({
             data: {
               userId,
-              communityId: community.id,
+              communityId: targetCommunity.id,
               role: "MEMBER"
             }
           });
           console.log(`[Post-Login] User ${userId} joined ${defaultCommunityName}`);
         }
-      } else {
-        // Create if not exists (Safety fallback)
-        const newCommunity = await prisma.community.create({
-          data: {
-            name: defaultCommunityName,
-            slug: "100-man-dao",
-            description: "初期コミュニティ",
-            hpUrl: "https://mmdao.org",
-          } as any
-        });
-        await prisma.communityMember.create({
-          data: {
-            userId,
-            communityId: newCommunity.id,
-            role: "MEMBER"
-          }
-        });
-        console.log(`[Post-Login] User ${userId} joined new community ${defaultCommunityName}`);
+      } catch (memberErr: any) {
+        if (memberErr?.code === "P2002") {
+          console.log(`[Post-Login] Membership already exists (concurrent create) for user ${userId}`);
+        } else {
+          throw memberErr;
+        }
       }
     } catch (e) {
       console.error("[Post-Login] Failed to join default community:", e);

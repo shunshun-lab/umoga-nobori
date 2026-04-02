@@ -1,14 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const formData = await req.formData();
     const file = formData.get("file") as File;
 
     if (!file) {
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
+    }
+
+    // サーバー側バリデーション: MIME type
+    if (!file.type.startsWith("image/")) {
+      return NextResponse.json({ error: "画像ファイルのみアップロードできます" }, { status: 400 });
+    }
+
+    // サーバー側バリデーション: ファイルサイズ (10MB上限)
+    if (file.size > 10 * 1024 * 1024) {
+      return NextResponse.json({ error: "ファイルサイズは10MB以下にしてください" }, { status: 400 });
     }
 
     const bytes = await file.arrayBuffer();

@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     const { searchParams } = new URL(req.url);
-    const status = searchParams.get("status") || "active";
+    const status = searchParams.get("status") || "published";
     const tag = searchParams.get("tag");
     const format = searchParams.get("format");
     const from = searchParams.get("from");
@@ -25,16 +25,26 @@ export async function GET(req: NextRequest) {
     const q = searchParams.get("q"); // Keyword search
     const category = searchParams.get("category");
     const organizerCommunityId = searchParams.get("organizerCommunityId");
+    const price = searchParams.get("price"); // "free" | "paid"
+    const myCommunities = searchParams.get("myCommunities"); // "true"
+    const recommend = searchParams.get("recommend"); // "thisWeek" | "popular" | "community"
+    const sort = searchParams.get("sort"); // "date_asc" | "date_desc" | "popular" | "newest"
+    const limit = searchParams.get("limit"); // number
+    const prefecture = searchParams.get("prefecture");
 
     const whereClause: any = {
-      isPublic: true,
+      visibility: "public", // デフォルト: 一覧には完全公開のみ表示
     };
     if (status !== 'all') {
       whereClause.status = status;
     }
 
     if (organizerCommunityId) {
-      whereClause.organizerCommunityId = organizerCommunityId;
+      whereClause.OR = [
+        ...(whereClause.OR || []),
+        { organizerCommunityId },
+        { coOrganizerCommunities: { some: { id: organizerCommunityId } } },
+      ];
     }
 
     if (tag) {
@@ -46,10 +56,54 @@ export async function GET(req: NextRequest) {
     if (category) {
       whereClause.category = category;
     }
-    if (from || to) {
+    if (prefecture) {
+      whereClause.prefecture = prefecture;
+    }
+
+    // Date filters (from/to) — recommend presets can override
+    let effectiveFrom = from;
+    let effectiveTo = to;
+
+    if (recommend === "thisWeek") {
+      const now = new Date();
+      effectiveFrom = now.toISOString();
+      const endOfWeek = new Date(now);
+      endOfWeek.setDate(endOfWeek.getDate() + (7 - endOfWeek.getDay()));
+      endOfWeek.setHours(23, 59, 59, 999);
+      effectiveTo = endOfWeek.toISOString();
+    }
+
+    if (effectiveFrom || effectiveTo) {
       whereClause.startAt = {};
-      if (from) whereClause.startAt.gte = new Date(from);
-      if (to) whereClause.startAt.lte = new Date(to);
+      if (effectiveFrom) whereClause.startAt.gte = new Date(effectiveFrom);
+      if (effectiveTo) whereClause.startAt.lte = new Date(effectiveTo);
+    }
+
+    // Price filter: free = all tickets price 0 or no tickets; paid = at least one ticket price > 0
+    if (price === "free") {
+      whereClause.tickets = { every: { price: { lte: 0 } } };
+    } else if (price === "paid") {
+      whereClause.tickets = { some: { price: { gt: 0 } } };
+    }
+
+    // myCommunities filter: only events from communities the user belongs to
+    if (myCommunities === "true" && session?.user?.id) {
+      const memberCommunities = await prisma.communityMember.findMany({
+        where: { userId: session.user.id },
+        select: { communityId: true },
+      });
+      const memberCommunityIds = memberCommunities.map((m) => m.communityId);
+      whereClause.organizerCommunityId = { in: memberCommunityIds };
+    }
+
+    // recommend=community: same as myCommunities but for the recommend endpoint
+    if (recommend === "community" && session?.user?.id) {
+      const memberCommunities = await prisma.communityMember.findMany({
+        where: { userId: session.user.id },
+        select: { communityId: true },
+      });
+      const memberCommunityIds = memberCommunities.map((m) => m.communityId);
+      whereClause.organizerCommunityId = { in: memberCommunityIds };
     }
 
     // Keyword Search (OR condition)
@@ -76,26 +130,31 @@ export async function GET(req: NextRequest) {
     }
 
     // Visibility Logic
+    // public: 一覧に表示、誰でも閲覧可
+    // unlisted: 一覧に非表示、URLを知っていれば誰でも閲覧可
+    // private: 一覧に非表示、allowedRoles のメンバー + オーナーのみ閲覧可
     if (session?.user?.id) {
-      // Authenticated user: See public events OR owned events OR events restricted to their roles
-      // Combine with existing OR if present (keyword search) is tricky.
-      // The simpliest way is to put visibility check as a separate AND condition if possible, 
-      // but Prisma AND:[{OR}, {OR}] works.
-
       const visibilityCondition = {
         OR: [
-          { isPublic: true },
-          { ownerId: session.user.id },
+          { visibility: "public" },                    // 完全公開
+          { ownerId: session.user.id },                // オーナーは全て見える
+          { coOrganizers: { some: { id: session.user.id } } }, // 共催者も見える
           {
-            allowedRoles: {
-              some: {
-                members: {
+            // private イベントで allowedRoles に属している
+            AND: [
+              { visibility: "private" },
+              {
+                allowedRoles: {
                   some: {
-                    userId: session.user.id
+                    members: {
+                      some: {
+                        userId: session.user.id
+                      }
+                    }
                   }
                 }
               }
-            }
+            ]
           }
         ]
       };
@@ -108,15 +167,33 @@ export async function GET(req: NextRequest) {
       } else if (whereClause.AND) {
         whereClause.AND.push(visibilityCondition);
       } else {
-        // No search OR yet
         whereClause.AND = [visibilityCondition];
       }
 
-      // Remove strict isPublic: true if it was set (it is set by default above)
-      if (whereClause.isPublic) delete whereClause.isPublic;
+      // デフォルトの visibility: "public" 制約を解除（visibilityCondition が制御する）
+      if (whereClause.visibility) delete whereClause.visibility;
 
     } else {
       // Guest: Public only (already set by default)
+    }
+
+    // Determine orderBy
+    let orderBy: any;
+    const effectiveSort = sort || (recommend === "popular" ? "popular" : null);
+    switch (effectiveSort) {
+      case "date_desc":
+        orderBy = { startAt: "desc" };
+        break;
+      case "popular":
+        orderBy = { participants: { _count: "desc" } };
+        break;
+      case "newest":
+        orderBy = { createdAt: "desc" };
+        break;
+      case "date_asc":
+      default:
+        orderBy = { startAt: "asc" };
+        break;
     }
 
     // 全イベントを取得（organizerCommunity は include しない＝削除済みコミュニティ参照でも Prisma が落ちない）
@@ -136,10 +213,12 @@ export async function GET(req: NextRequest) {
           },
         },
         tickets: true,
+        allowedRoles: {
+          select: { id: true, name: true, color: true },
+        },
       },
-      orderBy: {
-        startAt: "asc",
-      },
+      orderBy,
+      ...(limit ? { take: parseInt(limit, 10) } : {}),
     });
 
     // organizerCommunity を別取得して付与（参照先が削除済みの場合は null のまま＝機能損なわない）
@@ -186,8 +265,10 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const {
-      title, description, imageUrl, startAt, endAt, location, format, onlineUrl, capacity, isPublic, organizerCommunityId,
+      title, description, imageUrl, startAt, endAt, location, format, onlineUrl, capacity, isPublic, organizerCommunityId, visibility,
       registrationDeadline, paymentDeadline,
+      category, tags, website,
+      googleMapsUrl, venueTitle, venueAddress, venueLat, venueLng, prefecture,
       // Hare fields
       concept, target, needs, projectId, theme,
       // Check-in
@@ -233,109 +314,58 @@ export async function POST(req: NextRequest) {
     const { enableYoutube, generateMeet } = body;
     let finalOnlineUrl = onlineUrl;
     let youtubeData: any = {};
+    let meetGenerationFailed = false;
 
-    // Google Token Retrieval (Checking if user is connected)
+    // Google Token Retrieval (with automatic refresh if expired)
+    // Meet/Calendar 生成にはカレンダースコープが必要
     let googleToken: string | null = null;
     if (userId) {
-      const account = await prisma.account.findFirst({
-        where: {
-          userId: userId,
-          provider: "google"
-        }
-      });
-      if (account?.access_token) {
-        googleToken = account.access_token;
-      }
+      const { getValidGoogleToken, GOOGLE_SCOPES } = await import("@/lib/google-token");
+      googleToken = await getValidGoogleToken(userId, GOOGLE_SCOPES.CALENDAR);
     }
 
     if (format === "online" || format === "hybrid") {
       if (generateMeet && !onlineUrl) {
-        try {
-          const { createGoogleMeetEvent, createGoogleMeetEventWithToken } = await import("@/lib/google-calendar");
-          const { createGoogleCalendarEventWithMeet } = await import("@/lib/googleMeet");
+        const { createGoogleCalendarEventWithMeet } = await import("@/lib/googleMeet");
+        const { createGoogleMeetEvent } = await import("@/lib/google-calendar");
 
-          const startDate = new Date(startAt);
-          const endDate = endAt ? new Date(endAt) : new Date(startDate.getTime() + 60 * 60 * 1000);
+        const startDate = new Date(startAt);
+        const endDate = endAt ? new Date(endAt) : new Date(startDate.getTime() + 60 * 60 * 1000);
 
-          let meetUrl: string | null = null;
+        let meetUrl: string | null = null;
 
-          // Method A: Use User's Access Token (Preferred for Consumer Accounts)
-          if (googleToken) {
-            meetUrl = await createGoogleMeetEventWithToken(googleToken, title, description || "", startDate, endDate);
-          }
-
-          // Method B: Fallback to System Account (OAuth2 Refresh Token > Service Account)
-          if (!meetUrl) {
-            // 優先: OAuth2 Refresh Token (dev@mmdao.org / mhd.toroku@gmail.com)
-            // src/lib/googleMeet.ts のロジックを使用
-            try {
-              console.log("Attempting to create Meet via OAuth Refresh Token...");
-              meetUrl = await createGoogleCalendarEventWithMeet({
-                title,
-                description: description || "",
-                startAt: startDate,
-                endAt: endDate,
-                location: location || "",
-              });
-            } catch (e) {
-              console.warn("OAuth Refresh Token method failed, falling back to Service Account:", e);
-              // 最終手段: Service Account
-              meetUrl = await createGoogleMeetEvent(title, description || "", startDate, endDate);
-            }
-          }
-
-          if (meetUrl) {
-            finalOnlineUrl = meetUrl;
-            console.log(`[Event Create] Meet link generated successfully: ${meetUrl}`);
-          } else {
-            console.warn("[Event Create] Meet generation returned null - using fallback or manual URL");
-          }
-        } catch (e: any) {
-          console.error("[Event Create] Meet generation failed with error:", e?.message || e);
-          console.error("[Event Create] Error details:", JSON.stringify(e, null, 2));
-        }
-      }
-      // If NOT generating Meet, but User has Google Account, Add to Calendar
-      else if (googleToken) {
-        try {
-          const { createGoogleCalendarEvent } = await import("@/lib/google-calendar");
-          const startDate = new Date(startAt);
-          const endDate = endAt ? new Date(endAt) : new Date(startDate.getTime() + 60 * 60 * 1000);
-
-          await createGoogleCalendarEvent(googleToken, {
+        // Method A: ユーザーのアクセストークン（リフレッシュ済み）→ システムトークン → サービスアカウント
+        // createGoogleCalendarEventWithMeet は内部で user token → system token の順で試す
+        meetUrl = await createGoogleCalendarEventWithMeet(
+          {
             title,
             description: description || "",
             startAt: startDate,
             endAt: endDate,
-            location: location || finalOnlineUrl || ""
-          });
-          console.log("Added to Google Calendar (Online/Hybrid without Auto-Meet)");
-        } catch (e) {
-          console.error("Failed to add to Google Calendar:", e);
+            location: location || "",
+          },
+          googleToken ?? undefined
+        );
+
+        // Method B: サービスアカウント（最終手段）
+        if (!meetUrl) {
+          console.log("[Event Create] Falling back to service account for Meet...");
+          meetUrl = await createGoogleMeetEvent(title, description || "", startDate, endDate);
+        }
+
+        if (meetUrl) {
+          finalOnlineUrl = meetUrl;
+          console.log(`[Event Create] Meet link generated: ${meetUrl}`);
+        } else {
+          meetGenerationFailed = true;
+          console.error("[Event Create] All Meet generation methods failed. No Meet link set.");
         }
       }
+      // Calendar追加はDB保存後にfire-and-forgetで実行（下記参照）
 
       // 2. YouTube Live (有効化フラグがある場合)
       if (enableYoutube && session?.accessToken) {
         // ... (Existing logic)
-      }
-    } else if (format === 'offline' && googleToken) {
-      // Offline Event: Add to Google Calendar if connected
-      try {
-        const { createGoogleCalendarEvent } = await import("@/lib/google-calendar");
-        const startDate = new Date(startAt);
-        const endDate = endAt ? new Date(endAt) : new Date(startDate.getTime() + 60 * 60 * 1000);
-
-        await createGoogleCalendarEvent(googleToken, {
-          title,
-          description: description || "",
-          startAt: startDate,
-          endAt: endDate,
-          location: location || ""
-        });
-        console.log("Added to Google Calendar (Offline)");
-      } catch (e) {
-        console.error("Failed to add to Google Calendar:", e);
       }
     }
 
@@ -358,8 +388,9 @@ export async function POST(req: NextRequest) {
         youtubeStreamUrl: youtubeData.youtubeStreamUrl,
         rtmpKey: youtubeData.rtmpKey,
         capacity,
-        isPublic: isPublic ?? true,
-        status: "draft", // 初回は下書きとして作成
+        isPublic: visibility ? visibility === "public" : (isPublic ?? true),
+        visibility: visibility || (isPublic === false ? "private" : "public"),
+        status: "published", // デフォルトは公開状態
         ownerId: userId,
         organizerCommunityId,
         communities: {
@@ -372,6 +403,15 @@ export async function POST(req: NextRequest) {
         projectId: projectId || null,
         keyword,
         theme,
+        category: category || null,
+        tags: typeof tags === "string" ? tags : (tags && Array.isArray(tags) ? JSON.stringify(tags) : null),
+        website: website || null,
+        googleMapsUrl: googleMapsUrl || null,
+        venueTitle: venueTitle || null,
+        venueAddress: venueAddress || null,
+        prefecture: prefecture || null,
+        venueLat: venueLat != null && !isNaN(Number(venueLat)) ? Number(venueLat) : null,
+        venueLng: venueLng != null && !isNaN(Number(venueLng)) ? Number(venueLng) : null,
         tickets: tickets && tickets.length > 0 ? {
           createMany: {
             data: tickets.map((t: any) => ({
@@ -410,18 +450,90 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    if (userId) {
-      const { sendNotification } = await import("@/lib/notifications");
-      await sendNotification(
-        userId,
-        "event_message",
-        "イベントを作成しました",
-        `イベント「${title}」を作成しました。`,
-        { eventId: event.id, link: `/events/${event.id}` }
-      );
-    }
+    // --- 非同期タスク（fire-and-forget: レスポンスをブロックしない） ---
+    const asyncTasks = async () => {
+      try {
+        // 1. 作成者への通知
+        const { sendNotification } = await import("@/lib/notifications");
+        await sendNotification(
+          userId,
+          "event_message",
+          "イベントを作成しました",
+          `イベント「${title}」を作成しました。`,
+          { eventId: event.id, link: `/events/${event.id}`, actorUserId: userId }
+        );
 
-    return NextResponse.json({ ...event, redirectToEdit: true }, { status: 201 });
+        // 2. コミュニティメンバーへの通知
+        if (organizerCommunityId) {
+          const members = await prisma.communityMember.findMany({
+            where: { communityId: organizerCommunityId },
+            select: { userId: true },
+          });
+          const otherMembers = members.filter(m => m.userId !== userId);
+          await Promise.allSettled(
+            otherMembers.map(m =>
+              sendNotification(
+                m.userId,
+                "community_event",
+                "新しいイベント",
+                `「${title}」が公開されました`,
+                { eventId: event.id, communityId: organizerCommunityId, link: `/events/${event.id}`, actorUserId: userId }
+              )
+            )
+          );
+        }
+
+        // 3. Google Calendar追加（Meet生成以外）
+        if (googleToken) {
+          try {
+            const { createGoogleCalendarEvent } = await import("@/lib/google-calendar");
+            const startDate = new Date(startAt);
+            const endDate = endAt ? new Date(endAt) : new Date(startDate.getTime() + 60 * 60 * 1000);
+            await createGoogleCalendarEvent(googleToken, {
+              title,
+              description: description || "",
+              startAt: startDate,
+              endAt: endDate,
+              location: location || finalOnlineUrl || "",
+            });
+          } catch (e) {
+            console.error("[Event Create] Google Calendar add failed:", e);
+          }
+        }
+      } catch (e) {
+        console.error("[Event Create] Async tasks failed:", e);
+      }
+
+      // 4. AI短縮サマリー生成
+      try {
+        const cleanDesc = description ? description.replace(/<[^>]*>?/gm, "").trim() : "";
+        const summaryText = `${title}\n${cleanDesc}`.slice(0, 1000);
+        const { openai } = await import("@/lib/openai");
+        const completion = await openai.chat.completions.create({
+          model: "gpt-4o-mini",
+          messages: [
+            { role: "system", content: "あなたはイベント告知の要約アシスタントです。与えられたイベント情報を50文字以内で魅力的に要約してください。絵文字を1-2個使い、参加したくなるような簡潔なキャッチコピーにしてください。URLは含めないでください。" },
+            { role: "user", content: summaryText },
+          ],
+          max_tokens: 100,
+          temperature: 0.7,
+        });
+        const summary = completion.choices?.[0]?.message?.content?.trim();
+        if (summary) {
+          await prisma.event.update({ where: { id: event.id }, data: { shortSummary: summary } });
+        }
+      } catch (e) {
+        console.error("[Event Create] Short summary generation failed:", e);
+      }
+    };
+    // 非同期実行（awaitしない = レスポンスをブロックしない）
+    asyncTasks().catch(e => console.error("[Event Create] Background task error:", e));
+
+    return NextResponse.json({
+      ...event,
+      redirectToEdit: true,
+      ...(meetGenerationFailed && { meetGenerationFailed: true }),
+    }, { status: 201 });
   } catch (error: any) {
     console.error("Error creating event:", error);
     return NextResponse.json(

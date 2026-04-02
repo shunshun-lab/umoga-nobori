@@ -9,10 +9,8 @@ import { prisma } from "@/lib/prisma";
 // Given the requirement "View more link to ... /communities/[slug]", we should probably support slug lookup.
 // But Next.js dynamic routes usually map to params.id. Let's try to find by ID first, then Slug.
 
-export async function GET(
-    req: NextRequest,
-    { params }: { params: { id: string } }
-) {
+export async function GET(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+    const params = await props.params;
     try {
         const idOrSlug = params.id;
         console.log(`[API] Fetching community with idOrSlug: ${idOrSlug}`);
@@ -50,8 +48,30 @@ export async function GET(
             });
         }
 
+        // 管理者かどうかで LINE 秘密情報の返却を制御
+        let isAdmin = false;
+        try {
+            const session = await getServerSession(authOptions);
+            if (session?.user?.id) {
+                const member = await prisma.communityMember.findUnique({
+                    where: { userId_communityId: { userId: (session.user as any).id, communityId: community.id } },
+                    select: { role: true },
+                });
+                isAdmin = !!(member && ["ADMIN", "ORGANIZER", "OWNER"].includes(member.role.toUpperCase()))
+                    || community.ownerOrganizerId === (session.user as any).id
+                    || !!(session.user as any).isAdmin;
+            }
+        } catch { /* セッション取得失敗は無視（公開表示として返す） */ }
+
+        if (isAdmin) {
+            return NextResponse.json({ ...community, owner });
+        }
+
+        // 非管理者: LINE の秘密情報を除外
+        const { lineChannelSecret, lineChannelToken, ...safeCommunity } = community as any;
         return NextResponse.json({
-            ...community,
+            ...safeCommunity,
+            hasLineBot: !!(lineChannelToken && lineChannelSecret),
             owner
         });
     } catch (error) {
@@ -66,10 +86,8 @@ export async function GET(
 
 
 // PATCH /api/communities/[id]
-export async function PATCH(
-    req: NextRequest,
-    { params }: { params: { id: string } }
-) {
+export async function PATCH(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+    const params = await props.params;
     try {
         const session = await getServerSession(authOptions);
         if (!session?.user?.id && !session?.user?.email) {
@@ -119,12 +137,19 @@ export async function PATCH(
             return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 
-        const body = await req.json();
+        let body: any = {};
+        try {
+            const raw = await req.text();
+            body = raw ? JSON.parse(raw) : {};
+        } catch {
+            return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+        }
 
         // Whitelist allowed fields to prevent arbitrary column updates or errors
         const allowedFields = [
             "name", "description", "slug", "imageUrl", "bannerUrl",
             "hpUrl", "twitterUrl", "instagramUrl", "discordUrl", "lineUrl", "lineOpenChatUrl",
+            "lineChannelId", "lineChannelSecret", "lineChannelToken", "lineBotBasicId",
             "aiPrompt", "aiTheme", "constitution", "location",
             "isPublic", "pageConfig", "theme", "customHtml", "inviteRewardPoints"
         ];

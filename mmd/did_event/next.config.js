@@ -1,4 +1,8 @@
 const nextConfig = {
+    turbopack: {
+        root: __dirname,
+    },
+    assetPrefix: process.env.ASSET_PREFIX || undefined,
     transpilePackages: ['lucide-react'],
     images: {
         remotePatterns: [
@@ -17,6 +21,12 @@ const nextConfig = {
             {
                 protocol: 'https',
                 hostname: 'profile.line-scdn.net', // LINE User Images
+                port: '',
+                pathname: '/**',
+            },
+            {
+                protocol: 'https',
+                hostname: 'placehold.co',
                 port: '',
                 pathname: '/**',
             }

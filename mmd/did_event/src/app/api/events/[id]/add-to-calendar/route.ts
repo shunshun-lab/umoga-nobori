@@ -7,10 +7,8 @@ import { addEventToUserGoogleCalendar } from "@/lib/add-to-calendar";
 /**
  * イベントをGoogleカレンダーに追加
  */
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const session = await getServerSession(authOptions);
 
@@ -50,6 +48,17 @@ export async function POST(
     );
 
     if (!result.success) {
+      // スコープ不足の場合、クライアントにリダイレクト先を返す
+      if (result.code === "SCOPE_REQUIRED") {
+        return NextResponse.json(
+          {
+            error: "Google Calendar のアクセス許可が必要です",
+            code: "SCOPE_REQUIRED",
+            redirectUrl: `/api/auth/google/request-scope?scope=CALENDAR&returnTo=/events/${params.id}`,
+          },
+          { status: 403 }
+        );
+      }
       const status = result.error.includes("連携") || result.error.includes("有効期限") ? 401 : 500;
       return NextResponse.json(
         { error: result.error },

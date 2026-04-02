@@ -12,10 +12,8 @@ import {
  * イベント参加者に LINE 通知を送信
  * イベント主催者のみが実行可能
  */
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const session = await getServerSession(authOptions);
 

@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
         const participations = await prisma.participant.findMany({
             where: {
                 userId: user.id,
-                status: "joined", // Only show joined events
+                status: { notIn: ["REJECTED", "CANCELLED"] },
             },
             include: {
                 event: true,

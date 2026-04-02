@@ -9,10 +9,8 @@ import { getVcJob } from "@/lib/kyosoVc";
  * VC 発行ステータス確認エンドポイント
  * EventCredential の発行状況を確認し、完了していれば更新します
  */
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     // セッション確認
     const session = await getServerSession(authOptions);

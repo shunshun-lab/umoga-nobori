@@ -67,6 +67,8 @@ export async function GET() {
         points: true,
         socialLinks: true,
         profileConfig: true,
+        walletAddress: true,
+        onboardingTags: true,
       } as any,
     });
 
@@ -75,18 +77,30 @@ export async function GET() {
     }
 
     // Parse preferences if it's a string (Prisma)
-    let preferences = { showPoints: true, showEvents: false, showCommunities: false, showQuests: false };
-    if (user.preferences) {
+    const safeJsonParse = <T,>(value: unknown, fallback: T, label: string): T => {
       try {
-        preferences = typeof user.preferences === 'string' ? JSON.parse(user.preferences) : user.preferences;
-      } catch (e) { }
-    }
+        if (typeof value !== "string") return (value as T) ?? fallback;
+        return (JSON.parse(value) as T) ?? fallback;
+      } catch (e) {
+        console.warn(`[UserProfile] Invalid JSON in ${label}`, {
+          userId: user.id,
+          error: e instanceof Error ? e.message : String(e),
+        });
+        return fallback;
+      }
+    };
+
+    const preferences = safeJsonParse(
+      user.preferences,
+      { showPoints: true, showEvents: false, showCommunities: false, showQuests: false },
+      "preferences",
+    );
 
     return NextResponse.json({
       ...user,
       preferences,
-      socialLinks: user.socialLinks ? JSON.parse(user.socialLinks as unknown as string) : [],
-      profileConfig: user.profileConfig ? JSON.parse(user.profileConfig as unknown as string) : {},
+      socialLinks: safeJsonParse(user.socialLinks, [], "socialLinks"),
+      profileConfig: safeJsonParse(user.profileConfig, {}, "profileConfig"),
     });
   } catch (error) {
     console.error("Error fetching user profile:", error);
@@ -112,7 +126,7 @@ export async function PUT(req: NextRequest) {
     const {
       name, displayName, website, profileUpdate,
       phoneNumber, realName, bio, twitterUrl, instagramUrl, linkedinUrl, location, exchangeScope, did, isVerified,
-      preferences, socialLinks, profileConfig // New fields
+      preferences, socialLinks, profileConfig, walletAddress
     } = body;
 
     // Helper to ensure JSON string format
@@ -186,6 +200,7 @@ export async function PUT(req: NextRequest) {
         profileConfig: formattedProfileConfig,
 
         preferences: formattedPreferences,
+        walletAddress: walletAddress || undefined,
         tutorialStatus: body.tutorialStatus === 'COMPLETED' ? "COMPLETED" : undefined,
       } as any,
       select: {
@@ -197,6 +212,7 @@ export async function PUT(req: NextRequest) {
         personalCommunityId: true,
         displayName: true,
         preferences: true,
+        onboardingTags: true,
       } as any,
     });
 
@@ -207,6 +223,7 @@ export async function PUT(req: NextRequest) {
       preferences: user.preferences ? JSON.parse(user.preferences as any) : { showPoints: true, showEvents: false, showCommunities: false, showQuests: false },
       socialLinks: user.socialLinks ? JSON.parse(user.socialLinks as any) : [],
       profileConfig: user.profileConfig ? JSON.parse(user.profileConfig as any) : {},
+      onboardingTags: (user as any).onboardingTags ?? null,
     });
   } catch (error) {
     console.error("Error updating user profile:", error);

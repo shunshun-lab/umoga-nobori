@@ -33,6 +33,7 @@ export async function GET() {
             lineUrl: c.lineUrl,
             lineOpenChatUrl: (c as any).lineOpenChatUrl,
             bannerUrl: (c as any).bannerUrl,
+            shopMode: (c as any).shopMode || 'internal',
         }));
 
         return NextResponse.json(communities);
@@ -50,7 +51,19 @@ export async function POST(req: NextRequest) {
         }
 
         const body = await req.json();
-        const { name, description, selectedActivityIds, orderedActivities, permissionTemplateId, slug, scope } = body;
+        const {
+            name,
+            description,
+            selectedActivityIds,
+            orderedActivities,
+            permissionTemplateId,
+            slug,
+            scope,
+            imageUrl,
+            hpUrl,
+            useAiGeneration,
+            aiPrompt,
+        } = body;
 
         if (!name) {
             return NextResponse.json({ error: "Community Name is required" }, { status: 400 });
@@ -68,6 +81,9 @@ export async function POST(req: NextRequest) {
                     ownerOrganizerId: session.user.id, // Set the creator as owner
                     slug: slug || `comm-${Date.now()}`,
                     scope: scope || "PUBLIC",
+                    imageUrl: imageUrl || null,
+                    hpUrl: hpUrl || null,
+                    aiPrompt: typeof aiPrompt === "string" ? aiPrompt : null,
                     members: {
                         create: {
                             userId: session.user.id,
@@ -87,6 +103,35 @@ export async function POST(req: NextRequest) {
 
             return created;
         });
+
+        if (useAiGeneration) {
+            try {
+                const { generateCommunityHp } = await import("@/lib/ai");
+                const theme =
+                    typeof aiPrompt === "string" && /cyberpunk|neon/i.test(aiPrompt)
+                        ? "futuristic"
+                        : "default";
+                const customHtml = await generateCommunityHp(
+                    newCommunity.name,
+                    newCommunity.description || "",
+                    typeof aiPrompt === "string" && aiPrompt.trim().length > 0
+                        ? aiPrompt
+                        : "Create a modern, stunning homepage.",
+                    theme
+                );
+                const updated = await prisma.community.update({
+                    where: { id: newCommunity.id },
+                    data: {
+                        customHtml,
+                        aiPrompt: typeof aiPrompt === "string" ? aiPrompt : null,
+                        aiTheme: theme,
+                    },
+                });
+                return NextResponse.json(updated);
+            } catch (e) {
+                console.error("[POST /api/communities] AI homepage generation failed:", e);
+            }
+        }
 
         return NextResponse.json(newCommunity);
 

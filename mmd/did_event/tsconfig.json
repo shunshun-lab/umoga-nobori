@@ -16,7 +16,7 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
     "plugins": [
       {
@@ -34,13 +34,18 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",
+    "apps",
     "scripts",
     "check-integrity.ts",
     "check_product.ts",
+    "check_data.ts",
+    "check_items.ts",
+    "check_participants.ts",
     "restore-communities.ts",
     "prisma/seed.ts",
     "prisma/seed_marketplace.ts",

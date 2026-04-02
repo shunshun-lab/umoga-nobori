@@ -32,13 +32,21 @@ Next.js (App Router) と SQLite を使用したモノリス構成で、イベン
 - **作品応募**: テーマに沿った作品（画像・テキスト）の応募。
 - **投票**: ユーザーによる投票機能で優秀作品を決定。
 
+## ドキュメント
+
+- [docs 総合入口](docs/index.md) — 設計・手順・トラブルシューティング
+- [クイックスタート](docs/getting-started/quickstart.md) — 5分で試す
+- [セットアップガイド](docs/getting-started/setup-guide.md) — ローカル環境構築
+- [アーキテクチャ](docs/architecture/) — 全体設計
+- [運用手順](docs/runbooks/) — デプロイ・連携設定
+
 ## 技術スタック
 
 - **Framework**: Next.js 14 (App Router)
 - **Database**: SQLite (via Prisma ORM)
 - **Auth**: NextAuth.js (Google, LINE, Credentials)
 - **Styling**: Tailwind CSS
-- **Testing**: Playwright (E2E)
+- **Testing**: Vitest（ユニット）, Playwright (E2E)。ユニットテストの実行と方針は [runbooks/unit-testing](docs/runbooks/unit-testing.md) を参照。
 
 ## セットアップ手順
 

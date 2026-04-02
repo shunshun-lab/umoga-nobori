@@ -36,6 +36,7 @@ export async function GET(req: NextRequest) {
         ownerId: user.id,
       },
       include: {
+        owner: { select: { id: true, name: true, image: true } },
         _count: {
           select: {
             participants: true,

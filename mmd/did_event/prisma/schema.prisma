@@ -1,10 +1,10 @@
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -15,7 +15,7 @@ model User {
   did                    String?                  @unique
   firebaseUid            String?                  @unique
   image                  String?
-  provider               String                   @default("line")
+  provider               String                   @default("credentials")
   createdAt              DateTime                 @default(now())
   updatedAt              DateTime                 @updatedAt
   emailVerified          DateTime?
@@ -37,6 +37,10 @@ model User {
   realName               String?
   socialLinks            String?
   twitterUrl             String?
+  facebookUrl            String?
+  youtubeUrl             String?
+  source                 String?                  @default("credentials")
+  createdFromFormAt      DateTime?
   whatsappUserId         String?                  @unique
   personalCommunityId    String?                  @unique
   displayName            String?
@@ -82,6 +86,7 @@ model User {
   questApplications      QuestApplication[]
   quests                 Quest[]
   recurringTemplates     RecurringEventTemplate[]
+  recurringSubscriptions RecurringEventSubscription[]
   RoleGrant              RoleGrant[]
   sessions               Session[]
   shippingAddresses      ShippingAddress[]
@@ -96,9 +101,32 @@ model User {
   claimedQuests          QuestApplication[]       @relation("ClaimedQuests")
   claimedOrders          Order[]                  @relation("ClaimedOrders")
   claimedParticipants    Participant[]            @relation("ClaimedParticipants")
+  jxcContact             JxcContact?
+  onboardingTags         Json?
+  behaviorEvents         UserBehaviorEvent[]
+  onlineSessions         OnlineSession[]
+  pointRewardGrants      EventPointRewardGrant[]
+  pointRewardApplications EventPointRewardApplication[]
+  sentPointGifts         PointGift[]              @relation("SentGifts")
+  claimedPointGifts      PointGift[]              @relation("ClaimedGifts")
+  walletAddress          String?
+  nftMintRecords         NftMintRecord[]
 
   @@index([phoneNumberHash])
   @@map("users")
+}
+
+model UserBehaviorEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  metadata  Json?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([action])
+  @@map("user_behavior_events")
 }
 
 model UserPhoneVerification {
@@ -137,6 +165,7 @@ model Notification {
   isRead      Boolean  @default(false)
   eventId     String?
   communityId String?
+  actorUserId String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -185,6 +214,24 @@ model PointTransaction {
   user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("point_transactions")
+}
+
+model PointGift {
+  id            String    @id @default(cuid())
+  code          String    @unique
+  amount        Int
+  communityId   String
+  senderUserId  String
+  claimedByUserId String?
+  description   String?
+  claimedAt     DateTime?
+  expiresAt     DateTime?
+  createdAt     DateTime  @default(now())
+  community     Community @relation(fields: [communityId], references: [id])
+  sender        User      @relation("SentGifts", fields: [senderUserId], references: [id])
+  claimedBy     User?     @relation("ClaimedGifts", fields: [claimedByUserId], references: [id])
+
+  @@map("point_gifts")
 }
 
 model Item {
@@ -247,8 +294,11 @@ model Event {
   endAt                  DateTime?
   location               String?
   capacity               Int?
+  offlineCapacity        Int?
+  onlineCapacity         Int?
   ownerId                String?
   isPublic               Boolean                 @default(true)
+  visibility             String                  @default("public") // "public" | "unlisted" | "private"
   status                 String                  @default("draft")
   createdAt              DateTime                @default(now())
   updatedAt              DateTime                @updatedAt
@@ -274,11 +324,13 @@ model Event {
   target                 String?
   theme                  String?
   venueAddress           String?
+  prefecture             String?
   venueLat               Float?
   venueLng               Float?
   venueTitle             String?
   youtubeBroadcastId     String?
   youtubeStreamUrl       String?
+  shortSummary           String?
   paymentDeadline        DateTime?
   registrationDeadline   DateTime?
   approvalRequired       Boolean                 @default(false)
@@ -300,8 +352,84 @@ model Event {
   coOrganizerCommunities Community[]             @relation("EventCoOrganizerCommunities")
   coOrganizers           User[]                  @relation("EventCoOrganizers")
   reviews                EventReview[]
+  pointRewards           EventPointReward[]
+  onlineSessions         OnlineSession[]
+  posts                  Post[]
 
   @@map("events")
+}
+
+enum PointRewardType {
+  JOIN
+  KEYWORD
+  SURVEY
+  APPROVAL
+}
+
+enum PointIssuerKind {
+  OPS
+  ORGANIZER
+}
+
+enum RewardApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model EventPointReward {
+  id         String          @id @default(cuid())
+  eventId    String
+  type       PointRewardType
+  issuerKind PointIssuerKind @default(OPS)
+  amount     Int
+  isActive   Boolean         @default(true)
+  config     Json?           @default("{}")
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  event        Event                         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  grants       EventPointRewardGrant[]
+  applications EventPointRewardApplication[]
+
+  @@unique([eventId, type])
+  @@index([eventId])
+  @@map("event_point_rewards")
+}
+
+model EventPointRewardGrant {
+  id         String   @id @default(cuid())
+  rewardId   String
+  userId     String
+  participantId String?
+  referenceId String?
+  createdAt  DateTime @default(now())
+
+  reward      EventPointReward @relation(fields: [rewardId], references: [id], onDelete: Cascade)
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([rewardId, userId])
+  @@index([userId, createdAt])
+  @@map("event_point_reward_grants")
+}
+
+model EventPointRewardApplication {
+  id        String                  @id @default(cuid())
+  rewardId  String
+  userId    String
+  status    RewardApplicationStatus @default(PENDING)
+  message   String?
+  decidedByUserId String?
+  decidedAt DateTime?
+  createdAt DateTime                @default(now())
+  updatedAt DateTime                @updatedAt
+
+  reward    EventPointReward @relation(fields: [rewardId], references: [id], onDelete: Cascade)
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([rewardId, userId])
+  @@index([rewardId, status, createdAt])
+  @@map("event_point_reward_applications")
 }
 
 model Blast {
@@ -426,7 +554,7 @@ model Participant {
   id                    String       @id @default(cuid())
   userId                String
   eventId               String
-  status                String       @default("joined")
+  status                String       @default("JOINED")
   createdAt             DateTime     @default(now())
   updatedAt             DateTime     @updatedAt
   paymentMethod         String?
@@ -435,6 +563,7 @@ model Participant {
   reminded24h           Boolean      @default(false)
   stripePaymentIntentId String?
   ticketId              String?
+  attendanceMode        String?
   event                 Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
   ticket                EventTicket? @relation(fields: [ticketId], references: [id])
   user                  User         @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -481,6 +610,8 @@ model RecurringEventTemplate {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   customDays      String?
+  /// 任意の日付列（ISO文字列配列）: ["2026-04-03","2026-04-10",...]
+  customDates     String?
   endDate         DateTime?
   endType         String    @default("never")
   interval        Int       @default(1)
@@ -491,9 +622,27 @@ model RecurringEventTemplate {
   communityId     String?
   projectId       String?
   events          Event[]
+  subscriptions   RecurringEventSubscription[]
   owner           User      @relation(fields: [ownerId], references: [id])
 
   @@map("recurring_event_templates")
+}
+
+model RecurringEventSubscription {
+  id         String   @id @default(cuid())
+  templateId String
+  userId     String
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  template RecurringEventTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  user     User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([templateId, userId])
+  @@index([userId, isActive])
+  @@index([templateId, isActive])
+  @@map("recurring_event_subscriptions")
 }
 
 model Community {
@@ -509,6 +658,10 @@ model Community {
   discordUrl         String?
   lineUrl            String?
   lineOpenChatUrl    String?
+  lineChannelId      String?            // LINE Messaging API Channel ID（コミュニティ別公式LINE）
+  lineChannelSecret  String?            // Webhook署名検証用
+  lineChannelToken   String?            // Channel Access Token（push送信用）
+  lineBotBasicId     String?            // LINE公式ベーシックID（@xxx）
   scope              String             @default("OFFICIAL")
   isOfficial         Boolean            @default(false)
   isPublic           Boolean            @default(true)
@@ -543,6 +696,7 @@ model Community {
   inviteCodes        InviteCode[]
   MemberFact         MemberFact[]
   pointTransactions  PointTransaction[]
+  pointGifts         PointGift[]
   posts              Post[]
   projects           Project[]
   quests             Quest[]
@@ -553,6 +707,23 @@ model Community {
   resources          CommunityResource[]
   page               Page?
   referralTiers      Json?              // [{ n: 1, label: "特典A", emoji: "🎁" }, ...]
+  shopMode           String             @default("internal") // internal | shopify_centralized
+  shopifyDomain      String?
+  shopifyCollectionId String?
+  shopifyProductMappings ShopifyProductMapping[]
+  shopifyOrderMappings   ShopifyOrderMapping[]
+  nftMintRecords         NftMintRecord[]
+  settlementLedger       SettlementLedger[]
+  apiKeys                ApiKey[]
+  usageRecords           UsageRecord[]
+  invoices               Invoice[]
+  onboardingForm         CommunityForm?
+
+  // トップページ拡張
+  storyText    String?  // 導入散文（ストーリーセクション用）
+  activities   Json?    // 活動内容カード [{icon, title, description}]
+  themeColors  Json?    // テーマカラー {primary, accent, background, border}
+  heroImages   Json?    // ヒーロー画像配列 ["url1", "url2", ...]
 }
 
 
@@ -591,19 +762,21 @@ model ResourceBooking {
 }
 
 model CommunityMember {
-  id           String         @id @default(cuid())
-  communityId  String
-  userId       String
-  role         String         @default("MEMBER")
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  roleId       String?
-  points       Int            @default(0)
-  inviteCodeId String?
-  community    Community      @relation(fields: [communityId], references: [id], onDelete: Cascade)
-  inviteCode   InviteCode?    @relation(fields: [inviteCodeId], references: [id])
-  customRole   CommunityRole? @relation(fields: [roleId], references: [id])
-  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                    String                  @id @default(cuid())
+  communityId           String
+  userId                String
+  role                  String                  @default("MEMBER")
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+  roleId                String?
+  points                Int                     @default(0)
+  inviteCodeId          String?
+  onboardingCompletedAt DateTime?
+  community             Community               @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  inviteCode            InviteCode?             @relation(fields: [inviteCodeId], references: [id])
+  customRole            CommunityRole?          @relation(fields: [roleId], references: [id])
+  user                  User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  formResponses         CommunityFormResponse[]
 
   @@unique([userId, communityId])
   @@map("community_members")
@@ -637,6 +810,8 @@ model CommunityRole {
   description   String?
   isPlatform    Boolean           @default(false)
   slug          String?
+  /// ファンランク: この値以上のイベント参加回数で自動付与（null=手動のみ）
+  fanRankThreshold Int?
   members       CommunityMember[]
   community     Community         @relation(fields: [communityId], references: [id], onDelete: Cascade)
   grants        RoleGrant[]
@@ -652,6 +827,7 @@ model Post {
   id          String     @id @default(cuid())
   communityId String?
   projectId   String?
+  eventId     String?
   userId      String
   content     String
   imageUrl    String?
@@ -662,10 +838,12 @@ model Post {
   favorites   Favorite[]
   campaign    Campaign?  @relation("CampaignUpdates", fields: [campaignId], references: [id])
   community   Community? @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  event       Event?     @relation(fields: [eventId], references: [id], onDelete: Cascade)
   project     Project?   @relation(fields: [projectId], references: [id], onDelete: Cascade)
   user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([communityId, createdAt])
+  @@index([eventId, createdAt])
   @@map("posts")
 }
 
@@ -744,6 +922,11 @@ model Quest {
   userId          String?
   communityId     String
   membersOnly     Boolean            @default(false)
+  deliverables       String?
+  acceptanceCriteria String?
+  reward             String?
+  requirements       String?
+  notes              String?
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
   createdByUserId String?
@@ -756,19 +939,21 @@ model Quest {
 }
 
 model QuestApplication {
-  id        String         @id @default(cuid())
-  questId   String
-  userId    String
-  status    String         @default("PENDING")
-  message   String?
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
-  quest     Quest          @relation(fields: [questId], references: [id], onDelete: Cascade)
-  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  messages  QuestMessage[]
-  claimedById String?
-  claimedAt   DateTime?
-  claimedBy   User?        @relation("ClaimedQuests", fields: [claimedById], references: [id])
+  id           String         @id @default(cuid())
+  questId      String
+  userId       String
+  status       String         @default("PENDING")
+  type         String         @default("application") // "application" | "offer" | "proposal"
+  message      String?
+  offerMessage String?        // オファー/逆提案の初期メッセージ
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  quest        Quest          @relation(fields: [questId], references: [id], onDelete: Cascade)
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages     QuestMessage[]
+  claimedById  String?
+  claimedAt    DateTime?
+  claimedBy    User?          @relation("ClaimedQuests", fields: [claimedById], references: [id])
 
   @@unique([questId, userId])
   @@map("quest_applications")
@@ -962,7 +1147,10 @@ model Product {
   updatedAt      DateTime    @updatedAt
   priceYen       Int?
   unlimitedStock Boolean     @default(false)
+  allowPoints    Boolean     @default(true)
+  allowCash      Boolean     @default(false)
   orderItems     OrderItem[]
+  shopifyMapping ShopifyProductMapping?
 
   @@map("products")
 }
@@ -980,12 +1168,18 @@ model Order {
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
   currency        String       @default("POINT")
+  paymentMethod   String       @default("POINT")
+  pointsAmount    Int?
+  cashAmount      Int?
   fulfillment     Fulfillment?
   items           OrderItem[]
   user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   claimedById     String?
   claimedAt       DateTime?
   claimedBy       User?        @relation("ClaimedOrders", fields: [claimedById], references: [id])
+  shopifyMapping  ShopifyOrderMapping?
+  nftMintRecords  NftMintRecord[]
+  settlementEntries SettlementLedger[]
 
   @@map("orders")
 }
@@ -1514,6 +1708,11 @@ enum FactType {
   LEDGER_SPENT
   ENTITLEMENT_GRANTED
   ENTITLEMENT_REVOKED
+  EVENT_PUBLISHED
+  EVENT_JOINED
+  EVENT_CANCELLED
+  POINT_TRANSFERRED
+  CREDENTIAL_ISSUED
 }
 
 enum FactRefType {
@@ -1677,4 +1876,340 @@ model Revision {
   publishedPage Page? @relation("PublishedRevision")
 
   @@map("revisions")
+}
+
+// Shopify Integration
+model ShopifyProductMapping {
+  id                 String   @id @default(cuid())
+  communityId        String
+  localProductId     String
+  shopifyProductId   String
+  shopifyVariantId   String
+  shopifyHandle      String?
+  lastSyncedAt       DateTime @default(now())
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  product   Product   @relation(fields: [localProductId], references: [id], onDelete: Cascade)
+
+  syncStatus String   @default("SYNCED")     // SYNCED | FAILED | STALE
+  syncError  String?
+
+  @@unique([communityId, shopifyProductId])
+  @@unique([localProductId])
+  @@map("shopify_product_mappings")
+}
+
+model ShopifyOrderMapping {
+  id               String   @id @default(cuid())
+  communityId      String
+  localOrderId     String   @unique
+  shopifyOrderId   String
+  shopifyOrderName String?
+  invoiceUrl       String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  order     Order     @relation(fields: [localOrderId], references: [id], onDelete: Cascade)
+
+  @@unique([communityId, shopifyOrderId])
+  @@map("shopify_order_mappings")
+}
+
+model NftMintRecord {
+  id          String   @id @default(cuid())
+  communityId String
+  orderId     String
+  userId      String
+  tokenId     String?
+  contractAddress String?
+  chain       String   @default("mock")
+  txHash      String?
+  status      String   @default("PENDING") // PENDING | MINTED | FAILED
+  errorMsg    String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  order     Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("nft_mint_records")
+}
+
+model SettlementLedger {
+  id          String   @id @default(cuid())
+  communityId String
+  orderId     String
+  amount      Int
+  type        String   // SALE | REFUND
+  status      String   @default("UNSETTLED") // UNSETTLED | SETTLED
+  source      String   @default("WEBHOOK")   // WEBHOOK | MANUAL | SYNC
+  referenceId String?                         // webhook deliveryId etc.
+  settledAt   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  order     Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("settlement_ledger")
+}
+
+model WebhookInbox {
+  id            String    @id @default(cuid())
+  deliveryId    String    @unique
+  topic         String
+  shopDomain    String
+  payload       Json
+  status        String    @default("RECEIVED") // RECEIVED | PROCESSING | PROCESSED | FAILED
+  errorMessage  String?
+  processedAt   DateTime?
+  communityId   String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([status])
+  @@index([topic, createdAt])
+  @@map("webhook_inbox")
+}
+
+// -------- JXC 参加導線 --------
+
+enum JxcContactStatus {
+  new
+  auto_classified
+  review_needed
+  contacted
+  active
+  archived
+  opted_out
+}
+
+enum JxcSubmissionType {
+  event_notice
+  referral
+  co_creation
+}
+
+enum JxcSubmissionStatus {
+  submitted
+  reviewed
+  followup_needed
+  followup_done
+  closed
+}
+
+model JxcContact {
+  id            String           @id @default(cuid())
+  userId        String?          @unique
+  name          String
+  email         String          @unique
+  lineUserId    String?
+  sourceChannel String?
+  sourceArticle String?
+  lineConnected Boolean          @default(false)
+  status        JxcContactStatus  @default(new)
+  priority      Int?
+  score         Int?
+  optOut        Boolean          @default(false)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  user          User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  submissions   JxcSubmission[]
+
+  @@index([email])
+  @@index([status])
+  @@index([lineUserId])
+  @@map("jxc_contacts")
+}
+
+model JxcSubmission {
+  id               String                @id @default(cuid())
+  contactId        String
+  userId           String?
+  type             JxcSubmissionType
+  payloadJson      String
+  consentUpdates   Boolean?              @default(false)
+  consentContact   Boolean?              @default(true)
+  submissionStatus JxcSubmissionStatus   @default(submitted)
+  submittedAt      DateTime              @default(now())
+  contact          JxcContact            @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  referral         JxcReferral?
+  collabProfile    JxcCollabProfile?
+
+  @@index([contactId])
+  @@index([type])
+  @@index([submissionStatus])
+  @@map("jxc_submissions")
+}
+
+model JxcReferral {
+  id              String        @id @default(cuid())
+  submissionId    String        @unique
+  targetType      String
+  targetName      String
+  reason          String
+  url             String?
+  relationship    String?
+  followupAllowed Boolean?      @default(true)
+  submission      JxcSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@map("jxc_referrals")
+}
+
+model JxcCollabProfile {
+  id              String        @id @default(cuid())
+  submissionId    String        @unique
+  interestedAreas String?
+  skills          String?
+  experience      String?
+  availability    String?
+  contactAllowed  Boolean       @default(true)
+  submission      JxcSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@map("jxc_collab_profiles")
+}
+
+model JxcArticle {
+  id          String   @id @default(cuid())
+  title       String
+  summary     String?
+  externalUrl String
+  publishedAt DateTime
+  thumbnail   String?
+  tags        String?
+  slug        String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([publishedAt])
+  @@map("jxc_articles")
+}
+
+model ApiKey {
+  id          String    @id @default(cuid())
+  key         String    @unique
+  clientName  String
+  communityId String?
+  scopes      String[]  @default([])
+  isActive    Boolean   @default(true)
+  expiresAt   DateTime?
+  lastUsedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  community   Community? @relation(fields: [communityId], references: [id])
+
+  @@index([key])
+  @@map("api_keys")
+}
+
+// -------- Usage & Invoice --------
+
+model UsageRecord {
+  id          String   @id @default(cuid())
+  communityId String
+  period      String   // "2026-03" (月次)
+  metricType  String   // "active_members", "events_held", "points_issued", "checkins", "orders"
+  value       Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  @@unique([communityId, period, metricType])
+  @@index([communityId, period])
+  @@map("usage_records")
+}
+
+model Invoice {
+  id              String    @id @default(cuid())
+  communityId     String
+  period          String    // "2026-03"
+  status          String    @default("DRAFT") // DRAFT | ISSUED | PAID | VOID
+  totalAmount     Int       @default(0)
+  currency        String    @default("jpy")
+  items           Json      @default("[]") // [{description, quantity, unitPrice, amount}]
+  stripeInvoiceId String?   @unique
+  issuedAt        DateTime?
+  paidAt          DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  @@unique([communityId, period])
+  @@index([communityId, status])
+  @@map("invoices")
+}
+
+// -------- Online Session --------
+
+model OnlineSession {
+  id        String    @id @default(cuid())
+  userId    String
+  eventId   String
+  joinedAt  DateTime  @default(now())
+  leftAt    DateTime?
+  duration  Int?      // seconds (computed on leave or by cron)
+  source    String    @default("web") // "web", "google_meet", "youtube", "custom"
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId, userId])
+  @@index([eventId, joinedAt])
+  @@map("online_sessions")
+}
+
+// ────────────────────────────────────────────────
+// コミュニティ オンボーディングフォーム
+// ────────────────────────────────────────────────
+
+model CommunityForm {
+  id          String   @id @default(cuid())
+  communityId String   @unique  // 1コミュニティにつき1フォーム
+  title       String   @default("参加時アンケート")
+  description String?
+  isRequired  Boolean  @default(false)  // 参加時に必須か
+  isActive    Boolean  @default(true)
+  fields      Json     @default("[]")   // CommunityFormField[] を JSON で格納
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  community   Community              @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  responses   CommunityFormResponse[]
+
+  @@map("community_forms")
+}
+
+// fields JSON の型定義（コード側で使用）:
+// interface CommunityFormField {
+//   id: string;          // cuid
+//   type: "TEXT" | "PARAGRAPH" | "SELECT" | "RADIO" | "CHECKBOX";
+//   label: string;
+//   description?: string;
+//   options?: string[];  // SELECT/RADIO/CHECKBOX 用
+//   required: boolean;
+//   order: number;
+// }
+
+model CommunityFormResponse {
+  id          String   @id @default(cuid())
+  formId      String
+  memberId    String
+  responses   Json     // { [fieldId: string]: string | string[] }
+  submittedAt DateTime @default(now())
+
+  form   CommunityForm   @relation(fields: [formId], references: [id], onDelete: Cascade)
+  member CommunityMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@unique([formId, memberId])  // 1メンバー1回答
+  @@map("community_form_responses")
 }

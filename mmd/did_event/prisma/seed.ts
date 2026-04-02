@@ -1,20 +1,26 @@
 // prisma/seed.ts
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../src/generated/prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import pg from "pg";
 
-const prisma = new PrismaClient();
+const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL! });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   // Create test users
   const user1 = await prisma.user.upsert({
     where: { email: "test1@example.com" },
     update: {
-      isAdmin: true, // 管理者として設定
+      isAdmin: true,
+      tutorialStatus: "COMPLETED", // E2E テストでオンボーディングをスキップ
     },
     create: {
       email: "test1@example.com",
       name: "テストユーザー1（管理者）",
       provider: "test",
       isAdmin: true,
+      tutorialStatus: "COMPLETED",
     },
   });
 
@@ -22,12 +28,14 @@ async function main() {
     where: { email: "test2@example.com" },
     update: {
       points: 100,
+      tutorialStatus: "COMPLETED",
     },
     create: {
       email: "test2@example.com",
       name: "テストユーザー2",
       provider: "test",
       points: 100,
+      tutorialStatus: "COMPLETED",
     },
   });
 
@@ -182,7 +190,7 @@ async function main() {
     create: {
       userId: user1.id,
       eventId: event1.id,
-      status: "joined",
+      status: "JOINED",
     },
   });
 
@@ -197,7 +205,7 @@ async function main() {
     create: {
       userId: user1.id,
       eventId: event2.id,
-      status: "joined",
+      status: "JOINED",
     },
   });
 
@@ -249,7 +257,7 @@ async function main() {
       slug: "mmd-official",
       scope: "OFFICIAL",
       isOfficial: true,
-      imageUrl: "https://placehold.co/600x200/2563eb/ffffff?text=MMD+Official",
+      imageUrl: "https://res.cloudinary.com/dv7r3a0gg/image/upload/v1774570331/community-icons/d6fhfk01qqekdkqr7loa.jpg",
       ownerOrganizerId: user1.id, // Admin user as owner
     },
   });

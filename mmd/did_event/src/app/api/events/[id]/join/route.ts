@@ -6,7 +6,10 @@ import { prisma } from "@/lib/prisma";
 import { issueEventVcToUser, issueEventVcToDid } from "@/lib/kyosoVc";
 import { createAndPublishDid } from "@/lib/kyosoDid";
 import { addEventToUserGoogleCalendar } from "@/lib/add-to-calendar";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/generated/prisma/client";
+import { createPointTransaction } from "@/lib/ledger";
+import { recordEventJoined, recordLedgerEarned, recordCredentialIssued } from "@/lib/member-facts";
+import { requirePhoneVerification } from "@/lib/require-phone";
 
 // Define Body Interface
 interface JoinRequestBody {
@@ -14,16 +17,15 @@ interface JoinRequestBody {
   answers?: { questionId: string; value: string }[];
   intentId?: string;
   paymentMethod?: string;
+  attendanceMode?: "online" | "offline";
 }
 
 /**
  * イベント参加エンドポイント
  * ユーザーがイベントに参加し、VC を発行します
  */
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     // セッション確認
     const session = await getServerSession(authOptions);
@@ -48,6 +50,10 @@ export async function POST(
       );
     }
 
+    // 電話番号認証チェック（必須）
+    const phoneCheck = await requirePhoneVerification(user.id);
+    if (phoneCheck) return phoneCheck;
+
     // Parse Body
     let body: JoinRequestBody = {};
     try {
@@ -56,7 +62,7 @@ export async function POST(
       body = {};
     }
 
-    const { ticketId, answers = [], intentId, paymentMethod } = body;
+    const { ticketId, answers = [], intentId, paymentMethod, attendanceMode } = body;
 
     // イベント取得
     const event = await prisma.event.findUnique({
@@ -70,7 +76,9 @@ export async function POST(
             }
           }
         },
-        questions: true
+        questions: true,
+        allowedRoles: { select: { id: true } },
+        coOrganizers: { select: { id: true } },
       },
     });
 
@@ -79,6 +87,40 @@ export async function POST(
         { error: "Event not found" },
         { status: 404 }
       );
+    }
+
+    // --- Visibility / Entitlement gating ---
+    // private イベントのみロールチェック（unlisted は URLを知っていれば参加可）
+    const eventVisibility = (event as any).visibility || "public";
+    const allowedRoleIds = (event as { allowedRoles?: { id: string }[] }).allowedRoles?.map(r => r.id) ?? [];
+    if (eventVisibility === "private" && allowedRoleIds.length > 0) {
+      // Owner と admin はゲーティング免除
+      const isOwner = event.ownerId === user.id;
+      const isAdmin = user.isAdmin;
+      if (!isOwner && !isAdmin) {
+        // CommunityMember.roleId または RoleGrant で該当ロールを持っているか確認
+        const [memberRole, grantedRole] = await Promise.all([
+          prisma.communityMember.findFirst({
+            where: {
+              userId: user.id,
+              roleId: { in: allowedRoleIds },
+            },
+          }),
+          prisma.roleGrant.findFirst({
+            where: {
+              userId: user.id,
+              roleId: { in: allowedRoleIds },
+              status: "ACTIVE",
+            },
+          }),
+        ]);
+        if (!memberRole && !grantedRole) {
+          return NextResponse.json(
+            { error: "このイベントに参加するには特定のロールが必要です" },
+            { status: 403 }
+          );
+        }
+      }
     }
 
     // Strict typing for included relations
@@ -137,6 +179,35 @@ export async function POST(
       }
     }
 
+    // ハイブリッドイベントの場合、attendanceMode 必須
+    if (event.format === "hybrid") {
+      if (!attendanceMode || !["online", "offline"].includes(attendanceMode)) {
+        return NextResponse.json(
+          { error: "ハイブリッドイベントでは参加方法（会場/オンライン）を選択してください" },
+          { status: 400 }
+        );
+      }
+      // モード別定員チェック
+      const modeCapacity = attendanceMode === "offline"
+        ? (event as any).offlineCapacity
+        : (event as any).onlineCapacity;
+      if (modeCapacity != null) {
+        const modeCount = await prisma.participant.count({
+          where: {
+            eventId,
+            attendanceMode,
+            status: { in: ["JOINED", "PENDING", "ATTENDED", "COMPLETED"] },
+          },
+        });
+        if (modeCount >= modeCapacity) {
+          return NextResponse.json(
+            { error: attendanceMode === "offline" ? "会場参加の定員に達しています" : "オンライン参加の定員に達しています" },
+            { status: 400 }
+          );
+        }
+      }
+    }
+
     // 既に参加済みかチェック
     const existingParticipant = await prisma.participant.findUnique({
       where: {
@@ -177,7 +248,7 @@ export async function POST(
 
     // Determine Participation Status (check approvalRequired)
     const approvalRequired = (typedEvent as { approvalRequired?: boolean }).approvalRequired;
-    const participationStatus = approvalRequired ? "PENDING" : "joined";
+    const participationStatus: string = approvalRequired ? "PENDING" : "JOINED";
 
     // --- TRANSACTION START ---
     const { participant, intentConsumed, isNewJoin } = await prisma.$transaction(async (tx: typeof prisma) => {
@@ -196,6 +267,7 @@ export async function POST(
             ticketId: ticketId || null,
             paymentStatus,
             paymentMethod: method,
+            attendanceMode: attendanceMode || null,
             answers: {
               create: answers.map(a => ({
                 questionId: a.questionId,
@@ -283,7 +355,7 @@ export async function POST(
     }
 
     // 参加確定時: Googleカレンダーに自動追加（連携済みユーザーのみ）
-    if (isNewJoin && participationStatus === "joined") {
+    if (isNewJoin && participationStatus === "JOINED") {
       try {
         const googleId = (session.user as { googleId?: string | null }).googleId ?? null;
         const calResult = await addEventToUserGoogleCalendar(
@@ -308,13 +380,71 @@ export async function POST(
 
     // New Join Specific Actions (Chat Post, VC)
     if (isNewJoin) {
-      // 参加チャットへの自動投稿
+      // Record EVENT_JOINED fact
+      const factCommunityId = (typedEvent as { organizerCommunityId?: string }).organizerCommunityId
+        || (typedEvent as { communityId?: string }).communityId;
+      if (factCommunityId) {
+        await recordEventJoined({
+          communityId: factCommunityId,
+          userId: user.id,
+          eventId,
+          participantId: participant.id,
+        });
+      }
+
+      // A) JOIN報酬（ポイント付与）: 設定がある場合のみ、重複なしで付与
+      try {
+        const joinReward = await prisma.eventPointReward.findUnique({
+          where: { eventId_type: { eventId, type: "JOIN" } }
+        });
+        if (joinReward?.isActive && Number(joinReward.amount) > 0) {
+          const alreadyGranted = await prisma.eventPointRewardGrant.findUnique({
+            where: { rewardId_userId: { rewardId: joinReward.id, userId: user.id } }
+          });
+          if (!alreadyGranted) {
+            await prisma.$transaction(async (tx: typeof prisma) => {
+              await tx.eventPointRewardGrant.create({
+                data: {
+                  rewardId: joinReward.id,
+                  userId: user.id,
+                  participantId: participant.id,
+                  referenceId: `event:${eventId}:reward:JOIN:participant:${participant.id}`,
+                }
+              });
+              // NOTE: 現状のポイント実装はユーザーに対する加算（口座差引は後続で拡張）
+              const rewardCommunityId = (typedEvent as { organizerCommunityId?: string }).organizerCommunityId || (typedEvent as { communityId?: string }).communityId || factCommunityId;
+              if (!rewardCommunityId) throw new Error("No communityId for point transaction");
+              await createPointTransaction({
+                userId: user.id,
+                communityId: rewardCommunityId as string,
+                amount: Number(joinReward.amount),
+                type: "EARN",
+                description: `イベント参加報酬: ${typedEvent.title}`,
+              });
+            });
+            if (factCommunityId) {
+              await recordLedgerEarned({
+                communityId: factCommunityId,
+                userId: user.id,
+                amount: Number(joinReward.amount),
+                description: `イベント参加報酬: ${typedEvent.title}`,
+                eventId,
+                rewardType: "JOIN",
+              });
+            }
+          }
+        }
+      } catch (ptErr) {
+        console.error("[Join] Failed to grant join reward:", ptErr);
+      }
+
+      // 参加チャットへの自動投稿（eventId で直接紐付け）
       try {
         await prisma.post.create({
           data: {
             content: "イベントに参加しました！",
             userId: user.id,
-            communityId: (typedEvent as { communityId?: string }).communityId || undefined,
+            eventId,
           },
         });
       } catch (msgError) {
@@ -382,6 +512,67 @@ export async function POST(
       }
     }
 
+    // --- イベントオーナーへの新規参加通知 ---
+    if (isNewJoin && typedEvent.ownerId && typedEvent.ownerId !== user.id) {
+      try {
+        const { sendNotification } = await import("@/lib/notifications");
+        const statusLabel = approvalRequired ? "（承認待ち）" : "";
+        await sendNotification(
+          typedEvent.ownerId,
+          "event_message",
+          "新しい参加申込",
+          `${user.name || "ユーザー"}さんが「${typedEvent.title}」に参加申込しました${statusLabel}`,
+          { eventId, actorUserId: user.id, link: `/events/${eventId}/manage/participants` }
+        );
+      } catch (e) {
+        console.error("[Join] Failed to notify event owner:", e);
+      }
+    }
+
+    // --- 共同主催者への新規参加通知 ---
+    if (isNewJoin) {
+      const coOrganizers = (typedEvent as { coOrganizers?: { id: string }[] }).coOrganizers ?? [];
+      const coOrganizerIds = coOrganizers
+        .map((co) => co.id)
+        .filter((id) => id !== user.id && id !== typedEvent.ownerId); // 参加者自身とオーナー（既に通知済み）を除外
+      if (coOrganizerIds.length > 0) {
+        try {
+          const { sendNotification } = await import("@/lib/notifications");
+          const statusLabel = approvalRequired ? "（承認待ち）" : "";
+          await Promise.allSettled(
+            coOrganizerIds.map((coOrgId) =>
+              sendNotification(
+                coOrgId,
+                "event_message",
+                "新しい参加申込",
+                `${user.name || "ユーザー"}さんが「${typedEvent.title}」に参加申込しました${statusLabel}`,
+                { eventId, actorUserId: user.id, link: `/events/${eventId}/manage/participants` }
+              )
+            )
+          );
+        } catch (e) {
+          console.error("[Join] Failed to notify co-organizers:", e);
+        }
+      }
+    }
+
+    // --- ファンランク自動評価 ---
+    if (isNewJoin) {
+      const rankCommunityId = (typedEvent as { organizerCommunityId?: string }).organizerCommunityId
+        || (typedEvent as { communityId?: string }).communityId;
+      if (rankCommunityId) {
+        try {
+          const { evaluateFanRank } = await import("@/lib/fan-rank");
+          const rankResult = await evaluateFanRank(user.id, rankCommunityId);
+          if (rankResult.granted.length > 0) {
+            console.log(`[Join] Fan rank granted: ${rankResult.granted.join(", ")} for user ${user.id}`);
+          }
+        } catch (e) {
+          console.error("[Join] Fan rank evaluation failed:", e);
+        }
+      }
+    }
+
     return NextResponse.json({
       participant,
       credential: null,
@@ -399,10 +590,8 @@ export async function POST(
 /**
  * イベント参加キャンセルエンドポイント
  */
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const session = await getServerSession(authOptions);
 
