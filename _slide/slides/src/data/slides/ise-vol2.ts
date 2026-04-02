@@ -18,12 +18,14 @@ export const iseVol2: DeckData = {
   },
   credits: [
     { context: "タイトル・宇治橋", attribution: "Wikimedia Commons / CC BY-SA 3.0" },
+    { context: "内宮参道（今日の流れ）", attribution: "Wikimedia Commons / CC BY-SA 3.0" },
     { context: "外宮正宮", attribution: "Wikimedia Commons / CC BY-SA 3.0" },
+    { context: "せんぐう館（外宮の歩き方）", attribution: "Wikimedia Commons / CC BY-SA 3.0" },
     { context: "五十鈴川御手洗場", attribution: "Wikimedia Commons / CC BY-SA 3.0" },
-    { context: "内宮正宮石段", attribution: "Wikimedia Commons / CC BY-SA 3.0" },
+    { context: "内宮正宮石段（二拝二拍手一拝）", attribution: "Wikimedia Commons / CC BY-SA 3.0" },
     { context: "夫婦岩", attribution: "Wikimedia Commons / CC BY-SA 3.0" },
     { context: "森林・参道", attribution: "Unsplash License" },
-    { context: "お木曳き・奉曳車", attribution: "Wikimedia Commons / CC BY-SA 3.0" },
+    { context: "お木曳き・奉曳車・エンヤ曳き", attribution: "Wikimedia Commons / CC BY-SA 3.0" },
   ],
   slides: [
     // ── スライド 1: タイトル ──
@@ -43,6 +45,10 @@ export const iseVol2: DeckData = {
       type: "section",
       title: "今日の流れ",
       subtitle: "前半: 参拝ガイド（チラシを見ながら）\n　外宮先祭・歩き方・参拝作法・見どころ\n後半: お木曳き\n　式年遷宮とお木曳き・参加方法・常磐会ツアー\n\n※チラシを手元に広げてください",
+      style: {
+        backgroundImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Naiku_01.JPG/1280px-Naiku_01.JPG",
+        overlayOpacity: 0.8,
+      },
     },
     // ── 前半: 参拝と歩き方（スライド 3-6） ──
     // ── スライド 3: 外宮先祭 ──
@@ -72,6 +78,10 @@ export const iseVol2: DeckData = {
         { id: "6", label: "せんぐう館", sub: "300円" },
       ],
       flow: "horizontal",
+      style: {
+        backgroundImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/eb/Geku_Sengukan01.jpg/1280px-Geku_Sengukan01.jpg",
+        overlayOpacity: 0.82,
+      },
     },
     // ── スライド 5: 内宮と参拝作法 ──
     {
@@ -86,6 +96,10 @@ export const iseVol2: DeckData = {
         { id: "6", label: "神楽殿", sub: "お守り" },
       ],
       flow: "horizontal",
+      style: {
+        backgroundImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Isuzu-gawa_River3.jpg/1280px-Isuzu-gawa_River3.jpg",
+        overlayOpacity: 0.8,
+      },
     },
     // ── スライド 5b: 二拝二拍手一拝 ──
     {
@@ -98,6 +112,10 @@ export const iseVol2: DeckData = {
         { id: "4", label: "⑥", sub: "深く1回お辞儀（一拝）" },
       ],
       flow: "horizontal",
+      style: {
+        backgroundImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Naiku_05.JPG/1280px-Naiku_05.JPG",
+        overlayOpacity: 0.8,
+      },
     },
     // ── スライド 6: 見どころダイジェスト ──
     {
