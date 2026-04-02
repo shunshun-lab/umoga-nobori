@@ -133,6 +133,7 @@ export const iseVol2: DeckData = {
         [{ text: "半日:", bold: true }, " 外宮 or 内宮どちらか集中"],
         [{ text: "1日:", bold: true }, " 外宮→内宮→おかげ横丁"],
         [{ text: "1泊2日:", bold: true }, " 早朝内宮がおすすめ"],
+        [{ text: "📖 公式 内宮参拝コース", href: "https://www.isejingu.or.jp/visit/course/naiku.html", bold: true }],
       ],
       style: {
         backgroundImage: "https://upload.wikimedia.org/wikipedia/commons/b/bc/Meoto_Iwa_3.JPG",
