@@ -506,5 +506,18 @@
   "https://github.com/sprklai/agenttray",
   "https://github.com/oliver-kriska/claude-elixir-phoenix",
   "https://diditgetdumber.com/",
-  "https://github.com/anthropics/claude-code/releases/tag/v2.1.96"
+  "https://github.com/anthropics/claude-code/releases/tag/v2.1.96",
+  "https://dev.to/thebrierfox/building-a-revenue-generating-agent-from-scratch-with-claude-code-1721",
+  "https://www.reddit.com/r/ClaudeAI/comments/1shacnm/claude_code_vscode_extension_with_custom_api_url/",
+  "https://dev.to/oldeucryptoboi/how-claude-code-remembers-and-forgets-the-memory-and-persistence-architecture-55bd",
+  "https://dev.to/subprime2010/how-i-use-claude-code-to-refactor-legacy-code-without-breaking-production-3h3e",
+  "https://dev.to/thebrierfox/claude-code-permissions-the-approval-boundary-pattern-that-makes-autonomous-agents-safe-e9c",
+  "https://www.reddit.com/r/ClaudeAI/comments/1sh93j2/83k_tokens_to_37k_semantic_knowledge_base_for/",
+  "https://dev.to/subprime2010/how-i-use-claude-code-to-research-before-i-write-a-single-line-of-code-5dla",
+  "https://dev.to/thebrierfox/claude-code-memory-how-automatic-memory-extraction-actually-works-1bmg",
+  "https://dev.to/thebrierfox/claude-code-hooks-automate-what-happens-before-and-after-every-tool-call-30mi",
+  "https://dev.to/thebrierfox/how-claude-code-handles-context-compaction-and-how-to-stop-losing-work-cg3",
+  "https://dev.to/thebrierfox/claude-code-claudemd-the-5-patterns-that-make-agents-actually-autonomous-513l",
+  "https://dev.to/subprime2010/how-i-use-claude-code-to-refactor-legacy-code-without-breaking-everything-5fap",
+  "https://github.com/anthropics/claude-code/releases/tag/v2.1.98"
 ]
