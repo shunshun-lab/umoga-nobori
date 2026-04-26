@@ -822,5 +822,22 @@
   "https://github.com/zhizdev/overgrow",
   "https://twitter.com/pranay01/status/2047444399114932548",
   "https://github.com/agentdmai/teamfuse",
-  "https://www.anthropic.com/engineering/april-23-postmortem"
+  "https://www.anthropic.com/engineering/april-23-postmortem",
+  "https://dev.to/recca0120/i-audited-3-months-of-claude-code-billing-every-cost-saving-tip-i-believed-was-wrong-2ghj",
+  "https://dev.to/whoffagents/i-gave-an-ai-agent-authority-over-my-content-ops-heres-what-broke-on-day-one-1bm4",
+  "https://dev.to/recca0120/12-more-days-scanned-claude-code-sub-agent-cache-ttl-has-been-100-5m-for-17-straight-days-this-7ff",
+  "https://github.com/ivankuznetsov/llm-wiki",
+  "https://dev.to/simon_paxton/claude-code-token-usage-hides-in-history-and-tools-2lg2",
+  "https://github.com/lu-zhengda/claude-mem-viz",
+  "https://github.com/btahir/agent-order",
+  "https://dev.to/whoffagents/tdd-is-the-only-claude-code-workflow-that-actually-stuck-for-me-1oae",
+  "https://marmelab.com/blog/2026/04/24/claude-code-tips-i-wish-id-had-from-day-one.html",
+  "https://github.com/tryhardfifi/pocket-ingest",
+  "https://dev.to/jtorchia/i-almost-cancelled-claude-i-ran-my-own-benchmarks-before-pulling-the-trigger-ei2",
+  "https://dev.to/jtorchia/cancele-claude-medi-el-deterioro-de-calidad-con-mis-propios-benchmarks-antes-de-irme-11ca",
+  "https://dev.to/lavellehatcherjr/how-i-stopped-getting-stream-idle-timeout-errors-in-claude-code-hf9",
+  "https://dev.to/raxxostudios/claude-code-21118-adds-vim-mode-theme-and-hook-mcp-43m5",
+  "https://www.arcade.dev/blog/claude-code-routines-mcp-setup/",
+  "https://dev.to/raxxostudios/claude-code-ultraplan-plan-in-the-cloud-run-anywhere-3jjm",
+  "https://github.com/heyallencao/NoonFlow/releases"
 ]
