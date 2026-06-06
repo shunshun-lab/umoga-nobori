@@ -430,6 +430,21 @@ function CTASlide({ slide, theme }: { slide: CTASlideData; theme: DeckTheme }) {
           {slide.url}
         </a>
       )}
+      {slide.qr && (
+        <div className="mt-8 flex flex-col items-center gap-2">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={slide.qr}
+            alt="QR code"
+            className="h-28 w-28 rounded-md bg-white p-2 sm:h-32 sm:w-32"
+          />
+          {slide.qrCaption && (
+            <p className="text-xs sm:text-sm" style={{ color: theme.muted }}>
+              <RT accent={theme.accent}>{slide.qrCaption}</RT>
+            </p>
+          )}
+        </div>
+      )}
     </SlideFrame>
   );
 }

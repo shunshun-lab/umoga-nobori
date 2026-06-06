@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>常磐会（ときわかい）団体概要 — A4チラシ</title>
+  <style>
+    @page { size: A4; margin: 0; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+      color: #222;
+      background: #faf8f5;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* ── A4 page ── */
+    .page {
+      width: 210mm;
+      height: 297mm;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      page-break-after: always;
+      background: #faf8f5;
+    }
+    .page:last-child { page-break-after: auto; }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(135deg, #1a0a00 0%, #2d1810 55%, #160a02 100%);
+      color: #fff;
+      text-align: center;
+      padding: 6mm 10mm 5mm;
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 80%, rgba(184,134,11,0.18) 0%, transparent 70%);
+    }
+    .hero-sub {
+      font-size: 8pt;
+      letter-spacing: 0.42em;
+      color: #d4a838;
+      margin-bottom: 2mm;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: 22pt;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      line-height: 1.25;
+      position: relative;
+    }
+    .hero-tagline {
+      font-size: 10pt;
+      color: rgba(255,255,255,0.85);
+      margin-top: 2mm;
+      letter-spacing: 0.05em;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 8pt;
+      color: rgba(255,255,255,0.55);
+      margin-top: 1.5mm;
+      position: relative;
+    }
+
+    /* ── Content base ── */
+    .content {
+      flex: 1;
+      padding: 3mm 10mm 2mm;
+      display: flex;
+      flex-direction: column;
+      gap: 2.3mm;
+    }
+
+    h2 {
+      font-size: 11.5pt;
+      letter-spacing: 0.06em;
+      color: #1a1a1a;
+      border-bottom: 1.2pt solid #b8860b;
+      padding-bottom: 0.8mm;
+      margin-bottom: 1.5mm;
+      display: inline-block;
+    }
+    h3 { font-size: 9.5pt; color: #8b2500; margin: 0 0 1.5mm; letter-spacing: 0.03em; }
+    p { font-size: 8.5pt; line-height: 1.65; }
+    p strong { color: #8b2500; }
+
+    .lead { font-size: 9pt; line-height: 1.7; color: #1a1a1a; }
+    .lead strong { color: #8b2500; }
+
+    /* ── Quote / philosophy ── */
+    .quote {
+      border-left: 2.5pt solid #b8860b;
+      padding: 2mm 4mm;
+      background: #f5f0e8;
+      font-size: 9pt;
+      line-height: 1.6;
+      color: #1a1a1a;
+      font-style: italic;
+      border-radius: 0 1mm 1mm 0;
+    }
+    .quote strong { font-style: normal; color: #8b2500; }
+
+    /* ── MVV ── */
+    .mvv {
+      background: #fff;
+      border: 0.6pt solid #d4c5a9;
+      border-radius: 1.5mm;
+      padding: 2.5mm 3.5mm;
+    }
+    .mvv-row {
+      display: grid;
+      grid-template-columns: 18mm 1fr;
+      gap: 3mm;
+      align-items: baseline;
+      padding: 1mm 0;
+      border-bottom: 0.3pt dotted #d4c5a9;
+    }
+    .mvv-row:last-child { border-bottom: none; }
+    .mvv-row .k {
+      font-size: 8.5pt;
+      font-weight: 700;
+      color: #b8860b;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+    .mvv-row .v { font-size: 8pt; line-height: 1.55; color: #1a1a1a; }
+    .mvv-row .v strong { color: #8b2500; }
+    .badges { margin-top: 1mm; display: flex; flex-wrap: wrap; gap: 1.5mm; }
+    .badge {
+      background: #faf3e6;
+      border: 0.5pt solid #d4a838;
+      color: #8b2500;
+      font-size: 7.5pt;
+      font-weight: 700;
+      padding: 0.6mm 2.5mm;
+      border-radius: 4mm;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── 3 categories ── */
+    .triple { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2.5mm; }
+    .triple-card {
+      background: #fff;
+      border: 0.6pt solid #d4c5a9;
+      border-top: 1.5pt solid #b8860b;
+      border-radius: 1.5mm;
+      padding: 2.5mm 3mm;
+    }
+    .triple-card .ic {
+      font-size: 9pt;
+      font-weight: 700;
+      color: #8b2500;
+      display: block;
+      margin-bottom: 1mm;
+      letter-spacing: 0.03em;
+    }
+    .triple-card .ic span { color: #b8860b; font-size: 11pt; margin-right: 1mm; }
+    .triple-card .aim {
+      font-size: 7pt;
+      color: #777;
+      display: block;
+      margin-bottom: 1.2mm;
+      line-height: 1.4;
+    }
+    .triple-card .acts {
+      font-size: 7.5pt;
+      line-height: 1.55;
+      color: #1a1a1a;
+    }
+    .triple-card .acts strong { color: #8b2500; }
+
+    /* ── Calendar table ── */
+    .cal {
+      background: #fff;
+      border: 0.6pt solid #d4c5a9;
+      border-radius: 1.5mm;
+      padding: 2mm 3mm;
+    }
+    .cal-row {
+      display: grid;
+      grid-template-columns: 18mm 1fr auto;
+      gap: 3mm;
+      align-items: baseline;
+      padding: 0.8mm 0;
+      border-bottom: 0.3pt dotted #d4c5a9;
+      font-size: 8pt;
+    }
+    .cal-row:last-child { border-bottom: none; }
+    .cal-row .m { font-weight: 700; color: #b8860b; white-space: nowrap; }
+    .cal-row .a { color: #1a1a1a; line-height: 1.45; }
+    .cal-row .a strong { color: #8b2500; }
+    .cal-row .pl { font-size: 7pt; color: #777; white-space: nowrap; }
+    .cal-star {
+      background: #8b2500;
+      color: #fff;
+      font-size: 7.5pt;
+      font-weight: 700;
+      padding: 1mm 3mm;
+      border-radius: 0.8mm;
+      margin-top: 1.5mm;
+      text-align: center;
+      letter-spacing: 0.04em;
+    }
+    .cal-star .small { font-size: 6.5pt; font-weight: 400; color: rgba(255,255,255,0.85); display: block; margin-top: 0.3mm; }
+
+    /* ── Join row (two cols + fees) ── */
+    .join { display: grid; grid-template-columns: 1.3fr 1fr; gap: 4mm; align-items: stretch; }
+    .fees {
+      background: #fff;
+      border: 0.6pt solid #d4c5a9;
+      border-left: 1.5pt solid #b8860b;
+      border-radius: 1.5mm;
+      padding: 2.5mm 3.5mm;
+    }
+    .fees-row {
+      display: grid;
+      grid-template-columns: 22mm 1fr;
+      gap: 2mm;
+      align-items: baseline;
+      padding: 0.9mm 0;
+      border-bottom: 0.3pt dotted #d4c5a9;
+      font-size: 8pt;
+    }
+    .fees-row:last-child { border-bottom: none; }
+    .fees-row .ft { font-weight: 700; color: #b8860b; }
+    .fees-row .fd { color: #333; line-height: 1.45; }
+    .fees-row .fd strong { color: #8b2500; }
+    .fees-note { font-size: 7pt; color: #c0392b; font-weight: 700; margin-top: 1.2mm; }
+
+    .qr-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 3mm; }
+    .qr-box {
+      background: #fff;
+      border: 0.6pt solid #d4c5a9;
+      border-radius: 1.5mm;
+      padding: 2.5mm 2mm 2mm;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .qr-box img {
+      width: 24mm;
+      height: 24mm;
+      display: block;
+      margin: 0 auto 1mm;
+      background: #fff;
+    }
+    .qr-box .qt { font-size: 8pt; font-weight: 700; color: #8b2500; display: block; }
+    .qr-box .qd { font-size: 6.5pt; color: #666; display: block; margin-top: 0.5mm; line-height: 1.35; }
+
+    /* ── Footer / CTA ── */
+    .cta {
+      background: linear-gradient(135deg, #2d1810, #160a02);
+      color: #fff;
+      padding: 3mm 10mm;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 5mm;
+    }
+    .cta-text { flex: 1; }
+    .cta-text .ct-head {
+      font-size: 11pt;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: #d4a838;
+      margin-bottom: 1mm;
+    }
+    .cta-text .ct-sub {
+      font-size: 8pt;
+      color: rgba(255,255,255,0.78);
+      line-height: 1.5;
+      margin-bottom: 1.2mm;
+    }
+    .cta-text .ct-links { font-size: 7.5pt; color: rgba(255,255,255,0.6); line-height: 1.5; }
+    .cta-text .ct-links strong { color: #d4a838; }
+  </style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- ── HERO ── -->
+  <div class="hero">
+    <p class="hero-sub">TOKIWAKAI &nbsp;｜&nbsp; A COMMUNITY GROWING FROM ISE</p>
+    <h1>常磐会（ときわかい）のご案内</h1>
+    <p class="hero-tagline">伊勢の地から、未来の世代を育むコミュニティ</p>
+    <p class="hero-meta">一般社団法人 設立準備中 ｜ 伊勢・東京・京都 ｜ isetokiwa.jp</p>
+  </div>
+
+  <div class="content">
+
+    <!-- ── 常磐会とは ── -->
+    <div>
+      <h2>常磐会とは</h2>
+      <p class="lead">
+        <strong>常磐会（ときわかい）</strong>は、伊勢を拠点に、若い世代と多世代のための<strong>学びの場</strong>をつくる団体です。活動は伊勢のほか、東京・京都でも開催。日本の伝統文化の<strong>継承</strong>、若い世代・子どもたちの<strong>健やかな育ち</strong>、世代をこえた<strong>温かなつながり</strong>を目指しています。
+      </p>
+    </div>
+
+    <div class="quote">
+      <strong>「変わらないために、変わり続ける」</strong>—— 伊勢神宮の式年遷宮にみる「常若（とこわか）」の知恵を、現代の私たちの生き方の軸に。会の名は祝詞「常磐尓堅磐尓」に由来し、神宮参事・音羽悟氏により名づけられました。
+    </div>
+
+    <!-- ── MVV ── -->
+    <div>
+      <h2>私たちが目指すもの（MVV）</h2>
+      <div class="mvv">
+        <div class="mvv-row">
+          <div class="k">Mission</div>
+          <div class="v">伊勢の地から日本の伝統文化を次の世代へ継承し、<strong>若い世代・子どもたちの育ちと世代をこえたつながり</strong>を育む</div>
+        </div>
+        <div class="mvv-row">
+          <div class="k">Vision</div>
+          <div class="v"><strong>「変わらないために、変わり続ける」</strong>—— 常若の思想を、現代の生き方の軸に</div>
+        </div>
+        <div class="mvv-row">
+          <div class="k">Value</div>
+          <div class="v">
+            関わるうちに自然と育つ、大切にする5つのこころ
+            <div class="badges">
+              <span class="badge">奉仕</span>
+              <span class="badge">友愛</span>
+              <span class="badge">責任</span>
+              <span class="badge">忍耐</span>
+              <span class="badge">進取</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 活動の3つの入り口 ── -->
+    <div>
+      <h2>活動の3つの入り口</h2>
+      <div class="triple">
+        <div class="triple-card">
+          <span class="ic"><span>①</span>学びの場（知る）</span>
+          <span class="aim">伊勢・日本文化を学び、物語を「自分ごと」に</span>
+          <div class="acts"><strong>朔日会</strong>（毎月2日・東京）／伊勢神宮基礎講座シリーズ／伊勢神宮100人講演会</div>
+        </div>
+        <div class="triple-card">
+          <span class="ic"><span>②</span>体験・奉仕（味わう）</span>
+          <span class="aim">行事の当事者になり、心身を整える</span>
+          <div class="acts"><strong>お木曳き奉仕</strong>（少人数枠）／<strong>夏至祭</strong>（二見興玉神社）／リアル伊勢・伊勢ツアー</div>
+        </div>
+        <div class="triple-card">
+          <span class="ic"><span>③</span>つながり（続ける）</span>
+          <span class="aim">世代・地域をこえた縁を結ぶ</span>
+          <div class="acts"><strong>京都イベント</strong>（都をどり・舞妓体験）／会員コミュニティ</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 年間カレンダー ── -->
+    <div>
+      <h2>伊勢の一年を、共に巡る（年間カレンダー）</h2>
+      <div class="cal">
+        <div class="cal-row"><div class="m">1月</div><div class="a">リアル伊勢（新年の参拝）</div><div class="pl">おかげ横丁</div></div>
+        <div class="cal-row"><div class="m">毎月2日</div><div class="a"><strong>朔日会</strong>（朔日餅を楽しむ会・全11種を月替わりで）</div><div class="pl">東京</div></div>
+        <div class="cal-row"><div class="m">3月</div><div class="a">リアル伊勢（春の参拝）</div><div class="pl">おかげ横丁</div></div>
+        <div class="cal-row"><div class="m">4月</div><div class="a">伊勢ツアー（宿泊）／京都・都をどり&amp;舞妓体験</div><div class="pl">伊勢・京都</div></div>
+        <div class="cal-row"><div class="m">5・8月</div><div class="a"><strong>お木曳き奉仕</strong>（成人10名・学生10名の少人数枠）</div><div class="pl">伊勢</div></div>
+        <div class="cal-row"><div class="m">6月</div><div class="a"><strong>夏至祭</strong>（夫婦岩の朝日と海での禊）</div><div class="pl">二見興玉神社</div></div>
+        <div class="cal-row"><div class="m">11月</div><div class="a">リアル伊勢（朔日参り）</div><div class="pl">伊勢</div></div>
+      </div>
+      <div class="cal-star">
+        その先に —— 2033年・第63回 式年遷宮へ
+        <span class="small">一年をかけて伊勢の祭事暦をまるごと追体験。活動はこの大きな節目へ向かっています</span>
+      </div>
+    </div>
+
+    <!-- ── 関わり方 + 会費 + QR ── -->
+    <div>
+      <h2>関わり方 — それぞれのペースで</h2>
+      <div class="join">
+        <div class="fees">
+          <p style="font-size:8pt; line-height:1.55; margin-bottom:1.2mm;">いきなり入会しなくて大丈夫。<strong>気軽なイベント参加から</strong>。強制も義務もありません。</p>
+          <div class="fees-row"><div class="ft">イベント参加</div><div class="fd">都度申込（Peatix）。まずは単発でOK</div></div>
+          <div class="fees-row"><div class="ft">会員</div><div class="fd">年 <strong>10,000円</strong>（名刺付き 20,000円）</div></div>
+          <div class="fees-row"><div class="ft">寄付</div><div class="fd"><strong>1,000円</strong>から いつでも（Stripe／銀行振込）</div></div>
+          <p class="fees-note">※自動更新なし・1年ごとの任意更新</p>
+        </div>
+
+        <div class="qr-pair">
+          <!-- 差し替え: イベント申込QR（Peatix）。本番では src を実際のQR画像（peatix.com の常磐会ページ）に置換 -->
+          <div class="qr-box">
+            <img src="./qr-peatix.svg" alt="QR — イベント申込（Peatix）">
+            <span class="qt">イベントを見る</span>
+            <span class="qd">Peatix で申込<br>（差し替え）</span>
+          </div>
+          <!-- 差し替え: 入会・支援QR（isetokiwa.jp/join）。本番では src を実際のQR画像（isetokiwa.jp/join）に置換 -->
+          <div class="qr-box">
+            <img src="./qr-join.svg" alt="QR — 入会・支援（isetokiwa.jp/join）">
+            <span class="qt">会員になる</span>
+            <span class="qd">isetokiwa.jp/join<br>（差し替え）</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── FOOTER / CTA ── -->
+  <div class="cta">
+    <div class="cta-text">
+      <p class="ct-head">あなたの根っこを、伊勢で。</p>
+      <p class="ct-sub">日本の神話や歴史が「物語」から「自分ごと」に。世代や地域をこえた仲間と、自分の根っこを見つめなおす——まずは気軽なイベント参加から。</p>
+      <p class="ct-links">
+        <strong>常磐会</strong> https://www.isetokiwa.jp/ ／ <strong>毎月2日</strong> 朔日会（東京） ／ 最新情報はHPをご確認ください
+      </p>
+    </div>
+    <!-- このチラシのオンライン版（スライド資料）を指すQR -->
+    <div style="flex:0 0 auto; text-align:center; margin-left:5mm;">
+      <div style="background:#fff; padding:2mm; border-radius:2mm; width:22mm; height:22mm;">
+        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 35 35" shape-rendering="crispEdges"><path fill="#ffffff" d="M0 0h35v35H0z"/><path stroke="#1a0a00" d="M1 1.5h7m3 0h4m2 0h4m1 0h3m2 0h7M1 2.5h1m5 0h1m3 0h1m2 0h3m1 0h1m2 0h1m1 0h1m3 0h1m5 0h1M1 3.5h1m1 0h3m1 0h1m1 0h1m4 0h1m2 0h3m1 0h3m3 0h1m1 0h3m1 0h1M1 4.5h1m1 0h3m1 0h1m1 0h2m1 0h1m2 0h1m1 0h1m3 0h1m1 0h1m1 0h1m1 0h1m1 0h3m1 0h1M1 5.5h1m1 0h3m1 0h1m1 0h3m1 0h1m2 0h1m1 0h2m2 0h1m1 0h1m2 0h1m1 0h3m1 0h1M1 6.5h1m5 0h1m1 0h1m2 0h2m2 0h3m2 0h1m5 0h1m5 0h1M1 7.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M9 8.5h2m1 0h1m2 0h2m2 0h1m2 0h2M1 9.5h1m1 0h5m4 0h5m1 0h1m2 0h1m2 0h2m1 0h5M2 10.5h1m1 0h3m3 0h1m1 0h1m2 0h1m4 0h3m1 0h1m2 0h2m1 0h4M1 11.5h1m1 0h1m1 0h1m1 0h1m1 0h1m6 0h1m2 0h1m2 0h1m2 0h1m3 0h1m1 0h2M4 12.5h1m4 0h4m2 0h3m2 0h4m2 0h2m1 0h5M4 13.5h2m1 0h2m1 0h1m8 0h2m2 0h1m1 0h1m3 0h2m1 0h2M4 14.5h3m5 0h6m3 0h1m2 0h2m1 0h1m3 0h3M3 15.5h1m1 0h1m1 0h3m1 0h1m2 0h2m2 0h1m1 0h1m1 0h2m2 0h2m2 0h1m1 0h1M1 16.5h5m5 0h4m2 0h1m1 0h5m2 0h2m2 0h2M1 17.5h1m3 0h1m1 0h3m1 0h1m1 0h3m2 0h1m1 0h1m2 0h1m1 0h2m1 0h2m3 0h1M1 18.5h1m2 0h1m4 0h5m1 0h1m1 0h5m1 0h2m1 0h3m1 0h2m1 0h1M1 19.5h1m1 0h3m1 0h1m3 0h1m1 0h2m1 0h3m2 0h2m3 0h4m1 0h1M1 20.5h4m4 0h1m4 0h1m1 0h4m1 0h3m1 0h7M1 21.5h1m1 0h1m1 0h1m1 0h2m2 0h2m2 0h3m2 0h1m2 0h4m1 0h3M1 22.5h1m1 0h1m1 0h1m2 0h2m2 0h1m2 0h2m2 0h1m2 0h3m2 0h1m2 0h1m2 0h1M1 23.5h1m1 0h1m3 0h3m6 0h2m3 0h3m4 0h1m2 0h2M1 24.5h1m3 0h2m4 0h2m1 0h1m1 0h1m4 0h2m1 0h4m2 0h2m1 0h1M1 25.5h1m1 0h3m1 0h1m1 0h1m4 0h1m1 0h1m1 0h1m4 0h1m1 0h5M9 26.5h1m3 0h2m2 0h1m2 0h1m2 0h1m1 0h1m3 0h1m1 0h3M1 27.5h7m2 0h3m1 0h1m1 0h2m1 0h1m1 0h2m1 0h2m1 0h1m1 0h1m1 0h2M1 28.5h1m5 0h1m1 0h2m2 0h1m6 0h6m3 0h3M1 29.5h1m1 0h3m1 0h1m1 0h2m1 0h1m2 0h2m2 0h3m1 0h1m1 0h6M1 30.5h1m1 0h3m1 0h1m1 0h9m2 0h3m2 0h2m2 0h1m2 0h2M1 31.5h1m1 0h3m1 0h1m1 0h2m1 0h3m3 0h2m1 0h1m1 0h2m2 0h2m1 0h2M1 32.5h1m5 0h1m5 0h1m1 0h1m1 0h1m1 0h6m2 0h1m1 0h3M1 33.5h7m1 0h4m2 0h1m2 0h1m1 0h1m2 0h4m1 0h1m3 0h1"/></svg>
+      </div>
+      <span style="display:block; font-size:6.5pt; color:#8b2500; font-weight:700; margin-top:1mm;">スライドで見る</span>
+      <span style="display:block; font-size:5.5pt; color:#666;">この資料のWeb版</span>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>常磐会のご案内 — 団体概要</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --gold: #b8860b;
+    --gold-light: #d4a838;
+    --crimson: #8b2500;
+    --dark: #1a0a00;
+    --dark-blue: #1a1a2e;
+    --bg-warm: #faf8f5;
+    --text-light: rgba(255,255,255,0.92);
+    --text-dim: rgba(255,255,255,0.6);
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: #000;
+    font-family: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Slide container ── */
+  .deck { width: 100vw; height: 100vh; position: relative; }
+
+  .slide {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    text-align: center;
+    opacity: 0; visibility: hidden;
+    transition: opacity 0.6s ease, visibility 0.6s ease;
+    background-size: cover; background-position: center;
+    color: var(--text-light);
+    padding: 6vh 8vw;
+  }
+  .slide.active { opacity: 1; visibility: visible; }
+
+  /* Dark overlay on photo slides */
+  .slide.photo::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(26,10,0,0.74) 0%, rgba(26,26,46,0.70) 100%);
+    z-index: 0;
+  }
+  .slide.photo > * { position: relative; z-index: 1; }
+
+  /* Solid-background slides */
+  .slide.solid {
+    background: linear-gradient(135deg, var(--dark) 0%, #2d1810 50%, var(--dark-blue) 100%);
+  }
+
+  /* Photo-only slides (full-screen image + caption) */
+  .slide.photo-only {
+    background-size: cover;
+    background-position: center;
+    justify-content: flex-end;
+    align-items: center;
+    padding-bottom: 8vh;
+  }
+  .slide.photo-only::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(0,0,0,0.05) 0%,
+      rgba(0,0,0,0.15) 50%,
+      rgba(0,0,0,0.70) 85%,
+      rgba(0,0,0,0.85) 100%
+    );
+    z-index: 0;
+  }
+  .slide.photo-only > * { position: relative; z-index: 1; }
+  .slide.photo-only .photo-caption {
+    font-size: clamp(0.9rem, 1.6vw, 1.3rem);
+    color: rgba(255,255,255,0.92);
+    text-shadow: 0 2px 12px rgba(0,0,0,0.8);
+    letter-spacing: 0.05em;
+    line-height: 1.6;
+    text-align: center;
+    max-width: 80%;
+  }
+  .slide.photo-only .photo-caption .caption-sub {
+    display: block;
+    font-size: 0.75em;
+    color: rgba(255,255,255,0.55);
+    margin-top: 0.5vh;
+  }
+
+  /* Credit slide */
+  .slide.credits {
+    background: #111;
+    justify-content: flex-start;
+    padding-top: 6vh;
+    text-align: left;
+  }
+  .slide.credits h2 {
+    font-size: clamp(1.2rem, 2.5vw, 2rem);
+    margin-bottom: 3vh;
+    text-align: center;
+    width: 100%;
+  }
+  .slide.credits .credit-list {
+    font-size: clamp(0.55rem, 0.9vw, 0.75rem);
+    color: rgba(255,255,255,0.5);
+    line-height: 2;
+    max-width: 90%;
+    margin: 0 auto;
+    column-count: 2;
+    column-gap: 4vw;
+  }
+  .slide.credits .credit-list p {
+    break-inside: avoid;
+    margin-bottom: 0.5vh;
+  }
+
+  /* ── Typography ── */
+  .slide-sub {
+    font-size: clamp(0.7rem, 1.4vw, 1.1rem);
+    letter-spacing: 0.5em;
+    color: var(--gold-light);
+    text-transform: uppercase;
+    margin-bottom: 1.5vh;
+  }
+
+  h1 {
+    font-size: clamp(2rem, 5.5vw, 4.5rem);
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    line-height: 1.25;
+    margin-bottom: 2vh;
+    text-shadow: 0 4px 30px rgba(0,0,0,0.5);
+  }
+
+  h2 {
+    font-size: clamp(1.6rem, 4vw, 3.2rem);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    line-height: 1.3;
+    margin-bottom: 2.5vh;
+    text-shadow: 0 3px 20px rgba(0,0,0,0.4);
+  }
+
+  .tagline {
+    font-size: clamp(0.9rem, 1.8vw, 1.4rem);
+    color: var(--text-dim);
+    line-height: 1.6;
+    max-width: 72%;
+    margin: 0 auto;
+  }
+
+  .body-text {
+    font-size: clamp(1rem, 2vw, 1.5rem);
+    line-height: 1.8;
+    max-width: 80%;
+    text-align: left;
+    margin: 0 auto;
+  }
+
+  .body-text li {
+    margin-bottom: 1vh;
+    list-style: none;
+    padding-left: 1.5em;
+    position: relative;
+  }
+  .body-text li::before {
+    content: "\25C6";
+    color: var(--gold);
+    position: absolute;
+    left: 0;
+    font-size: 0.7em;
+    top: 0.2em;
+  }
+
+  .quote-block {
+    border-left: 4px solid var(--gold);
+    padding: 2vh 3vw;
+    margin: 3vh auto;
+    max-width: 78%;
+    text-align: left;
+    font-style: italic;
+    font-size: clamp(1.1rem, 2.2vw, 1.8rem);
+    line-height: 1.7;
+    background: rgba(184,134,11,0.08);
+    border-radius: 0 8px 8px 0;
+  }
+
+  /* ── Table ── */
+  .slide-table {
+    border-collapse: collapse;
+    margin: 2vh auto;
+    font-size: clamp(0.9rem, 1.6vw, 1.3rem);
+    text-align: left;
+  }
+  .slide-table th, .slide-table td {
+    padding: 1.2vh 2vw;
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+  }
+  .slide-table th {
+    color: var(--gold-light);
+    font-weight: 700;
+  }
+  .slide-table td { color: var(--text-light); }
+
+  /* ── Gold accent ── */
+  .gold { color: var(--gold-light); }
+  .big-num {
+    font-size: clamp(3rem, 8vw, 7rem);
+    font-weight: 900;
+    color: var(--gold-light);
+    line-height: 1;
+    display: block;
+    margin-bottom: 1vh;
+  }
+
+  /* ── Fact cards ── */
+  .fact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 2vw;
+    max-width: 90%;
+    margin: 2vh auto 0;
+    text-align: left;
+  }
+  .fact-card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(184,134,11,0.3);
+    border-radius: 12px;
+    padding: 3vh 2vw;
+  }
+  .fact-card h3 {
+    font-size: clamp(0.9rem, 1.5vw, 1.2rem);
+    color: var(--gold-light);
+    margin-bottom: 1vh;
+    font-weight: 700;
+  }
+  .fact-card p {
+    font-size: clamp(0.75rem, 1.2vw, 1rem);
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  /* ── Step cards ── */
+  .step-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5vw;
+    max-width: 90%;
+    margin: 2vh auto 0;
+    text-align: left;
+  }
+  .step-card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(184,134,11,0.3);
+    border-radius: 12px;
+    padding: 2.5vh 2vw;
+  }
+  .step-card .step-num {
+    font-size: clamp(1.5rem, 3vw, 2.5rem);
+    font-weight: 900;
+    color: var(--gold-light);
+    line-height: 1;
+    margin-bottom: 0.5vh;
+  }
+  .step-card p {
+    font-size: clamp(0.8rem, 1.3vw, 1.1rem);
+    color: var(--text-light);
+    line-height: 1.5;
+  }
+
+  /* ── Route flow ── */
+  .route-flow {
+    font-size: clamp(0.9rem, 1.6vw, 1.3rem);
+    color: var(--text-light);
+    line-height: 2.2;
+    max-width: 85%;
+    margin: 0 auto;
+    text-align: center;
+  }
+  .route-flow .arrow {
+    color: var(--gold);
+    margin: 0 0.3em;
+  }
+
+  /* ── CTA ── */
+  .cta-url {
+    display: inline-block;
+    background: var(--gold);
+    color: #fff;
+    font-size: clamp(1.2rem, 2.5vw, 2rem);
+    font-weight: 700;
+    padding: 1.5vh 4vw;
+    border-radius: 8px;
+    text-decoration: none;
+    letter-spacing: 0.05em;
+    margin: 2vh 0;
+  }
+  .qr-area {
+    margin-top: 3vh;
+    text-align: center;
+  }
+  .qr-area img {
+    width: clamp(100px, 15vw, 200px);
+    height: auto;
+    filter: drop-shadow(0 0 20px rgba(184,134,11,0.3));
+  }
+  .qr-label {
+    display: block;
+    font-size: clamp(0.6rem, 1vw, 0.8rem);
+    color: var(--text-dim);
+    margin-top: 0.5vh;
+  }
+
+  /* ── Timeline ── */
+  .timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5vh;
+    max-width: 82%;
+    margin: 2vh auto 0;
+    text-align: left;
+  }
+  .timeline-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5vw;
+  }
+  .timeline-dot {
+    width: clamp(12px, 1.5vw, 18px);
+    height: clamp(12px, 1.5vw, 18px);
+    border-radius: 50%;
+    background: var(--gold);
+    flex-shrink: 0;
+    margin-top: 0.3em;
+  }
+  .timeline-dot.highlight {
+    background: var(--gold-light);
+    box-shadow: 0 0 12px rgba(212,168,56,0.5);
+  }
+  .timeline-content {
+    font-size: clamp(0.85rem, 1.4vw, 1.15rem);
+    line-height: 1.5;
+  }
+  .timeline-content .tl-label {
+    color: var(--gold-light);
+    font-weight: 700;
+  }
+
+  /* ── Progress bar ── */
+  .progress {
+    position: fixed; bottom: 0; left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    transition: width 0.4s ease;
+    z-index: 100;
+  }
+
+  /* ── Slide number ── */
+  .slide-num {
+    position: fixed;
+    bottom: 1.5vh; right: 2vw;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    z-index: 100;
+    font-family: sans-serif;
+  }
+
+  /* ── Controls hint ── */
+  .hint {
+    position: fixed;
+    bottom: 1.5vh; left: 2vw;
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.25);
+    z-index: 100;
+    font-family: sans-serif;
+  }
+
+  /* ── Responsive tweaks ── */
+  @media (max-aspect-ratio: 4/3) {
+    .fact-grid, .step-grid { grid-template-columns: 1fr; max-width: 80%; }
+    .slide { padding: 4vh 6vw; }
+  }
+</style>
+</head>
+<body>
+<div class="deck">
+  <!-- 1. タイトル -->
+  <!-- TODO写真: 伊勢神宮の杜・宇治橋、または夫婦岩の朝日 -->
+  <div class="slide photo active" style="background-image: url('./photos/uji_bridge.jpg');">
+    <p class="slide-sub">団体概要のご案内</p>
+    <h1>常磐会（ときわかい）<br>のご案内</h1>
+    <p class="tagline">伊勢の地から、未来の世代を育むコミュニティ<br>TOKIWAKAI — A COMMUNITY GROWING FROM ISE</p>
+    <p style="margin-top:2.5vh; font-size: clamp(0.9rem,1.5vw,1.2rem); color: var(--gold-light); font-weight:700;">https://www.isetokiwa.jp/</p>
+  </div>
+
+  <!-- 2. こんな思いはありませんか？ -->
+  <div class="slide solid">
+    <h2>こんな思い、ありませんか？</h2>
+    <div class="body-text" style="text-align:center; max-width:78%;">
+      <p style="font-size:0.9em; color: var(--text-dim);">「日本のことを、何も知らないままでいいのかな」</p>
+      <p style="font-size:0.9em; color: var(--text-dim);">「忙しい毎日に、立ち返れる“軸”がほしい」</p>
+      <p style="font-size:0.9em; color: var(--text-dim);">「損得をこえて付き合える仲間に出会いたい」</p>
+    </div>
+    <div class="body-text" style="text-align:center; margin-top:5vh;">
+      <p style="font-size: clamp(1.8rem,4vw,3rem); font-weight:700;">——その答えを探しに、<br><span class="gold" style="font-weight:700;">伊勢へ来ませんか。</span></p>
+    </div>
+  </div>
+
+  <!-- 3. 常磐会とは -->
+  <!-- TODO写真: 活動風景・集合写真 -->
+  <div class="slide photo" style="background-image: url('./photos/shugo.jpg');">
+    <h2>常磐会とは</h2>
+    <div class="body-text" style="text-align:center; max-width:80%;">
+      <p><span class="gold" style="font-weight:700;">常磐会（ときわかい）</span>（一般社団法人 設立準備中）<br>伊勢を拠点に、若い世代と多世代のための<span class="gold" style="font-weight:700;">学びの場</span>をつくる団体<br><span style="font-size:0.85em; color: var(--text-light);">活動は伊勢のほか、東京・京都でも開催</span></p>
+    </div>
+    <ul style="margin-top:3vh; max-width:80%;">
+      <li>日本の伝統文化の<span class="gold" style="font-weight:700;">継承</span></li>
+      <li>若い世代・子どもたちの<span class="gold" style="font-weight:700;">健やかな育ち</span></li>
+      <li>世代をこえた<span class="gold" style="font-weight:700;">温かなつながり</span></li>
+    </ul>
+  </div>
+
+  <!-- 4. なぜ「伊勢」なのか -->
+  <!-- TODO写真: 式年遷宮・社殿 -->
+  <div class="slide photo" style="background-image: url('./photos/sengu.jpg');">
+    <h2>なぜ「伊勢」なのか</h2>
+    <div class="body-text" style="text-align:center; max-width:80%;">
+      <p style="font-size: clamp(1.6rem,3.6vw,2.8rem); font-weight:700;">「変わらないために、<br><span class="gold" style="font-weight:700;">変わり続ける</span>」</p>
+    </div>
+    <p style="margin-top:3vh; font-size: clamp(0.95rem,1.7vw,1.3rem); color: var(--gold-light); font-weight:700; max-width:80%; text-align:center;">
+      伊勢神宮の式年遷宮 — 20年ごとにすべてを新しくし、永遠を保つ思想。<br>1,300年つづく「常若（とこわか）」の知恵を、現代の生き方に活かす。
+    </p>
+  </div>
+
+  <!-- 5. 私たちが目指すもの（MVV） -->
+  <div class="slide solid">
+    <h2>私たちが目指すもの（MVV）</h2>
+    <div class="body-text" style="max-width:82%;">
+      <p><span class="gold" style="font-weight:700;">Mission｜使命</span><br>伊勢の地から日本の伝統文化を次世代へ継承し、若い世代・子どもたちの育ちと、世代をこえたつながりを育む</p>
+      <p style="margin-top:2vh;"><span class="gold" style="font-weight:700;">Vision｜目指す姿</span><br>「変わらないために、変わり続ける」— 常若の思想を、現代の生き方の軸に</p>
+    </div>
+    <p style="margin-top:2.5vh; font-size: clamp(0.9rem,1.5vw,1.2rem); color: var(--gold-light); font-weight:700;">Value｜大切にする5つのこころ</p>
+    <div style="display:flex; gap:1.5vw; justify-content:center; margin-top:1.5vh; flex-wrap:wrap;">
+      <span class="gold" style="font-weight:700; padding:0.6vh 1.6vw; border:1px solid var(--gold); border-radius:999px;">奉仕</span>
+      <span class="gold" style="font-weight:700; padding:0.6vh 1.6vw; border:1px solid var(--gold); border-radius:999px;">友愛</span>
+      <span class="gold" style="font-weight:700; padding:0.6vh 1.6vw; border:1px solid var(--gold); border-radius:999px;">責任</span>
+      <span class="gold" style="font-weight:700; padding:0.6vh 1.6vw; border:1px solid var(--gold); border-radius:999px;">忍耐</span>
+      <span class="gold" style="font-weight:700; padding:0.6vh 1.6vw; border:1px solid var(--gold); border-radius:999px;">進取</span>
+    </div>
+  </div>
+
+  <!-- 6. 名称「常磐会」にこめた想い -->
+  <div class="slide solid">
+    <p class="slide-sub">第二部 — 名前と仲間</p>
+    <h2>名称「常磐会」にこめた想い</h2>
+    <div class="body-text" style="text-align:center; max-width:80%;">
+      <p><span class="gold" style="font-weight:700;">「常磐（ときわ）」</span>＝ いつまでも変わらない、揺るがないもの<br>祝詞のことば<span class="gold" style="font-weight:700;">「常磐尓堅磐尓（ときはに かきはに）」</span>に由来</p>
+      <p style="margin-top:2.5vh;">伊勢で共に学んだ仲間が、進む道は変わっても<br><span class="gold" style="font-weight:700;">心はひとつに、ずっとつながっていてほしい</span><br>——そんな願いがこめられた名前</p>
+    </div>
+    <p style="margin-top:3vh; font-size: clamp(0.8rem,1.3vw,1rem); color: var(--text-dim);">※会の名は、神宮参事・音羽悟氏により名づけられました</p>
+  </div>
+
+  <!-- 7. どんな人たちが集まるのか -->
+  <!-- TODO写真: 多世代が集う様子 -->
+  <div class="slide photo" style="background-image: url('./photos/tasedai.jpg');">
+    <h2>どんな人たちが集まるのか</h2>
+    <ul style="max-width:80%;">
+      <li>全国の<span class="gold" style="font-weight:700;">大学生・社会人・場所にとらわれず働く人</span></li>
+      <li>地域の<span class="gold" style="font-weight:700;">ご家族・子どもたち・人生の先輩方</span></li>
+    </ul>
+    <p style="margin-top:3vh; font-size: clamp(1.1rem,2.2vw,1.6rem); color: var(--gold-light); font-weight:700; text-align:center; max-width:80%;">
+      共通点はただ一つ、<br>「<span style="color:#fff;">伊勢が気になる</span>」その気持ちだけ
+    </p>
+  </div>
+
+  <!-- 8. 活動を通して育まれるもの -->
+  <div class="slide solid">
+    <h2>活動を通して育まれるもの</h2>
+    <div class="body-text" style="text-align:center; max-width:78%;">
+      <p>上達も入会条件もありません。関わるうちに、自然と育っていくもの——</p>
+    </div>
+    <ul style="margin-top:2.5vh; max-width:72%;">
+      <li><span class="gold" style="font-weight:700;">人の役に立つ喜び</span>（奉仕）</li>
+      <li><span class="gold" style="font-weight:700;">世代をこえた友情</span>（友愛）</li>
+      <li><span class="gold" style="font-weight:700;">一歩踏み出す勇気</span>（進取）</li>
+    </ul>
+    <p style="margin-top:3vh; font-size: clamp(0.95rem,1.6vw,1.3rem); color: var(--gold-light); font-weight:700;">
+      「身につけなきゃ」ではなく「いつのまにか育っていた」を大切に
+    </p>
+  </div>
+
+  <!-- 9. 参加するとどんな体験が -->
+  <div class="slide solid">
+    <h2>参加するとどんな体験が</h2>
+    <ul style="max-width:80%;">
+      <li>日本の神話や歴史が、「物語」から<span class="gold" style="font-weight:700;">「自分ごと」</span>に変わる</li>
+      <li>世代や地域をこえた<span class="gold" style="font-weight:700;">仲間</span>ができる</li>
+      <li>自然の中で<span class="gold" style="font-weight:700;">心と身体を整える</span>きっかけになる</li>
+    </ul>
+  </div>
+
+  <!-- 10. 活動の3つの入り口（全体マップ） -->
+  <div class="slide solid">
+    <p class="slide-sub">第三部 — 活動と関わり方</p>
+    <h2>活動の3つの入り口</h2>
+    <div style="display:flex; gap:2vw; justify-content:center; margin-top:2vh; max-width:92%;">
+      <div style="flex:1; padding:2vh 1.5vw; background: rgba(184,134,11,0.10); border:1px solid var(--gold); border-radius:12px;">
+        <h3 class="gold" style="font-weight:700;">① 学びの場</h3>
+        <p style="font-size:0.85em; color: var(--gold-light);">知る</p>
+        <p style="font-size:0.8em; margin-top:1vh;">伊勢・日本文化を学び、物語を「自分ごと」に</p>
+        <p style="font-size:0.78em; color: var(--text-dim); margin-top:1vh;">朔日会／伊勢神宮基礎講座／伊勢神宮100人講演会</p>
+      </div>
+      <div style="flex:1; padding:2vh 1.5vw; background: rgba(184,134,11,0.10); border:1px solid var(--gold); border-radius:12px;">
+        <h3 class="gold" style="font-weight:700;">② 体験・奉仕</h3>
+        <p style="font-size:0.85em; color: var(--gold-light);">身体で味わう</p>
+        <p style="font-size:0.8em; margin-top:1vh;">行事の当事者になり、心身を整える</p>
+        <p style="font-size:0.78em; color: var(--text-dim); margin-top:1vh;">お木曳き奉仕／夏至祭／リアル伊勢・伊勢ツアー</p>
+      </div>
+      <div style="flex:1; padding:2vh 1.5vw; background: rgba(184,134,11,0.10); border:1px solid var(--gold); border-radius:12px;">
+        <h3 class="gold" style="font-weight:700;">③ つながり</h3>
+        <p style="font-size:0.85em; color: var(--gold-light);">仲間と続ける</p>
+        <p style="font-size:0.8em; margin-top:1vh;">世代・地域をこえた縁を結ぶ</p>
+        <p style="font-size:0.78em; color: var(--text-dim); margin-top:1vh;">京都イベント／会員コミュニティ</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 11. ① 学びの入り口：朔日会 -->
+  <div class="slide solid">
+    <h2>① 学びの入り口：朔日会（@東京）</h2>
+    <div class="body-text" style="text-align:center; max-width:80%;">
+      <p><span class="gold" style="font-weight:700;">毎月2日</span>、東京都内で開催される定例の交流イベント<br>伊勢の朔日参りの文化を、東京で・日常の中で味わう</p>
+    </div>
+    <p style="margin-top:2.5vh; font-size: clamp(0.95rem,1.6vw,1.3rem); max-width:82%; text-align:center;">
+      <span class="gold" style="font-weight:700;">朔日餅は全11種類</span> — かしわ餅・麦手餅・笹わらび餅・八朔粟餅・萩の餅…と月替わりで味わいながら、神宮や伊勢の話を聞き、感想をシェア
+    </p>
+    <p style="margin-top:2.5vh; font-size: clamp(1rem,1.8vw,1.4rem); color: var(--gold-light); font-weight:700;">
+      はじめての方へ — 伊勢に行ったことがなくても大丈夫。まずはここから
+    </p>
+  </div>
+
+  <!-- 12. ② 体験の入り口：動と静 -->
+  <div class="slide solid">
+    <h2>② 体験の入り口：伊勢で身体ごと味わう</h2>
+    <div style="display:flex; gap:3vw; justify-content:center; margin-top:2vh; max-width:90%;">
+      <div style="flex:1; padding:2.5vh 2vw; background: rgba(184,134,11,0.12); border:1px solid var(--gold); border-radius:12px;">
+        <h3 class="gold" style="font-weight:700;">【動】お木曳き奉仕</h3>
+        <p style="font-size:0.85em; margin-top:1.5vh;">式年遷宮の御用材を奉曳車や川で運ぶ伝統行事。法被・伊勢音頭で町が最も活気づく</p>
+        <p style="font-size:0.82em; margin-top:1.5vh; color: var(--gold-light);">奉仕枠は成人10名・学生10名の少人数制（2026年は5/17・8/2）</p>
+        <p style="font-size:0.82em; margin-top:1vh;">「行事のど真ん中で奉仕したい」人へ</p>
+      </div>
+      <div style="flex:1; padding:2.5vh 2vw; background: rgba(80,110,160,0.12); border:1px solid #6a8fc7; border-radius:12px;">
+        <h3 style="color:#9bbbe6; font-weight:700;">【静】夏至祭</h3>
+        <p style="font-size:0.85em; margin-top:1.5vh;">二見興玉神社・6月。夫婦岩の間から昇る朝日を浴び、海での禊で心身を清める</p>
+        <p style="font-size:0.82em; margin-top:1.5vh; color: var(--gold-light);">「自分と向き合う時間をとりたい」人へ</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 13. 伊勢の一年を、共に巡る（年間カレンダー） -->
+  <div class="slide solid">
+    <h2>伊勢の一年を、共に巡る</h2>
+    <table class="slide-table">
+      <tr><th>時期</th><th>活動</th><th>場所</th></tr>
+      <tr><td>1月</td><td>リアル伊勢（新年の参拝）</td><td>おかげ横丁</td></tr>
+      <tr><td><span class="gold" style="font-weight:700;">毎月2日</span></td><td>朔日会（朔日餅を楽しむ会）</td><td>東京</td></tr>
+      <tr><td>3月</td><td>リアル伊勢（春の参拝）</td><td>おかげ横丁</td></tr>
+      <tr><td>4月</td><td>伊勢ツアー（宿泊）／京都・都をどり&amp;舞妓体験</td><td>伊勢・京都</td></tr>
+      <tr><td><span class="gold" style="font-weight:700;">5・8月</span></td><td>お木曳き奉仕（少人数枠）</td><td>伊勢</td></tr>
+      <tr><td>6月</td><td>夏至祭</td><td>二見興玉神社</td></tr>
+      <tr><td>11月</td><td>リアル伊勢（朔日参り）</td><td>伊勢</td></tr>
+    </table>
+    <p style="margin-top:2vh; font-size: clamp(0.95rem,1.6vw,1.3rem); color: var(--gold-light); font-weight:700; text-align:right; max-width:92%;">
+      一年で伊勢の祭事暦をまるごと追体験 ／ <span style="font-size:1.15em;">→ 2033 第63回式年遷宮へ</span>
+    </p>
+  </div>
+
+  <!-- 14. どの関わり方が自分に向いている？ -->
+  <div class="slide solid">
+    <h2>どの関わり方が自分に向いている？</h2>
+    <ul style="max-width:82%;">
+      <li><span class="gold" style="font-weight:700;">まず雰囲気を知りたい</span> → 朔日会（東京）</li>
+      <li><span class="gold" style="font-weight:700;">伊勢に一度じっくり行きたい</span> → リアル伊勢・伊勢ツアー</li>
+      <li><span class="gold" style="font-weight:700;">行事の中で奉仕したい</span> → お木曳き奉仕（少人数枠）</li>
+      <li><span class="gold" style="font-weight:700;">自分と向き合いたい</span> → 夏至祭（二見興玉神社）</li>
+    </ul>
+    <p style="margin-top:3vh; font-size: clamp(1rem,1.8vw,1.4rem); color: var(--gold-light); font-weight:700;">
+      強制も義務もない。それぞれのペースで伊勢とつながればいい
+    </p>
+  </div>
+
+  <!-- 15. 進む道は変わっても、心はひとつに -->
+  <!-- TODO写真: 仲間が集う様子・伊勢の情景 -->
+  <div class="slide photo" style="background-image: url('./photos/nakama.jpg');">
+    <p class="slide-sub">第四部 — お誘い</p>
+    <h2>進む道は変わっても、<br>心はひとつに</h2>
+    <div class="body-text" style="text-align:center; max-width:80%;">
+      <p style="font-size: clamp(1.6rem,3.4vw,2.6rem); font-weight:700;">あなたの根っこを、<span class="gold" style="font-weight:700;">伊勢で。</span></p>
+    </div>
+    <p style="margin-top:2.5vh; font-size: clamp(0.95rem,1.6vw,1.3rem); color: var(--gold-light); font-weight:700; max-width:80%; text-align:center;">
+      祭り・行事・学びの場を通して、自分の根っこを見つめなおし、仲間と共に成長していく。<br>進む道が分かれても、伊勢でつながった心はずっとひとつに。
+    </p>
+  </div>
+
+  <!-- 16. 次の一歩 -->
+  <!-- TODO写真: 宇治橋からの朝日 -->
+  <div class="slide photo" style="background-image: url('./photos/uji_sunrise.jpg');">
+    <h2>次の一歩</h2>
+    <div class="body-text" style="text-align:center; max-width:80%;">
+      <p style="font-size: clamp(1.2rem,2.4vw,1.7rem); font-weight:700;"><span class="gold" style="font-weight:700;">いきなり入会しなくて大丈夫。</span>気軽なイベント参加から。</p>
+    </div>
+    <div style="display:flex; gap:3vw; justify-content:center; margin-top:2.5vh;">
+      <div style="text-align:center;">
+        <!-- TODO QR: Peatix（イベント申込）のQRコード -->
+        <img src="./qr-peatix.svg" alt="Peatix イベント申込 QR" style="width:clamp(90px,12vw,140px); background:#fff; padding:6px; border-radius:8px;" onerror="this.style.display='none'">
+        <p style="margin-top:1vh; font-size: clamp(0.8rem,1.3vw,1rem); color: var(--gold-light); font-weight:700;">① イベントを見る・申し込む<br>Peatix</p>
+      </div>
+      <div style="text-align:center;">
+        <!-- TODO QR: 会員登録・支援（isetokiwa.jp/join）のQRコード -->
+        <img src="./qr-join.svg" alt="会員登録・支援 QR（isetokiwa.jp/join）" style="width:clamp(90px,12vw,140px); background:#fff; padding:6px; border-radius:8px;" onerror="this.style.display='none'">
+        <p style="margin-top:1vh; font-size: clamp(0.8rem,1.3vw,1rem); color: var(--gold-light); font-weight:700;">② 会員になる・支援する<br>isetokiwa.jp/join</p>
+      </div>
+    </div>
+    <p style="margin-top:2vh; font-size: clamp(0.78rem,1.25vw,0.98rem); color: var(--text-light); max-width:84%; text-align:center;">
+      費用のめやす｜イベント参加: 都度申込（Peatix）／会員: 年<span class="gold" style="font-weight:700;">10,000円</span>（名刺付き20,000円・自動更新なし）／寄付: <span class="gold" style="font-weight:700;">1,000円から</span>いつでも
+    </p>
+    <p style="margin-top:1vh; font-size: clamp(0.72rem,1.15vw,0.9rem); color: var(--text-dim);">※最新情報はHP（https://www.isetokiwa.jp/）をご確認ください</p>
+  </div>
+
+  <!-- 17. このスライドを共有（自己QR） -->
+  <div class="slide solid">
+    <h2>このスライドを、共有できます</h2>
+    <div style="margin-top:2vh; background:#fff; padding:14px; border-radius:12px; width:clamp(160px,22vw,240px);">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 35 35" shape-rendering="crispEdges"><path fill="#ffffff" d="M0 0h35v35H0z"/><path stroke="#1a0a00" d="M1 1.5h7m3 0h4m2 0h4m1 0h3m2 0h7M1 2.5h1m5 0h1m3 0h1m2 0h3m1 0h1m2 0h1m1 0h1m3 0h1m5 0h1M1 3.5h1m1 0h3m1 0h1m1 0h1m4 0h1m2 0h3m1 0h3m3 0h1m1 0h3m1 0h1M1 4.5h1m1 0h3m1 0h1m1 0h2m1 0h1m2 0h1m1 0h1m3 0h1m1 0h1m1 0h1m1 0h1m1 0h3m1 0h1M1 5.5h1m1 0h3m1 0h1m1 0h3m1 0h1m2 0h1m1 0h2m2 0h1m1 0h1m2 0h1m1 0h3m1 0h1M1 6.5h1m5 0h1m1 0h1m2 0h2m2 0h3m2 0h1m5 0h1m5 0h1M1 7.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M9 8.5h2m1 0h1m2 0h2m2 0h1m2 0h2M1 9.5h1m1 0h5m4 0h5m1 0h1m2 0h1m2 0h2m1 0h5M2 10.5h1m1 0h3m3 0h1m1 0h1m2 0h1m4 0h3m1 0h1m2 0h2m1 0h4M1 11.5h1m1 0h1m1 0h1m1 0h1m1 0h1m6 0h1m2 0h1m2 0h1m2 0h1m3 0h1m1 0h2M4 12.5h1m4 0h4m2 0h3m2 0h4m2 0h2m1 0h5M4 13.5h2m1 0h2m1 0h1m8 0h2m2 0h1m1 0h1m3 0h2m1 0h2M4 14.5h3m5 0h6m3 0h1m2 0h2m1 0h1m3 0h3M3 15.5h1m1 0h1m1 0h3m1 0h1m2 0h2m2 0h1m1 0h1m1 0h2m2 0h2m2 0h1m1 0h1M1 16.5h5m5 0h4m2 0h1m1 0h5m2 0h2m2 0h2M1 17.5h1m3 0h1m1 0h3m1 0h1m1 0h3m2 0h1m1 0h1m2 0h1m1 0h2m1 0h2m3 0h1M1 18.5h1m2 0h1m4 0h5m1 0h1m1 0h5m1 0h2m1 0h3m1 0h2m1 0h1M1 19.5h1m1 0h3m1 0h1m3 0h1m1 0h2m1 0h3m2 0h2m3 0h4m1 0h1M1 20.5h4m4 0h1m4 0h1m1 0h4m1 0h3m1 0h7M1 21.5h1m1 0h1m1 0h1m1 0h2m2 0h2m2 0h3m2 0h1m2 0h4m1 0h3M1 22.5h1m1 0h1m1 0h1m2 0h2m2 0h1m2 0h2m2 0h1m2 0h3m2 0h1m2 0h1m2 0h1M1 23.5h1m1 0h1m3 0h3m6 0h2m3 0h3m4 0h1m2 0h2M1 24.5h1m3 0h2m4 0h2m1 0h1m1 0h1m4 0h2m1 0h4m2 0h2m1 0h1M1 25.5h1m1 0h3m1 0h1m1 0h1m4 0h1m1 0h1m1 0h1m4 0h1m1 0h5M9 26.5h1m3 0h2m2 0h1m2 0h1m2 0h1m1 0h1m3 0h1m1 0h3M1 27.5h7m2 0h3m1 0h1m1 0h2m1 0h1m1 0h2m1 0h2m1 0h1m1 0h1m1 0h2M1 28.5h1m5 0h1m1 0h2m2 0h1m6 0h6m3 0h3M1 29.5h1m1 0h3m1 0h1m1 0h2m1 0h1m2 0h2m2 0h3m1 0h1m1 0h6M1 30.5h1m1 0h3m1 0h1m1 0h9m2 0h3m2 0h2m2 0h1m2 0h2M1 31.5h1m1 0h3m1 0h1m1 0h2m1 0h3m3 0h2m1 0h1m1 0h2m2 0h2m1 0h2M1 32.5h1m5 0h1m5 0h1m1 0h1m1 0h1m1 0h6m2 0h1m1 0h3M1 33.5h7m1 0h4m2 0h1m2 0h1m1 0h1m2 0h4m1 0h1m3 0h1"/></svg>
+    </div>
+    <p style="margin-top:2.5vh; font-size: clamp(1rem,1.8vw,1.4rem); color: var(--gold-light); font-weight:700;">スマホで読み取ると、この資料がそのまま開きます</p>
+    <p style="margin-top:1vh; font-size: clamp(0.78rem,1.2vw,0.95rem); color: var(--text-dim);">slides-two-nu.vercel.app/slides/ise-gaiyou</p>
+  </div>
+
+</div><!-- /.deck -->
+<div class="slide-num" id="slideNum"></div>
+<div class="hint">← → キーで操作 / F でフルスクリーン</div>
+
+<script>
+(function() {
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let current = 0;
+
+  function show(n) {
+    if (n < 0 || n >= total) return;
+    slides[current].classList.remove('active');
+    current = n;
+    slides[current].classList.add('active');
+    document.getElementById('progress').style.width = ((current + 1) / total * 100) + '%';
+    document.getElementById('slideNum').textContent = (current + 1) + ' / ' + total;
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+      e.preventDefault();
+      show(current + 1);
+    } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+      e.preventDefault();
+      show(current - 1);
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      show(0);
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      show(total - 1);
+    } else if (e.key === 'f' || e.key === 'F') {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(function(){});
+      } else {
+        document.exitFullscreen();
+      }
+    }
+  });
+
+  // Touch support
+  let touchStartX = 0;
+  document.addEventListener('touchstart', function(e) {
+    touchStartX = e.changedTouches[0].screenX;
+  });
+  document.addEventListener('touchend', function(e) {
+    const diff = e.changedTouches[0].screenX - touchStartX;
+    if (Math.abs(diff) > 50) {
+      if (diff < 0) show(current + 1);
+      else show(current - 1);
+    }
+  });
+
+  // Click to advance (right half) / go back (left half)
+  document.addEventListener('click', function(e) {
+    if (e.target.tagName === 'A') return;
+    if (e.clientX > window.innerWidth / 2) show(current + 1);
+    else show(current - 1);
+  });
+
+  show(0);
+})();
+</script>
+</body>
+</html>
