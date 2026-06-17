@@ -48,16 +48,30 @@ python3 pipeline/build.py episodes/001/episode.json --lang hi
 
 ## 採点とクローズドループ（`score.py` + `/ndsr-loop`）
 
-`score.py` は episode と出力 mp4 を **5 軸**で採点し、機械可読な diagnostics（penalty 降順・
+`score.py` は episode と出力 mp4 を **7 軸**で採点し、機械可読な diagnostics（penalty 降順・
 各 diag に AI 向け `fix` 付き）を JSON で返す。最重要軸は `authentic`（inauthentic/収益化判定の回避,
 docs §7 が出典）。
 
 ```bash
-python3 pipeline/score.py episodes/001/episode.json --mp4 out/001_en_fast.mp4
+# ループ用（素材依存の減点を免除、JSON/script品質で判定）
+python3 pipeline/score.py episodes/001/episode.json --mp4 out/001_en_fast.mp4 --gate draft
+# 最終出荷判定（全軸厳格）
+python3 pipeline/score.py episodes/001/episode.json --mp4 out/001_en_fast.mp4 --gate ship
 ```
 
-5 軸: `build`(尺一致/LUFS/placeholder率) `authentic`(同一クリップ多用・独自編集の有無・水増し)
-`structure`(NSDR標準構造) `license`(台帳完全性) `meta`(タイトル/多言語)。
+7 軸: `build`(尺一致/LUFS/音量レンジ/placeholder率) `authentic`(同一クリップ多用・独自編集・水増し)
+`structure`(NSDR標準構造) `license`(台帳完全性) `meta`(タイトル/多言語)
+`pacing`(role尺配分・誘導ナレ密度 words/分) `content`(LLM補助: 本文の医学的妥当性/商標リスク/CTA/独自性)。
+
+**ハック耐性（実測）**: `build`/`authentic` は episode.json のキー有無でなく、出力 mp4 の
+**実フレーム/波形を ffmpeg で実測**する（`blackdetect`=黒幕比率, `freezedetect`=静止比率,
+`silencedetect`=無音比率, `astats`=音量レンジ）。`speed`/`crop` キーを足すだけでは点は上がらない。
+
+**2 段ゲート**: `--gate draft` は実素材が無いと直せない減点（黒幕/無音/素材調達=`asset_dependent`）を
+免除し、ループが自律で詰められる品質だけ判定。`--gate ship`（デフォルト）は全件厳格。
+
+**content 軸（LLM）**: `score.py` は LLM を呼ばず、`content_payload`（script全文＋rubric）を出力する。
+`/ndsr-loop` がそれを採点し `--llm-result <verdict.json>` で食わせ直す。
 `gate_pass: true` で全軸が閾値（`GATE`）通過。閾値・重みは `score.py` 冒頭の `GATE`/`WEIGHTS`。
 
 **`/ndsr-loop <id> [lang] [iters]`** スキルがこれを駆動し、
