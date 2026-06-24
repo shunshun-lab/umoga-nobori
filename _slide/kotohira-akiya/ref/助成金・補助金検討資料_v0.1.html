@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>琴平空き家演劇祭(仮) 助成金・補助金 検討資料 v0.1</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --surface:#ffffff; --ink:#1d2530; --muted:#5b6b7b;
+    --line:#e3e8ef; --line-strong:#cbd5e1;
+    --accent:#2563eb; --accent-soft:#eff4ff;
+    --green:#15803d; --green-bg:#dcfce7; --green-line:#86efac;
+    --amber:#b45309; --amber-bg:#fef3c7; --amber-line:#fcd34d;
+    --red:#b91c1c; --red-bg:#fee2e2; --red-line:#fca5a5;
+    --planA:#64748b; --planB:#2563eb; --planC:#7c3aed;
+    --sidebar-w:248px;
+    --maxw:1000px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",YuGothic,Meiryo,system-ui,-apple-system,sans-serif;
+    font-size:16px; line-height:1.85; letter-spacing:.01em;
+    -webkit-font-smoothing:antialiased;
+  }
+  /* ---------- layout ---------- */
+  .wrap{display:flex; align-items:flex-start;}
+  nav.toc{
+    width:var(--sidebar-w); flex:0 0 var(--sidebar-w);
+    position:sticky; top:0; height:100vh; overflow-y:auto;
+    background:#0f172a; color:#cbd5e1; padding:22px 16px 40px;
+  }
+  nav.toc .toc-title{color:#fff; font-weight:700; font-size:15px; line-height:1.5; margin:0 0 4px;}
+  nav.toc .toc-sub{color:#7c8aa0; font-size:12px; margin:0 0 18px;}
+  nav.toc a{
+    display:block; color:#cbd5e1; text-decoration:none;
+    padding:7px 12px; border-radius:8px; font-size:14px; line-height:1.45;
+    border-left:3px solid transparent; transition:background .15s,color .15s;
+  }
+  nav.toc a .n{display:inline-block; width:1.4em; color:#64748b; font-weight:700;}
+  nav.toc a:hover{background:#1e293b; color:#fff;}
+  nav.toc a.active{background:#1e293b; color:#fff; border-left-color:var(--accent);}
+  nav.toc a.active .n{color:#60a5fa;}
+
+  main{flex:1 1 auto; min-width:0; padding:0 0 80px;}
+  .inner{max-width:var(--maxw); margin:0 auto; padding:0 28px;}
+
+  /* ---------- header ---------- */
+  header.doc{
+    background:linear-gradient(135deg,#1e3a8a,#2563eb);
+    color:#fff; padding:34px 0 30px;
+  }
+  header.doc h1{margin:0 0 12px; font-size:27px; line-height:1.4; font-weight:800;}
+  header.doc .meta{font-size:13.5px; line-height:1.7; color:#dbeafe;}
+  header.doc .meta b{color:#fff;}
+
+  /* ---------- headings ---------- */
+  h2.sec{
+    font-size:22px; font-weight:800; margin:46px 0 16px; padding:10px 0 10px 16px;
+    border-left:6px solid var(--accent); scroll-margin-top:14px;
+  }
+  h2.sec .secnum{color:var(--accent); margin-right:.5em;}
+  h3{font-size:17.5px; font-weight:700; margin:28px 0 10px; scroll-margin-top:14px;}
+  h4{font-size:15.5px; font-weight:700; margin:18px 0 8px; color:var(--ink);}
+  p{margin:10px 0;}
+  a{color:var(--accent);}
+
+  /* ---------- callouts ---------- */
+  .callout{border-radius:12px; padding:16px 18px; margin:18px 0; border:1px solid var(--line); background:var(--surface);}
+  .callout .ttl{font-weight:800; font-size:15px; margin:0 0 8px; display:flex; align-items:center; gap:8px;}
+  .callout ol,.callout ul{margin:6px 0 0; padding-left:1.3em;}
+  .callout li{margin:7px 0;}
+  .c-conclusion{background:var(--accent-soft); border-color:#bfdbfe;}
+  .c-conclusion .ttl{color:#1d4ed8;}
+  .c-warning{background:var(--amber-bg); border-color:var(--amber-line);}
+  .c-warning .ttl{color:var(--amber);}
+  .c-note{background:#f1f5f9; border-color:var(--line-strong);}
+  .c-note .ttl{color:#475569;}
+  .c-check{background:var(--green-bg); border-color:var(--green-line);}
+  .c-check .ttl{color:var(--green);}
+  .ico{font-size:18px; line-height:1;}
+
+  /* ---------- tables ---------- */
+  .table-wrap{overflow-x:auto; margin:14px 0 8px; border:1px solid var(--line); border-radius:12px; background:var(--surface);}
+  table{border-collapse:collapse; width:100%; font-size:13.5px; line-height:1.65; min-width:680px;}
+  table.narrow{min-width:0;}
+  thead th{
+    position:sticky; top:0; z-index:2;
+    background:#1e293b; color:#fff; font-weight:700; text-align:left;
+    padding:11px 12px; white-space:nowrap; border-right:1px solid #334155;
+  }
+  tbody td{padding:11px 12px; border-top:1px solid var(--line); border-right:1px solid var(--line); vertical-align:top;}
+  tbody tr:nth-child(even){background:#fafbfc;}
+  tbody tr:hover{background:var(--accent-soft);}
+  td .pid{font-weight:800; color:var(--accent);}
+  td .pname{font-weight:700;}
+  .colnum{width:42px; text-align:center; white-space:nowrap;}
+
+  /* ---------- badges ---------- */
+  .badge{display:inline-block; font-size:12px; font-weight:800; padding:2px 9px; border-radius:999px; white-space:nowrap; line-height:1.6;}
+  .b-highest{background:#bbf7d0; color:#14532d; border:1px solid #4ade80;}
+  .b-high{background:var(--green-bg); color:var(--green); border:1px solid var(--green-line);}
+  .b-mid{background:var(--amber-bg); color:var(--amber); border:1px solid var(--amber-line);}
+  .b-lowmid{background:#ffedd5; color:#c2410c; border:1px solid #fdba74;}
+  .b-low{background:var(--red-bg); color:var(--red); border:1px solid var(--red-line);}
+  .fit{display:flex; gap:8px; align-items:flex-start;}
+  .fit .txt{color:var(--muted); font-size:12.5px;}
+
+  .mark{display:inline-block; width:24px; height:24px; line-height:23px; text-align:center; border-radius:50%; font-weight:800; font-size:15px;}
+  .m-yes{background:var(--green-bg); color:var(--green); border:1px solid var(--green-line);}
+  .m-maybe{background:#dbeafe; color:#1d4ed8; border:1px solid #93c5fd;}
+  .m-no{background:var(--red-bg); color:var(--red); border:1px solid var(--red-line);}
+  .mark-cell{text-align:center; white-space:nowrap;}
+  .mark-cell .sub{display:block; color:var(--muted); font-size:11px; margin-top:3px; line-height:1.4;}
+
+  /* ---------- legend ---------- */
+  .legend{display:flex; flex-wrap:wrap; gap:10px 18px; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:12px 16px; font-size:13px; margin:8px 0 4px;}
+  .legend span b{color:var(--ink);}
+
+  /* ---------- group label ---------- */
+  .grp{display:inline-block; font-weight:800; font-size:14.5px; margin:26px 0 2px; padding:5px 12px; border-radius:8px;}
+  .grpA{background:#dcfce7; color:#14532d;}
+  .grpB{background:#dbeafe; color:#1e3a8a;}
+  .grpC{background:#ede9fe; color:#5b21b6;}
+  .grpD{background:#fef3c7; color:#92400e;}
+  .grpE{background:#f1f5f9; color:#475569;}
+
+  /* ---------- plan cards ---------- */
+  .plans{display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:16px; margin:18px 0;}
+  .plan{background:var(--surface); border:1px solid var(--line); border-top:5px solid var(--planA); border-radius:12px; padding:16px 18px;}
+  .plan.b{border-top-color:var(--planB); box-shadow:0 0 0 2px #bfdbfe; }
+  .plan.c{border-top-color:var(--planC);}
+  .plan .ph{font-weight:800; font-size:16px; margin:0 0 4px;}
+  .plan.a .ph{color:var(--planA);} .plan.b .ph{color:var(--planB);} .plan.c .ph{color:var(--planC);}
+  .plan .rec{display:inline-block; font-size:11px; font-weight:800; background:var(--accent); color:#fff; padding:1px 8px; border-radius:999px; margin-left:6px; vertical-align:middle;}
+  .plan dl{margin:10px 0 0;}
+  .plan dt{font-weight:700; font-size:12.5px; color:var(--muted); margin-top:10px;}
+  .plan dd{margin:2px 0 0; font-size:13.5px; line-height:1.7;}
+
+  ul.clean{margin:10px 0; padding-left:1.2em;}
+  ul.clean li{margin:8px 0;}
+  strong{font-weight:800;}
+  .hl{background:linear-gradient(transparent 60%, #fde68a 60%); padding:0 1px;}
+
+  hr{border:none; border-top:1px solid var(--line); margin:34px 0;}
+  footer.doc{color:var(--muted); font-size:13px; font-style:italic; margin-top:40px; padding-top:16px; border-top:1px solid var(--line);}
+
+  /* ---------- back to top ---------- */
+  #top{position:fixed; right:20px; bottom:20px; background:#1e293b; color:#fff; border:none; width:46px; height:46px; border-radius:50%; font-size:20px; cursor:pointer; opacity:0; pointer-events:none; transition:opacity .2s; box-shadow:0 4px 14px rgba(0,0,0,.25);}
+  #top.show{opacity:.9; pointer-events:auto;}
+
+  /* ---------- mobile ---------- */
+  #navtoggle{display:none;}
+  @media (max-width:920px){
+    nav.toc{position:fixed; left:0; top:0; z-index:50; transform:translateX(-100%); transition:transform .25s; box-shadow:4px 0 20px rgba(0,0,0,.3);}
+    nav.toc.open{transform:translateX(0);}
+    #navtoggle{display:flex; align-items:center; gap:7px; position:fixed; top:12px; left:12px; z-index:60; background:#0f172a; color:#fff; border:none; padding:9px 14px; border-radius:9px; font-size:14px; font-weight:700; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,.25);}
+    header.doc{padding-top:60px;}
+    .inner{padding:0 16px;}
+    header.doc h1{font-size:22px;}
+  }
+
+  /* ---------- print ---------- */
+  @media print{
+    nav.toc,#navtoggle,#top{display:none !important;}
+    body{background:#fff; font-size:11px;}
+    .wrap{display:block;}
+    header.doc{background:#1e3a8a !important; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+    .table-wrap{overflow:visible; border:none;}
+    table{min-width:0; font-size:10px;}
+    thead th{position:static;}
+    h2.sec{page-break-after:avoid;}
+    .plan,.callout,.table-wrap{page-break-inside:avoid;}
+    *{-webkit-print-color-adjust:exact; print-color-adjust:exact;}
+  }
+</style>
+</head>
+<body>
+
+<button id="navtoggle" aria-label="目次">☰ 目次</button>
+
+<div class="wrap">
+  <nav class="toc" id="toc">
+    <p class="toc-title">琴平空き家演劇祭(仮)</p>
+    <p class="toc-sub">助成金・補助金 検討資料 v0.1</p>
+    <a href="#s0"><span class="n">0</span>この資料の使い方</a>
+    <a href="#s1"><span class="n">1</span>事業の前提整理</a>
+    <a href="#s2"><span class="n">2</span>構造的な論点(2つ)</a>
+    <a href="#s3"><span class="n">3</span>候補一覧テーブル</a>
+    <a href="#s4"><span class="n">4</span>重要な実務注意</a>
+    <a href="#s5"><span class="n">5</span>応募の方向性</a>
+    <a href="#s6"><span class="n">6</span>プラン A / B / C</a>
+    <a href="#s7"><span class="n">7</span>当面のタイムライン</a>
+    <a href="#s8"><span class="n">8</span>要確認事項リスト</a>
+  </nav>
+
+  <main>
+    <header class="doc">
+      <div class="inner">
+        <h1>琴平空き家演劇祭(仮) — 助成金・補助金 検討資料 <span style="opacity:.85">v0.1</span></h1>
+        <div class="meta">
+          <b>作成日:</b> 2026年6月13日 　/　 <b>用途:</b> 仲間内議論用(どの補助金を本命にするか・会期をどうするかを決めるための材料)<br>
+          <b>情報の確度:</b> 各制度とも公式サイト・募集要項PDF等の一次情報を確認済み。未確定・未公表の箇所は「要確認」と明記。金額・日程は申請前に必ず原本を再確認すること。
+        </div>
+      </div>
+    </header>
+
+    <div class="inner">
+
+      <!-- 0 -->
+      <h2 class="sec" id="s0"><span class="secnum">0.</span>この資料の使い方</h2>
+      <p>内部企画書(v0.1)のスケジュールでは「2026年6〜7月: 助成金候補の洗い出し」「2026年9〜12月: 助成金申請」とあり、今がまさに洗い出しのタイミング。この資料は、(1) 事業を補助金目線で整理し直し、(2) 候補制度を一覧テーブル化し、(3) 主要候補ごとの応募方針案を示し、(4)「現実的にどれで行くか」をプランA/B/Cの形で議論できる状態にすることを目的とする。</p>
+
+      <div class="callout c-conclusion">
+        <p class="ttl"><span class="ico">📌</span>先に結論の要点だけ</p>
+        <ol>
+          <li><strong>2027年3月開催は、日本の助成カレンダー上もっとも不利な時期</strong>(年度末)。3月開催のまま使える助成は実質「香川県文化芸術振興財団(上限50万・締切7/3)」と「琴平町GCF」「企業メセナ協議会の寄付認定」のみ。</li>
+          <li><strong>会期(少なくとも本番)を2027年4月以降に動かすと、福武財団(〜300万)・芸文振基金(〜400万)・税理士共栄会(50万)など主要助成が一斉に射程に入る</strong>。こんぴら歌舞伎(例年4月・金丸座)との「演劇月間」構想とも整合する。</li>
+          <li>申請の前提として<strong>実行委員会(規約・代表者・口座)の早期組成が必須</strong>。さらに琴平町を動かせれば、宝くじ助成(500万)・GCF・地域創造(1000万)・日本博(3000万)という町経由の太いルートが開く。</li>
+        </ol>
+      </div>
+
+      <!-- 1 -->
+      <h2 class="sec" id="s1"><span class="secnum">1.</span>事業の前提整理(補助金目線)</h2>
+      <p>審査で見られる軸に沿って本事業を言い換えると:</p>
+      <div class="table-wrap">
+        <table class="narrow">
+          <thead><tr><th style="width:130px">審査軸</th><th>本事業の答え</th></tr></thead>
+          <tbody>
+            <tr><td><b>何をするか</b></td><td>琴平町内の空き家3〜5軒を一時的な小劇場・展示空間に転換し、演劇公演+滞在制作(AIR約1か月)+展示+回遊型チケットの芸術祭を実施(本番約2週間・6〜10組・動員数千人)</td></tr>
+            <tr><td><b>地域課題</b></td><td>金刀比羅宮参拝客(年約200万人)の滞在が1〜2時間に留まる／宿泊理由の不足／空き家の増加</td></tr>
+            <tr><td><b>文化的文脈</b></td><td>現存最古の芝居小屋・金丸座、こんぴら歌舞伎の町。「演劇をやる町」の物語は琴平にしか語れない</td></tr>
+            <tr><td><b>人材育成</b></td><td>藝大院生を中心とする学生団体・若手アーティストの滞在制作・発表機会</td></tr>
+            <tr><td><b>地域連携</b></td><td>琴平バス(交通・宿泊・地元調整)、信金・地元企業(協賛)、神社・参道・商店街(回遊導線)、町(総合戦略との整合)</td></tr>
+            <tr><td><b>持続性</b></td><td>毎年の定例化→歌舞伎と接続した「演劇月間」→他地域への横展開。純利を残し次年度原資に</td></tr>
+            <tr><td><b>実績</b></td><td>主宰による埼玉での「空き家劇場」実施経験</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>強み:</strong> 同じ事業を「文化芸術」「観光」「空き家対策・地方創生」の3つの顔で語れる。制度ごとに主語を切り替えて申請する。</p>
+      <p><strong>追い風(調査で判明):</strong> 琴平町の第3期総合戦略(R7〜R11)に「アートを活用したにぎわいづくり」「こんぴら商店街アート化事業」「空き店舗対策(KPI: 5年で5店舗)」「四国こんぴら歌舞伎大芝居公演事業」が明記されている。本事業は町の戦略の3本柱に正面から合致しており、町への提案根拠が既にある。</p>
+
+      <!-- 2 -->
+      <h2 class="sec" id="s2"><span class="secnum">2.</span>先に共有したい構造的な論点(2つ)</h2>
+
+      <h3>論点A: 申請主体(名義)が決まらないと何も出せない</h3>
+      <ul class="clean">
+        <li>主要助成のほとんどが「任意団体(実行委員会)可・個人不可」。規約・代表者・所在地・独立した会計(口座)が最低要件。</li>
+        <li>制度ごとの追加要件に注意:
+          <ul>
+            <li><strong>芸文振基金:</strong> 応募団体(または実行委員会の中核団体)に「設立1年以上+同分野の主催公演実績」が必要 → 新設実行委員会の場合、<strong>実績のある既存団体(参加学生劇団等)を中核団体に据える設計が必須</strong>。</li>
+            <li><strong>香川県文化芸術振興財団:</strong>「香川県内に住所または活動の本拠」が必要 → <strong>琴平側メンバー(ことバス関係者・地域おこし協力隊等)を実行委員に入れ、本拠を琴平に置く</strong>。</li>
+            <li><strong>朝日新聞文化財団:</strong> 企業が実行委員会の構成員だと申請不可 → <strong>ことバス・信金は「共催・協賛・後援」扱いにし、実行委員会の構成員にはしない</strong>(他制度でも汎用的に安全な設計)。</li>
+          </ul>
+        </li>
+      </ul>
+      <div class="callout c-warning">
+        <p class="ttl"><span class="ico">⚠️</span>クリティカルパス</p>
+        <p style="margin:0"><strong>7〜8月に「琴平空き家演劇祭実行委員会(仮)」を組成(規約・代表・琴平の所在地・口座)が最初のクリティカルパス。</strong></p>
+      </div>
+
+      <h3>論点B: 「2027年3月開催」は助成カレンダー上の最悪手</h3>
+      <ul class="clean">
+        <li>2027年3月は2026年度(令和8年度)の最終月。2026年度対象の募集はほぼすべて<strong>2025年秋〜2026年5月に締切済み</strong>(芸文振2025/11、福武2025/10、トヨタ2026/6/3、空き家モデル2026/5/20…)。</li>
+        <li>これから(2026年夏〜秋)募集される回は、ほぼ例外なく<strong>「2027年4月1日以降の事業」が対象</strong> → 3月開催は1か月差で対象外。</li>
+        <li>さらに国の補助事業は<strong>事業完了期限が2027年2月中旬〜下旬</strong>のものが多く(観光庁2/26、空き家モデル2/15)、3月本番はそもそも入らない。</li>
+        <li>→ 会期を動かすか動かさないかが、資金計画全体を決める最大の意思決定(<a href="#s6">§6</a>で議論)。</li>
+      </ul>
+
+      <!-- 3 -->
+      <h2 class="sec" id="s3"><span class="secnum">3.</span>候補一覧テーブル</h2>
+      <div class="legend">
+        <span><span class="mark m-yes" style="width:20px;height:20px;line-height:19px;font-size:13px">◎</span> <b>=</b> 2027年3月開催のまま使える</span>
+        <span><span class="mark m-maybe" style="width:20px;height:20px;line-height:19px;font-size:13px">○</span> <b>=</b> 2027年4月以降開催なら有力</span>
+        <span><b>町 =</b> 琴平町を動かすことが前提</span>
+        <span><b>次 =</b> 2回目以降・規模拡大用</span>
+      </div>
+
+      <p class="grp grpA">A. 今すぐ動ける(2027年3月開催のままでも可)</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th class="colnum">#</th><th style="min-width:150px">制度(実施主体)</th><th style="min-width:160px">応募資格</th><th style="min-width:160px">金額・補助率</th><th style="min-width:180px">締切・スケジュール</th><th style="min-width:70px">3月開催</th><th style="min-width:150px">適合度</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td class="colnum"><span class="pid">A1</span></td>
+              <td><span class="pname">文化芸術振興活動費助成金</span>(置県百年記念香川県文化芸術振興財団)</td>
+              <td>県内に本拠の団体・個人(任意団体可、法人格不要。実行委名義の可否は要電話確認 087-832-3782)</td>
+              <td>一般枠: 赤字額の1/3・5〜50万／新規性ある取組はステップアップ枠1/2・〜50万</td>
+              <td><strong>第2次募集 受付中、2026/7/3 17時必着</strong>。8/1交付決定、交付決定後の経費が対象(会場費・広報費は遡及可)</td>
+              <td class="mark-cell"><span class="mark m-yes">◎</span><span class="sub">1〜3月実施を<br>明示的に対象</span></td>
+              <td><div class="fit"><span class="badge b-high">高</span></div></td>
+            </tr>
+            <tr>
+              <td class="colnum"><span class="pid">A2</span></td>
+              <td><span class="pname">琴平町GCF</span>(ふるさと納税型クラファン)(琴平町×ふるさとチョイス等)</td>
+              <td>町が主体(実行委への補助金として支出するスキームの合意が必要)</td>
+              <td>目標額は設計次第(同型先例: 国東半島芸術文化祭980万円/522人、吉野川市舞台芸術244万円)</td>
+              <td>随時組成可。2026年10〜12月開始・90日募集なら3月本番に間に合う</td>
+              <td class="mark-cell"><span class="mark m-yes">◎</span></td>
+              <td><div class="fit"><span class="badge b-high">高</span><span class="txt">関門は町の合意のみ</span></div></td>
+            </tr>
+            <tr>
+              <td class="colnum"><span class="pid">A3</span></td>
+              <td><span class="pname">助成認定制度</span>(企業メセナ協議会)</td>
+              <td><strong>実行委員会と明記</strong>・個人も可</td>
+              <td>助成金ではなく<strong>寄付の税制優遇スキーム</strong>(法人=別枠損金算入、個人=寄付金控除)。事業費1000万以下・寄付500万以下(超えるならArts Fund枠)</td>
+              <td>年4回締切(<strong>7/20</strong>・10/20・1/20・4/20)。実施日は締切の3か月後以降</td>
+              <td class="mark-cell"><span class="mark m-yes">◎</span></td>
+              <td><div class="fit"><span class="badge b-high">高</span><span class="txt">現金協賛を「税優遇付き寄付」に変換できる。手数料1万円〜</span></div></td>
+            </tr>
+            <tr>
+              <td class="colnum"><span class="pid">A4</span></td>
+              <td>観光庁 地域観光資源のコンテンツ化促進事業(二次公募)</td>
+              <td>任意団体可</td>
+              <td>400万まで定額+超過1/2(最低事業費600万)</td>
+              <td><strong>2026/6/18 正午締切</strong>。完了期限2027/2/26</td>
+              <td class="mark-cell"><span class="mark m-no">×</span><span class="sub">フェス主目的不可<br>+2月完了要件</span></td>
+              <td><div class="fit"><span class="badge b-low">低</span><span class="txt">見送り推奨</span></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="grp grpB">B. 会期を2027年4月以降にずらすと取れる(2026年夏〜秋に申請)</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th class="colnum">#</th><th style="min-width:150px">制度(実施主体)</th><th style="min-width:160px">応募資格</th><th style="min-width:150px">金額・補助率</th><th style="min-width:180px">締切・スケジュール</th><th style="min-width:170px">適合度</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td class="colnum"><span class="pid">B1</span></td>
+              <td><span class="pname">アートによる地域振興助成</span>(福武財団)</td>
+              <td>個人・非営利団体可(法人格不問、実行委採択例多数)。事業開始3年未満は「スタートアップ枠」</td>
+              <td><strong>50〜300万円</strong>(総額2000万・10〜15件)</td>
+              <td>例年7月上旬要項公表→<strong>10月応募</strong>→2月内定→<strong>3月末入金(前払い)</strong>。対象期間2027/4/1〜2028/3/31</td>
+              <td><div class="fit"><span class="badge b-highest">最高</span><span class="txt">香川拠点。鳥取「ちづの町と森の演劇祭」=ほぼ同型の採択例。空き家×住民協働×地域資源が要件ど真ん中</span></div></td>
+            </tr>
+            <tr>
+              <td class="colnum"><span class="pid">B2</span></td>
+              <td><span class="pname">芸術文化振興基金</span>(日本芸術文化振興会) 演劇枠 or「アマチュア等の文化団体活動」枠</td>
+              <td>任意団体可。ただし設立1年以上+主催公演実績(実行委の場合は中核団体に要求)</td>
+              <td><strong>定額50〜400万円</strong>(演劇枠)／20〜200万円(アマ枠)。どちらか一方のみ</td>
+              <td><strong>2026年10月末〜11月中旬募集</strong>(対象2027/4/1〜2028/3/31、年度跨ぎ不可)。<strong>精算払=全額立替が必要</strong></td>
+              <td><div class="fit"><span class="badge b-high">高</span><span class="txt">採択率約30%。回遊型複数会場公演=1活動として応募可。「超域的芸術創造活動」枠も検討余地</span></div></td>
+            </tr>
+            <tr>
+              <td class="colnum"><span class="pid">B3</span></td>
+              <td><span class="pname">地域文化の振興をめざして</span>(全国税理士共栄会文化財団)</td>
+              <td>個人・団体可(実行委採択例あり)。第三者推薦1名(税理士・学識者・公的機関等)</td>
+              <td>上限50万円</td>
+              <td><strong>第36期 受付中(2026/6/1〜10/31必着)</strong>。対象は2027/4/1〜2028/3/31に「実行および支出」する活動</td>
+              <td><div class="fit"><span class="badge b-high">高</span><span class="txt">演劇・人材育成が明記。香川の採択例なし=競合少</span></div></td>
+            </tr>
+            <tr>
+              <td class="colnum"><span class="pid">B4</span></td>
+              <td>三菱UFJ信託地域文化財団</td>
+              <td>団体のみ(実行委可・個人不可)</td>
+              <td>実績相場20〜70万円</td>
+              <td>例年8/1〜11月末締切(2027年度分・要確認)。「会期開始日」が2027/4/1以降なら対象</td>
+              <td><div class="fit"><span class="badge b-mid">中</span><span class="txt">演劇部門はアマチュア限定が壁→美術部門(プロ可・「芸術祭」明記)で展示を切り出す方が現実的</span></div></td>
+            </tr>
+            <tr>
+              <td class="colnum"><span class="pid">B5</span></td>
+              <td>中條文化振興財団(香川)</td>
+              <td>県内の団体・個人(設立5年未満も可)</td>
+              <td>上限30万円</td>
+              <td>締切2027/1/31(対象2027/4/1〜2028/3/31)</td>
+              <td><div class="fit"><span class="badge b-mid">中</span><span class="txt">小口だが地元財団。確度高めの足し算要員</span></div></td>
+            </tr>
+            <tr>
+              <td class="colnum"><span class="pid">B6</span></td>
+              <td>朝日新聞文化財団</td>
+              <td>任意団体可(規約・決算書必須。<strong>企業が実行委構成員だと不可</strong>)</td>
+              <td>最大100万(実績平均約13万)</td>
+              <td>2026/7/1〜10/25(対象2027/4/1〜2028/3/31)</td>
+              <td><div class="fit"><span class="badge b-lowmid">低〜中</span><span class="txt">演劇対象外。展示部分の切り出しのみ。隣町「アートエコーまんのう・山の芸術祭」採択例あり</span></div></td>
+            </tr>
+            <tr>
+              <td class="colnum"><span class="pid">B7</span></td>
+              <td>野村財団(美術部門)</td>
+              <td>団体(2名以上のグループ可)</td>
+              <td>上限100万(相場20〜50万)</td>
+              <td>2026/10/31締切(2027年度上期=2027/4〜9月実施分・要確認)</td>
+              <td><div class="fit"><span class="badge b-lowmid">低〜中</span><span class="txt">演劇部門なし。展示・AIR切り出しのみ。事前照会必須</span></div></td>
+            </tr>
+            <tr>
+              <td class="colnum"><span class="pid">B8</span></td>
+              <td>セゾン文化財団(創造環境イノベーション等)</td>
+              <td>団体可(規約要)</td>
+              <td>100〜200万円</td>
+              <td>2026/8/1〜9月中旬交付申込</td>
+              <td><div class="fit"><span class="badge b-low">低</span><span class="txt">「公演実施が主目的の事業」「地域振興主目的イベント」は対象外と明記。参加する若手個人のセゾン・フェロー応募は推奨</span></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="grp grpC">C. 琴平町を動かして乗せる(町経由・主に2027年度)</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th class="colnum">#</th><th style="min-width:140px">制度</th><th style="min-width:160px">仕組み</th><th style="min-width:140px">金額</th><th style="min-width:160px">タイミング</th><th style="min-width:170px">適合度</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td class="colnum"><span class="pid">C1</span></td>
+              <td><span class="pname">宝くじ・地域の芸術環境づくり助成</span>(自治総合センター)</td>
+              <td>町→県知事経由で申請、<strong>実施主体に実行委員会が明記</strong></td>
+              <td><strong>上限500万円</strong></td>
+              <td>令和9年度分を<strong>2026年夏〜10月頃</strong>に町経由で申請(町の窓口・締切は要確認)</td>
+              <td><div class="fit"><span class="badge b-high">高</span><span class="txt">2027/4以降開催が条件。公立文化施設=旧金毘羅大芝居等を会場に組み込むと趣旨に合致</span></div></td>
+            </tr>
+            <tr>
+              <td class="colnum"><span class="pid">C2</span></td>
+              <td>地域創造・創造プログラム</td>
+              <td>町が「相当の責任を負う」実行委員会、町が申請者</td>
+              <td>(経費−入場料収入)×1/2・<strong>上限1000万</strong>・2〜3か年</td>
+              <td>2026年9月末締切見込み(令和9年度分)</td>
+              <td><div class="fit"><span class="badge b-mid">中</span><span class="txt">「会場は原則公立文化施設」要件と空き家会場の整合が要確認。金丸座を主会場に据える設計なら可能性</span></div></td>
+            </tr>
+            <tr>
+              <td class="colnum"><span class="pid">C3</span></td>
+              <td>文化庁 文化芸術創造拠点形成事業／文化資源活用推進事業</td>
+              <td><strong>自治体のみ</strong>申請可</td>
+              <td>数百万〜数千万規模</td>
+              <td>例年1〜2月募集(令和9年度分)</td>
+              <td><div class="fit"><span class="badge b-mid">中</span><span class="txt">町が採択を取り、演劇祭を町事業として委託/補助する構図。地域芸術祭の常套スキーム</span></div></td>
+            </tr>
+            <tr>
+              <td class="colnum"><span class="pid">C4</span></td>
+              <td>地域未来交付金(内閣府)</td>
+              <td>町のみ。地域再生計画認定が前提</td>
+              <td>ソフト1/2・原則3か年</td>
+              <td>計画申請は5月/9月/1月目途</td>
+              <td><div class="fit"><span class="badge b-mid">中</span><span class="txt">「2026年度プレ→2027年度本格」の複数年事業として町に提案する形</span></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="grp grpD">D. 2回目以降・規模拡大用(2027年春以降に申請)</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th class="colnum">#</th><th style="min-width:140px">制度</th><th style="min-width:150px">応募資格</th><th style="min-width:150px">金額</th><th style="min-width:150px">タイミング</th><th style="min-width:200px">メモ</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td class="colnum"><span class="pid">D1</span></td>
+              <td><span class="pname">日本博 地域固有文化コンテンツ創出補助</span>(文化庁)</td>
+              <td><strong>任意団体可</strong>(規約案添付)</td>
+              <td><strong>上限3000万</strong>(インバウンド大なら5000万)。500万まで定額+超過1/2</td>
+              <td>令和9年度公募=2027年4〜5月頃見込み</td>
+              <td>事業例に「夜間の特別体験」「古民家活用」「芸術祭」明記。<strong>事前承認で3月開催も許容する唯一の国制度</strong>。初回実績ができてからの大本命</td>
+            </tr>
+            <tr>
+              <td class="colnum"><span class="pid">D2</span></td>
+              <td>空き家対策モデル事業(国交省)</td>
+              <td>NPO・民間事業者等(空き家を借り受けた者も可)</td>
+              <td><strong>ソフト定額10/10+改修1/3</strong></td>
+              <td>令和9年度公募=2027年4〜5月見込み</td>
+              <td>「一時転用→恒常活用(AIR拠点等)」のモデル性で申請。公演費(芸文振)と改修費(国交省)の費目切り分けで併用可</td>
+            </tr>
+            <tr>
+              <td class="colnum"><span class="pid">D3</span></td>
+              <td>香川県 持続可能な観光地域づくり支援</td>
+              <td>県内団体(町との連携必須)</td>
+              <td>新規造成1/2・上限200万</td>
+              <td>令和9年度=2027年2月頃</td>
+              <td>「滞在時間延長・夜間・宿泊」が趣旨ど真ん中。ただし「延べ1万人以上集客かつ2週間以上」要件がボーダー(要確認)</td>
+            </tr>
+            <tr>
+              <td class="colnum"><span class="pid">D4</span></td>
+              <td>トヨタ財団 国内助成カテゴリー2</td>
+              <td>法人格不問(実行委採択例あり)</td>
+              <td>上限600万・2年(人件費可)</td>
+              <td>2027年4〜6月公募→2027年11月開始</td>
+              <td>「演劇祭」でなく「空き家の文化拠点化×住民協働の自治基盤づくり」として。初回実績が応募材料になる</td>
+            </tr>
+            <tr>
+              <td class="colnum"><span class="pid">D5</span></td>
+              <td>サントリー地域文化賞 等</td>
+              <td>(顕彰・申請型でない)</td>
+              <td>—</td>
+              <td>—</td>
+              <td>実績を積んだ将来の話。ブランド付けとして頭の片隅に</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="grp grpE">E. 調査の結果、除外したもの</p>
+      <div class="table-wrap">
+        <table class="narrow">
+          <thead><tr><th style="min-width:220px">制度</th><th>除外理由</th></tr></thead>
+          <tbody>
+            <tr><td>アサヒグループ(芸術文化)財団</td><td>芸術文化助成は2022年から募集休止のまま事実上消滅</td></tr>
+            <tr><td>セゾン(事業助成として)</td><td>公演実施主目的・地域振興イベントは対象外と明記</td></tr>
+            <tr><td>地域創造(直接応募)</td><td>自治体等のみ。民間実行委の直接枠なし</td></tr>
+            <tr><td>日本財団</td><td>文化系は法人格必須(任意団体不可)。法人化後に再検討</td></tr>
+            <tr><td>文化庁 舞台芸術等総合支援事業</td><td>法人格必須+実績要件で現状不可</td></tr>
+            <tr><td>観光庁二次公募(6/18)</td><td>フェス主目的不可+2027/2/26完了要件で乖離大</td></tr>
+            <tr><td>ポーラ美術振興・クマ財団・吉野石膏・花王・かけはし・三井住友海上</td><td>分野外または個人向け(クマ財団は参加院生個人の奨学金として有用・12月頃募集)</td></tr>
+            <tr><td>琴平町の既存リフォーム補助</td><td>居住用・既存店舗向けで事業転用は文言上困難(運用は要確認)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 4 -->
+      <h2 class="sec" id="s4"><span class="secnum">4.</span>重要な実務注意(資金繰り・併用ルール)</h2>
+      <div class="callout c-warning">
+        <p class="ttl"><span class="ico">💰</span>カネが先に要る／併用には費目マッピングが要る</p>
+        <ul style="margin:0; padding-left:1.3em">
+          <li><strong>支払時期:</strong> 芸文振=精算払(終了後)で<strong>全額立替が必要</strong>。福武=事業開始前(3月末)入金。香川県財団=交付決定後の経費が対象(支払時期は要確認)。→ 採択されても現金が先に要る。GCF・クラファン・協賛・チケット前売を「先に入る現金」として設計する。</li>
+          <li><strong>併用ルール:</strong> 芸文振は文化庁系補助との重複不可。香川県財団は「国・町から経費の1/2以上の助成を受ける場合は対象外」+県の他助成と併用不可。→ <strong>どの経費にどの助成を充てるかの費目マッピングが必要</strong>(例: 公演費=芸文振／改修費=国交省／広報費=県財団、のような切り分け)。</li>
+          <li><strong>完了期限:</strong> 国の補助事業は2月中旬〜下旬完了が多い。年度末精算を考えると、本番会期だけでなく<strong>支出と実績報告の時期</strong>まで含めて会期を設計すること。</li>
+        </ul>
+      </div>
+
+      <!-- 5 -->
+      <h2 class="sec" id="s5"><span class="secnum">5.</span>主要候補への「応募するなら」の方向性</h2>
+
+      <h4>A1. 香川県文化芸術振興財団(締切7/3 — 最初の意思決定)</h4>
+      <ul class="clean">
+        <li><strong>ストーリー:</strong>「市町の区域を越えた広域からの参加・にぎわい創出」が要件 → 参拝客200万人の回遊・県内外からの来訪を前面に。空き家×演劇×AIRの新規性で<strong>ステップアップ枠(1/2)</strong>を狙い、ダメなら一般枠(1/3)。</li>
+        <li><strong>前提条件:</strong> 県内本拠の団体が3週間で用意できるか。①琴平側メンバーを含む実行委員会を即組成するか、②琴平の既存団体(観光協会・商店街団体等)に主催名義に入ってもらうか。<strong>まず財団に電話で「新設実行委員会の可否」「AIR宿泊費の経費区分」を確認</strong>。</li>
+        <li><strong>位置づけ:</strong> 金額は最大50万と小さいが、「公的助成の採択実績」として以後すべての申請・協賛交渉の信用になる。間に合わなければ令和9年度第1次募集(2027年4月頃)へ。</li>
+      </ul>
+
+      <h4>A2. 琴平町GCF(夏に提案開始)</h4>
+      <ul class="clean">
+        <li><strong>ストーリー:</strong> 町の第3期総合戦略(アートにぎわい×空き店舗×歌舞伎)との整合を表紙にし、国東半島(980万)・吉野川市(244万)の先行事例を添えて「町は要綱整備済み・リスク小・先例あり」と示す。返礼品=回遊チケット・AIR成果物・歌舞伎連動商品。</li>
+        <li><strong>動き方:</strong> ことバスから町(観光商工課/企画防災課)への紹介→地域おこし協力隊(空間活用・DAO/DXミッション保有)を巻き込む。寄付の使途=実行委への補助金支出の建付けまで合意できれば、10〜12月開始で3月本番に間に合う。</li>
+      </ul>
+
+      <h4>A3. メセナ協議会・助成認定(7/20締切回を推奨)</h4>
+      <ul class="clean">
+        <li><strong>ストーリー:</strong> 申請書は「公益性のある芸術文化活動」の説明(演劇祭の企画書がほぼ流用可)。認定されれば、ことバス・信金・地元企業への協賛営業が「税制優遇付き寄付のお願い」に変わり、決裁が通りやすくなる。</li>
+        <li><strong>注意:</strong> 認定前に受けた寄付は優遇対象外 → <strong>協賛営業を本格化する前に認定を取る</strong>。実行委員会の規約・代表者が前提なので、論点Aの組成と同時並行。</li>
+      </ul>
+
+      <h4>B1. 福武財団(<span class="hl">本命</span> — 10月応募)</h4>
+      <ul class="clean">
+        <li><strong>ストーリー:</strong>「在るものを活かし、無いものを創る」の理念に対し、空き家=地域資源の劇場化、金丸座の演劇文脈、住民協働(空き家所有者・商店街・近隣説明)、回遊による滞在創出、スタートアップ枠での挑戦性を主軸に。同型の採択例「ちづの町と森の演劇祭」を意識した構成(若手の滞在制作+町ぐるみの演劇祭)。</li>
+        <li><strong>動き:</strong> 7月上旬の2027年度要項公表を即確認 → <strong>事前相談(087-892-2550)で「演劇主体の可否」「空き家改修費の経費適格性」「実行委名義」を確認</strong> → 10月応募。前払い入金なのでキャッシュフロー上も最重要。</li>
+        <li>姉妹制度「瀬戸内海地域振興助成」(9月応募)は内陸の琴平が対象地域か要確認。</li>
+      </ul>
+
+      <h4>B2. 芸文振基金(10月末〜11月応募)</h4>
+      <ul class="clean">
+        <li><strong>分岐:</strong> ①学生・アマチュア主体性を打ち出すなら「アマチュア等の文化団体活動」枠(20〜200万、採択率約34%)、②若手プロの創造性・先駆性を打ち出すなら「演劇」枠(50〜400万、採択率約30%)、③演劇+展示+AIRの複合性で「超域的芸術創造活動」枠。<strong>1団体1活動・どちらか一方のみ</strong>なので9月までに決める。</li>
+        <li><strong>前提:</strong> 中核団体(設立1年以上・主催有料公演実績)の設計。参加予定の学生劇団・セシルさんの過去の空き家劇場の主催実績が使えるか確認。10月の応募前相談(電話・オンライン)を必ず使う。</li>
+        <li><strong>注意:</strong> 精算払。経費は2027年4月以降の支払いのみ計上可 → 3月中の制作費は対象外になるため、制作費は協賛・自己資金、本番経費を基金に乗せる設計。</li>
+      </ul>
+
+      <h4>B3. 税理士共栄会(受付中・10/31締切)</h4>
+      <ul class="clean">
+        <li><strong>ストーリー:</strong>「地域における演劇活動と人材の育成」へ素直に当てはめる。若手6〜10組の育成構造を定量的に。香川の採択例が直近にない=地域バランス的に有利。</li>
+        <li><strong>動き:</strong> 推薦者の確保(琴平町・香川県の文化担当部署、大学教員、ことバス顧問税理士など)。郵送のみ・必着。</li>
+      </ul>
+
+      <h4>C1. 宝くじ・地域の芸術環境づくり助成(町経由・夏に着手)</h4>
+      <ul class="clean">
+        <li><strong>ストーリー:</strong> 実施主体=実行委員会のまま、申請窓口=琴平町。旧金毘羅大芝居(公立文化施設扱いかは要確認)や町公会堂を会場の一つに組み込み、「公立文化施設の活用+地域交流プログラム」の体裁を整える。</li>
+        <li><strong>動き:</strong> 町の担当課に令和9年度分の県への提出スケジュールを確認(例年夏〜10月)。GCF提案と同じ面談で持ち込むのが効率的。</li>
+      </ul>
+
+      <h4>D1. 日本博(2年目の大本命)</h4>
+      <ul class="clean">
+        <li>初回の実績(動員・宿泊・空き家転換数・メディア露出)を持って、2027年春の令和9年度公募へ。「夜間体験×古民家×芸術祭×インバウンド」で上限3000万。回遊チケットのOTA/EC販売・訪日対応・KPI設計が要件なので、<strong>初回からチケットの販売データと外国人来訪データを取っておく</strong>こと。</li>
+      </ul>
+
+      <!-- 6 -->
+      <h2 class="sec" id="s6"><span class="secnum">6.</span>議論したい本丸: プラン A / B / C</h2>
+      <div class="plans">
+        <div class="plan a">
+          <p class="ph">プランA</p>
+          <p style="margin:0;font-size:13.5px;color:var(--muted)">2027年3月開催を堅持</p>
+          <dl>
+            <dt>取れる資金</dt><dd>県財団(〜50万)+GCF(町次第・100〜500万?)+メセナ認定経由の協賛+クラファン+チケット。</dd>
+            <dt>評価</dt><dd>助成という柱がほぼ崩れ、協賛・クラファン・チケットの3本足になる。内部企画書の「収入4本柱・ひとつ欠けても崩れない」という設計思想と矛盾。純利目標100万円の達成は協賛営業の成否に全面依存。</dd>
+            <dt>向くケース</dt><dd>学生の春休み(2〜3月)に制作・本番を完結させることがアーティスト調達上どうしても必要な場合。</dd>
+          </dl>
+        </div>
+        <div class="plan b">
+          <p class="ph">プランB<span class="rec">推奨検討</span></p>
+          <p style="margin:0;font-size:13.5px;color:var(--muted)">本番会期を2027年4月以降に後ろ倒し</p>
+          <dl>
+            <dt>形</dt><dd>制作・滞在は春休みの2〜3月のまま、<strong>本番会期初日を2027年4月(例: 4月上旬〜中旬、こんぴら歌舞伎と併走)に設定</strong>。ピッチ資料の「3月演劇祭→4月歌舞伎」を「4月、歌舞伎と併走する演劇月間」に組み替える。</dd>
+            <dt>取れる資金(2026年秋申請)</dt><dd>福武(50〜300万)+芸文振(50〜400万)+税理士共栄会(〜50万)+三菱UFJ美術(20〜70万)+中條(〜30万)+宝くじ町経由(〜500万)+県財団は令和9年度第1次へ。<strong>全採択なら1000万超、現実的な期待値でも200〜500万</strong>。</dd>
+            <dt>注意点</dt><dd>①多くの制度で「2027年4月以降の支出」のみ対象 → 3月の制作費は協賛・自己資金で持つ(費目マッピング必須)。②芸文振は精算払なので立替資金は依然必要。③歌舞伎期間は宿泊単価・混雑が上がる — 観客導線としては相乗効果、運営コストとしては負担増の両面。④学生の新学期と本番が重なる(制作は春休みで完結させ、本番は週末中心の設計でカバー可能か要検討)。</dd>
+            <dt>評価</dt><dd>資金調達面では圧倒的に合理的。「歌舞伎の前座」ではなく「歌舞伎と束ねて演劇月間」という物語はことバス・町への提案力も上がる。</dd>
+          </dl>
+        </div>
+        <div class="plan c">
+          <p class="ph">プランC</p>
+          <p style="margin:0;font-size:13.5px;color:var(--muted)">二段構え(3月=小規模プレ、後半〜2028=本格)</p>
+          <dl>
+            <dt>形</dt><dd>2027年3月に空き家1〜2軒・2〜3組の「プレ公演／公開滞在制作」を県財団50万+GCF+協賛で小さく実施。その実績を持って、2026年秋〜2027年春に福武・芸文振・宝くじ・日本博・空き家モデル事業へ一斉申請し、2027年秋〜2028年3月(または2028年4月)に本格開催。</dd>
+            <dt>評価</dt><dd>「初回は管理可能な上限を慎重に」という内部企画書の問題意識と整合。助成は「実績のある2回目」に通りやすく、日本博・トヨタ財団など大型枠まで視野に入る。一方、関係者の熱量維持と「プレで終わるリスク」、ことバスへの説明(「今年は小さく、来年大きく」)が課題。</dd>
+            <dt>向くケース</dt><dd>実行委組成・空き家確保・町交渉の進捗が夏までに固まらない場合の現実解。</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="callout c-conclusion">
+        <p class="ttl"><span class="ico">🗳️</span>判断のための問い(次回ミーティングのアジェンダ案)</p>
+        <ol>
+          <li><strong>本番会期を4月以降に動かせるか?</strong>(アーティストの春休み制約 vs 資金調達 — 制作=春休み・本番=4月の折衷は成立するか)</li>
+          <li><strong>実行委員会を7月中に組成できるか?</strong> 代表者は誰か、本拠(琴平側の住所)をどう確保するか、中核団体(芸文振用の実績持ち)は誰か。</li>
+          <li><strong>7/3の県財団第2次募集に出すか?</strong>(出すなら今週中に財団へ電話→実行委の体裁づくりに即着手。見送るなら令和9年度第1次へ)</li>
+          <li><strong>町への提案をいつ・誰が・どのルートで行うか?</strong>(GCF+宝くじ助成+総合戦略整合の3点セット。ことバス経由の紹介が前提)</li>
+          <li><strong>協賛営業の開始時期</strong>(メセナ認定7/20回を取ってから本格化する段取りでよいか)</li>
+        </ol>
+      </div>
+
+      <!-- 7 -->
+      <h2 class="sec" id="s7"><span class="secnum">7.</span>当面のタイムライン(プランB/C共通の動き)</h2>
+      <div class="table-wrap">
+        <table class="narrow">
+          <thead><tr><th style="width:120px">時期</th><th>アクション</th></tr></thead>
+          <tbody>
+            <tr><td><b>〜6月中</b></td><td>会期方針(A/B/C)の意思決定。県財団へ電話確認(087-832-3782)。福武の2027年度要項公表(7月上旬)をウォッチ</td></tr>
+            <tr><td><b>7月上旬</b></td><td>(出すなら)県財団第2次募集 申請(7/3必着)。実行委員会の規約・代表・口座の整備</td></tr>
+            <tr><td><b>7/20</b></td><td>メセナ協議会 助成認定 申請(協賛営業の前提インフラ)</td></tr>
+            <tr><td><b>7〜8月</b></td><td>福武へ事前相談。琴平町へGCF+宝くじ助成+総合戦略整合の提案(ことバス紹介→観光商工課・企画防災課・地域おこし協力隊)。税理士共栄会の推薦者確保</td></tr>
+            <tr><td><b>9月</b></td><td>芸文振の枠選択(演劇/アマチュア/超域)と中核団体の確定。瀬戸内海地域振興助成(福武・9月)の対象地域確認</td></tr>
+            <tr><td><b>10月</b></td><td><strong>申請ラッシュ:</strong> 福武(10月末)、税理士共栄会(10/31)、野村・美術切り出し(10/31・任意)、芸文振(10月末〜11月中旬)</td></tr>
+            <tr><td><b>11月</b></td><td>三菱UFJ信託・美術部門(11月末・任意)</td></tr>
+            <tr><td><b>10〜12月</b></td><td>GCF開始(町合意が取れた場合)。クラファン・チケット設計と連動</td></tr>
+            <tr><td><b>12月〜</b></td><td>参加院生個人にクマ財団(12月頃)・セゾン・フェロー(次回)を案内。採択結果を協賛営業に反映</td></tr>
+            <tr><td><b>2027年<br>2〜4月</b></td><td>採択通知(税理士2月上旬、福武2月、芸文振3月末内定)→資金確定→本番へ</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 8 -->
+      <h2 class="sec" id="s8"><span class="secnum">8.</span>要確認事項リスト(申請前に必ず潰す)</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th class="colnum">#</th><th style="min-width:230px">確認事項</th><th style="min-width:200px">確認先</th></tr></thead>
+          <tbody>
+            <tr><td class="colnum">1</td><td>県財団: 新設実行委員会の応募可否、AIR宿泊費の経費区分、ステップアップ枠の該当性</td><td>087-832-3782</td></tr>
+            <tr><td class="colnum">2</td><td>福武: 2027年度要項(7月上旬公表)、演劇主体の可否、空き家改修費の適格性、瀬戸内海助成の琴平対象可否</td><td>087-892-2550 / mail@fukutake-grant.jp</td></tr>
+            <tr><td class="colnum">3</td><td>芸文振: 中核団体の実績要件の充足(セシルさんの空き家劇場実績・参加劇団の実績が使えるか)、枠の選択</td><td>10月の応募前相談</td></tr>
+            <tr><td class="colnum">4</td><td>三菱UFJ信託: 藝大院生中心の団体の「アマチュア」該当性、美術部門での芸術祭申請</td><td>03-3272-6993</td></tr>
+            <tr><td class="colnum">5</td><td>琴平町: GCFの手数料・実行委への支出スキーム、宝くじ助成の町窓口と締切、空き家補助の事業転用可否、旧金毘羅大芝居の「公立文化施設」該当性</td><td>観光商工課 0877-75-6710 / 企画防災課 0877-75-6711</td></tr>
+            <tr><td class="colnum">6</td><td>メセナ協議会: Arts Fund枠(事業費1000万超の場合)の条件</td><td>culfun.mecenat.or.jp</td></tr>
+            <tr><td class="colnum">7</td><td>税理士共栄会: 公式サイトがHTTP接続のみで不安定 — 要領原本の郵送取り寄せ・電話確認</td><td>要項記載の連絡先</td></tr>
+            <tr><td class="colnum">8</td><td>各制度の2027年度要項は2026年7〜8月に正式公表が多い — 本資料の日程は例年パターンからの推定を含むため、公表後に再確認</td><td>各公式サイト</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <footer class="doc">
+        本資料は2026年6月13日時点のWeb一次情報(各財団・省庁の公式募集要項)に基づく。「要確認」事項の裏取りと、2027年度要項の公表確認を経て v0.2 に更新予定。
+      </footer>
+
+    </div><!-- /.inner -->
+  </main>
+</div><!-- /.wrap -->
+
+<button id="top" aria-label="トップへ戻る">↑</button>
+
+<script>
+  // mobile nav drawer
+  var toc = document.getElementById('toc');
+  var toggle = document.getElementById('navtoggle');
+  toggle.addEventListener('click', function(){ toc.classList.toggle('open'); });
+  toc.addEventListener('click', function(e){ if(e.target.tagName==='A') toc.classList.remove('open'); });
+
+  // scroll-spy: highlight current section in nav
+  var links = Array.prototype.slice.call(toc.querySelectorAll('a'));
+  var map = {};
+  links.forEach(function(a){ map[a.getAttribute('href').slice(1)] = a; });
+  var sections = Array.prototype.slice.call(document.querySelectorAll('h2.sec'));
+  var spy = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){
+        links.forEach(function(a){ a.classList.remove('active'); });
+        var a = map[en.target.id];
+        if(a) a.classList.add('active');
+      }
+    });
+  }, {rootMargin:'-10% 0px -80% 0px', threshold:0});
+  sections.forEach(function(s){ spy.observe(s); });
+
+  // back to top
+  var topBtn = document.getElementById('top');
+  topBtn.addEventListener('click', function(){ window.scrollTo({top:0, behavior:'smooth'}); });
+  window.addEventListener('scroll', function(){
+    if(window.scrollY > 600) topBtn.classList.add('show'); else topBtn.classList.remove('show');
+  });
+</script>
+</body>
+</html>

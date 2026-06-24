@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>琴平 空き家演劇祭 — 助成金ダッシュボード</title>
+<style>
+  :root{
+    --bg:#0f172a; --panel:#1e293b; --panel-2:#162032; --surface:#ffffff;
+    --ink:#1d2530; --ink-soft:#475569; --muted:#94a3b8; --line:#e3e8ef; --line-d:#334155;
+    --accent:#2563eb; --accent-l:#60a5fa; --accent-soft:#eff4ff;
+    --green:#15803d; --green-bg:#dcfce7; --green-line:#86efac;
+    --amber:#b45309; --amber-bg:#fef3c7; --amber-line:#fcd34d;
+    --red:#b91c1c; --red-bg:#fee2e2; --red-line:#fca5a5;
+    --grpA:#0891b2; --grpB:#2563eb; --grpC:#7c3aed; --grpD:#64748b;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:#eef1f6; color:var(--ink);
+    font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",YuGothic,Meiryo,system-ui,sans-serif;
+    font-size:15px; line-height:1.7; -webkit-font-smoothing:antialiased;
+  }
+
+  /* ── Top bar ── */
+  .topbar{
+    background:linear-gradient(135deg,#0f172a,#1e3a8a); color:#fff;
+    padding:20px 30px; display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:12px;
+  }
+  .topbar h1{font-size:22px; font-weight:800; line-height:1.3;}
+  .topbar h1 .sub{display:block; font-size:12px; font-weight:500; color:#bfdbfe; letter-spacing:.1em; margin-top:4px;}
+  .topbar .meta{font-size:12px; color:#cbd5e1; text-align:right; line-height:1.6;}
+  .topbar .meta b{color:#fff;}
+
+  .container{max-width:1180px; margin:0 auto; padding:24px 22px 80px;}
+  .sectitle{font-size:13px; font-weight:800; color:var(--ink-soft); letter-spacing:.08em; text-transform:uppercase; margin:30px 0 12px; display:flex; align-items:center; gap:8px;}
+  .sectitle::before{content:""; width:4px; height:15px; background:var(--accent); border-radius:2px;}
+
+  /* ── KPI cards ── */
+  .kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:14px;}
+  .kpi{background:var(--surface); border-radius:12px; padding:16px 18px; border:1px solid var(--line); box-shadow:0 1px 3px rgba(15,23,42,.05);}
+  .kpi .k{font-size:12px; color:var(--ink-soft); font-weight:700;}
+  .kpi .v{font-size:30px; font-weight:800; line-height:1.1; margin-top:6px; color:var(--ink);}
+  .kpi .v small{font-size:14px; font-weight:700; color:var(--ink-soft);}
+  .kpi .s{font-size:11.5px; color:var(--muted); margin-top:5px;}
+  .kpi.hot{border-color:var(--amber-line); background:linear-gradient(180deg,#fffbeb,#fff);}
+  .kpi.hot .v{color:var(--amber);}
+  .kpi.best{border-color:#bfdbfe; background:linear-gradient(180deg,var(--accent-soft),#fff);}
+  .kpi.best .v{color:var(--accent); font-size:24px;}
+
+  /* ── Timeline ── */
+  .timeline{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:18px 20px; overflow-x:auto;}
+  .tl-track{display:flex; gap:0; min-width:760px; position:relative;}
+  .tl-step{flex:1; position:relative; padding:0 6px;}
+  .tl-step .dot{width:13px; height:13px; border-radius:50%; background:var(--accent); border:3px solid #fff; box-shadow:0 0 0 2px var(--accent); margin:0 auto 8px;}
+  .tl-step.now .dot{background:var(--amber); box-shadow:0 0 0 2px var(--amber); animation:pulse 1.6s infinite;}
+  @keyframes pulse{0%{box-shadow:0 0 0 2px var(--amber);}50%{box-shadow:0 0 0 6px rgba(180,83,9,.25);}100%{box-shadow:0 0 0 2px var(--amber);}}
+  .tl-step::before{content:""; position:absolute; top:6px; left:-50%; width:100%; height:3px; background:var(--line); z-index:-0;}
+  .tl-step:first-child::before{display:none;}
+  .tl-when{font-size:11px; font-weight:800; text-align:center; color:var(--ink);}
+  .tl-step.now .tl-when{color:var(--amber);}
+  .tl-what{font-size:11px; color:var(--ink-soft); text-align:center; margin-top:3px; line-height:1.4;}
+  .tl-now-badge{display:inline-block; font-size:9px; background:var(--amber); color:#fff; padding:1px 6px; border-radius:99px; font-weight:800; margin-bottom:3px;}
+
+  /* ── Conclusion callout ── */
+  .callout{background:var(--accent-soft); border:1px solid #bfdbfe; border-radius:12px; padding:16px 18px; margin-top:14px;}
+  .callout .ct{font-weight:800; color:#1d4ed8; margin-bottom:8px; font-size:14px;}
+  .callout ol{padding-left:1.3em; font-size:13.5px;}
+  .callout li{margin:6px 0;}
+  .callout.warn{background:var(--amber-bg); border-color:var(--amber-line);}
+  .callout.warn .ct{color:var(--amber);}
+
+  /* ── Filters ── */
+  .filters{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;}
+  .filt{font-size:13px; font-weight:700; padding:7px 14px; border-radius:99px; border:1.5px solid var(--line-d); background:#fff; color:var(--ink-soft); cursor:pointer; transition:.15s;}
+  .filt:hover{border-color:var(--accent);}
+  .filt.on{background:var(--accent); border-color:var(--accent); color:#fff;}
+
+  /* ── Grant cards ── */
+  .grants{display:grid; grid-template-columns:repeat(3,1fr); gap:14px;}
+  .grant{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:15px 16px; border-top:4px solid var(--grpB); display:flex; flex-direction:column; transition:.15s;}
+  .grant:hover{box-shadow:0 6px 18px rgba(15,23,42,.10); transform:translateY(-2px);}
+  .grant.gA{border-top-color:var(--grpA);}
+  .grant.gB{border-top-color:var(--grpB);}
+  .grant.gC{border-top-color:var(--grpC);}
+  .grant.gD{border-top-color:var(--grpD);}
+  .grant .ghead{display:flex; justify-content:space-between; align-items:flex-start; gap:8px;}
+  .grant .pid{font-size:11px; font-weight:800; color:#fff; background:var(--grpB); padding:2px 8px; border-radius:6px;}
+  .grant.gA .pid{background:var(--grpA);} .grant.gC .pid{background:var(--grpC);} .grant.gD .pid{background:var(--grpD);}
+  .grant .fit{font-size:11px; font-weight:800; padding:2px 9px; border-radius:99px; white-space:nowrap;}
+  .fit-highest{background:#fde68a; color:#92400e;} .fit-high{background:var(--green-bg); color:var(--green);}
+  .fit-mid{background:#e0e7ff; color:#3730a3;} .fit-low{background:#f1f5f9; color:#64748b;}
+  .grant h3{font-size:15px; font-weight:800; margin:9px 0 4px; line-height:1.35;}
+  .grant .org{font-size:11.5px; color:var(--muted); margin-bottom:10px;}
+  .grant .money{font-size:19px; font-weight:800; color:var(--ink);}
+  .grant .money small{font-size:12px; font-weight:700; color:var(--ink-soft);}
+  .grant dl{margin-top:10px; font-size:12px; display:grid; grid-template-columns:auto 1fr; gap:4px 8px;}
+  .grant dt{color:var(--muted); font-weight:700; white-space:nowrap;}
+  .grant dd{color:var(--ink-soft);}
+  .grant .note{padding-top:10px; font-size:11.5px; color:var(--ink-soft); border-top:1px dashed var(--line); line-height:1.5;}
+  .grant .srclink{margin-top:auto; padding-top:10px; }
+  .grant .srclink a{display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:700; color:var(--accent); text-decoration:none; padding:6px 11px; border:1.5px solid var(--accent-soft); background:var(--accent-soft); border-radius:8px; transition:.15s;}
+  .grant .srclink a:hover{background:var(--accent); color:#fff; border-color:var(--accent);}
+  .grant .srclink a .ext{font-size:11px;}
+  .grant .srclink .unverified{font-size:11px; color:var(--muted); font-style:italic;}
+  .ddl{font-weight:800;}
+  .ddl.soon{color:var(--red);}
+
+  /* ── Plans ── */
+  .plans{display:grid; grid-template-columns:repeat(3,1fr); gap:14px;}
+  .plan{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 18px; border-top:5px solid var(--grpD);}
+  .plan.b{border-top-color:var(--accent); box-shadow:0 4px 16px rgba(37,99,235,.12);}
+  .plan .pname{font-size:16px; font-weight:800;}
+  .plan.b .pname{color:var(--accent);}
+  .plan .rec{font-size:10px; background:var(--accent); color:#fff; padding:2px 8px; border-radius:99px; margin-left:6px; font-weight:800;}
+  .plan .desc{font-size:12.5px; color:var(--muted); margin:2px 0 10px;}
+  .plan .amt{font-size:22px; font-weight:800; color:var(--ink); margin-bottom:8px;}
+  .plan .amt small{font-size:12px; color:var(--ink-soft); font-weight:700;}
+  .plan p{font-size:12px; color:var(--ink-soft); line-height:1.6;}
+  .plan p b{color:var(--ink);}
+
+  /* ── TODO ── */
+  .todos{background:var(--surface); border:1px solid var(--line); border-radius:12px; overflow:hidden;}
+  .todo{display:flex; gap:12px; padding:12px 16px; border-bottom:1px solid var(--line); align-items:flex-start;}
+  .todo:last-child{border-bottom:0;}
+  .todo .num{flex:0 0 24px; height:24px; border-radius:50%; background:var(--accent-soft); color:var(--accent); font-weight:800; font-size:12px; display:flex; align-items:center; justify-content:center;}
+  .todo .tx{font-size:13px; color:var(--ink-soft); flex:1;}
+  .todo .tx b{color:var(--ink);}
+  .todo .tel{font-size:12px; font-weight:700; color:var(--accent); white-space:nowrap;}
+
+  .src{font-size:11px; color:var(--muted); margin-top:24px; line-height:1.6; border-top:1px solid var(--line); padding-top:14px;}
+
+  @media (max-width:880px){
+    .kpis,.grants,.plans{grid-template-columns:1fr 1fr;}
+    .kpi.best{grid-column:span 2;}
+  }
+  @media (max-width:560px){
+    .kpis,.grants,.plans{grid-template-columns:1fr;}
+    .kpi.best{grid-column:span 1;}
+  }
+</style>
+</head>
+<body>
+
+  <div class="topbar">
+    <h1>琴平 空き家演劇祭 — 助成金ダッシュボード
+      <span class="sub">KOTOHIRA EMPTY-HOUSE THEATER FESTIVAL — GRANT TRACKER</span>
+    </h1>
+    <div class="meta">
+      <b>更新:</b> 2026/6/13（v0.1）<br>
+      一次情報（各財団・省庁の募集要項）確認済／日程は例年推定を含む
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- KPI -->
+    <div class="sectitle">サマリー</div>
+    <div class="kpis">
+      <div class="kpi">
+        <div class="k">現実的な期待調達額（プランB）</div>
+        <div class="v">200–500<small>万円</small></div>
+        <div class="s">全採択なら1,000万円超</div>
+      </div>
+      <div class="kpi">
+        <div class="k">候補制度数</div>
+        <div class="v">21<small>件</small></div>
+        <div class="s">A:4 / B:8 / C:4 / D:5（除外8件）</div>
+      </div>
+      <div class="kpi hot">
+        <div class="k">⚠ 最初の意思決定締切</div>
+        <div class="v">7/3</div>
+        <div class="s">香川県文化芸術振興財団（〜50万）</div>
+      </div>
+      <div class="kpi best">
+        <div class="k">★ 本命</div>
+        <div class="v">福武財団</div>
+        <div class="s">50–300万・10月応募・前払い入金。同型採択例あり</div>
+      </div>
+    </div>
+
+    <!-- 結論 -->
+    <div class="callout">
+      <div class="ct">📌 結論の要点</div>
+      <ol>
+        <li><b>2027年3月開催は助成カレンダー上もっとも不利</b>（年度末）。3月のまま使えるのは県財団・町GCF・メセナ寄付認定のみ。</li>
+        <li><b>本番を2027年4月以降にずらすと、福武・芸文振・税理士共栄会など主要助成が一斉に射程に入る</b>。こんぴら歌舞伎との「演劇月間」構想とも整合 → <b>プランB推奨</b>。</li>
+        <li>申請の前提として<b>実行委員会（規約・代表・琴平の所在地・口座）の7〜8月組成が最初のクリティカルパス</b>。町を動かせば宝くじ500万・GCF・地域創造1000万・日本博3000万の太いルートが開く。</li>
+      </ol>
+    </div>
+
+    <!-- タイムライン -->
+    <div class="sectitle">アクション・タイムライン（プランB/C共通）</div>
+    <div class="timeline">
+      <div class="tl-track">
+        <div class="tl-step now">
+          <div class="tl-now-badge">NOW</div>
+          <div class="dot"></div>
+          <div class="tl-when">〜6月</div>
+          <div class="tl-what">会期方針A/B/C決定<br>県財団へ電話確認</div>
+        </div>
+        <div class="tl-step">
+          <div class="dot"></div>
+          <div class="tl-when">7月上旬</div>
+          <div class="tl-what">県財団 7/3必着<br>実行委 組成</div>
+        </div>
+        <div class="tl-step">
+          <div class="dot"></div>
+          <div class="tl-when">7/20</div>
+          <div class="tl-what">メセナ認定申請<br>（協賛の前提）</div>
+        </div>
+        <div class="tl-step">
+          <div class="dot"></div>
+          <div class="tl-when">7–8月</div>
+          <div class="tl-what">福武 事前相談<br>町へGCF＋宝くじ提案</div>
+        </div>
+        <div class="tl-step">
+          <div class="dot"></div>
+          <div class="tl-when">9月</div>
+          <div class="tl-what">芸文振の枠選択<br>中核団体 確定</div>
+        </div>
+        <div class="tl-step">
+          <div class="dot"></div>
+          <div class="tl-when">10月</div>
+          <div class="tl-what">申請ラッシュ<br>福武・税理士・芸文振</div>
+        </div>
+        <div class="tl-step">
+          <div class="dot"></div>
+          <div class="tl-when">10–12月</div>
+          <div class="tl-what">GCF開始<br>クラファン・前売連動</div>
+        </div>
+        <div class="tl-step">
+          <div class="dot"></div>
+          <div class="tl-when">27年2–4月</div>
+          <div class="tl-what">採択通知→資金確定<br>本番へ</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 候補制度 -->
+    <div class="sectitle">候補制度（フィルタで絞り込み）</div>
+    <div class="filters">
+      <button class="filt on" data-f="all">すべて</button>
+      <button class="filt" data-f="A">A 今すぐ動ける（3月可）</button>
+      <button class="filt" data-f="B">B 4月以降なら有力</button>
+      <button class="filt" data-f="C">C 町経由</button>
+      <button class="filt" data-f="D">D 2年目・拡大</button>
+    </div>
+    <div class="grants" id="grants">
+
+      <!-- A -->
+      <div class="grant gA" data-g="A">
+        <div class="ghead"><span class="pid">A1</span><span class="fit fit-high">適合 高</span></div>
+        <h3>文化芸術振興活動費助成金</h3>
+        <div class="org">置県百年記念 香川県文化芸術振興財団</div>
+        <div class="money">5–50<small>万円</small></div>
+        <dl>
+          <dt>資格</dt><dd>県内本拠の団体・個人（任意団体可）</dd>
+          <dt>補助率</dt><dd>赤字額1/3、新規性枠1/2</dd>
+          <dt>締切</dt><dd><span class="ddl soon">2026/7/3 17時必着</span></dd>
+        </dl>
+        <div class="note">1〜3月実施を明示的に対象。小額だが「公的採択実績」として以後の信用になる。☎087-832-3782</div>
+        <div class="srclink"><a href="https://www.kagawa-arts.or.jp/grant/" target="_blank" rel="noopener">公式募集要項を見る <span class="ext">↗</span></a></div>
+      </div>
+
+      <div class="grant gA" data-g="A">
+        <div class="ghead"><span class="pid">A2</span><span class="fit fit-high">適合 高</span></div>
+        <h3>琴平町GCF（ふるさと納税型クラファン）</h3>
+        <div class="org">琴平町 × ふるさとチョイス等</div>
+        <div class="money">設計次第<small>（先例980万/244万）</small></div>
+        <dl>
+          <dt>資格</dt><dd>町が主体（実行委へ補助で支出）</dd>
+          <dt>締切</dt><dd>随時。10–12月開始・90日で3月本番に間に合う</dd>
+        </dl>
+        <div class="note">関門は町の合意のみ。国東半島980万/522人・吉野川市244万の同型先例あり。</div>
+        <div class="srclink"><a href="https://www.furusato-tax.jp/gcf/" target="_blank" rel="noopener">GCF公式（ふるさとチョイス） <span class="ext">↗</span></a></div>
+      </div>
+
+      <div class="grant gA" data-g="A">
+        <div class="ghead"><span class="pid">A3</span><span class="fit fit-high">適合 高</span></div>
+        <h3>助成認定制度（寄付の税制優遇）</h3>
+        <div class="org">企業メセナ協議会</div>
+        <div class="money">寄付〜500<small>万円</small></div>
+        <dl>
+          <dt>資格</dt><dd>実行委員会と明記・個人可</dd>
+          <dt>締切</dt><dd><span class="ddl">7/20</span>・10/20・1/20・4/20</dd>
+        </dl>
+        <div class="note">現金協賛を「税優遇付き寄付」に変換。協賛営業の前に認定取得を。手数料1万円〜。</div>
+        <div class="srclink"><a href="https://culfun.mecenat.or.jp/collect/grant/" target="_blank" rel="noopener">公式募集要項を見る <span class="ext">↗</span></a></div>
+      </div>
+
+      <div class="grant gA" data-g="A">
+        <div class="ghead"><span class="pid">A4</span><span class="fit fit-low">適合 低</span></div>
+        <h3>地域観光資源コンテンツ化促進（二次）</h3>
+        <div class="org">観光庁</div>
+        <div class="money">〜400<small>万円+超過1/2</small></div>
+        <dl>
+          <dt>締切</dt><dd>2026/6/18正午・完了2/26</dd>
+        </dl>
+        <div class="note">フェス主目的不可＋2月完了要件で乖離大。<b>見送り推奨</b>。</div>
+        <div class="srclink"><a href="https://www.mlit.go.jp/kankocho/kobo05_00086.html" target="_blank" rel="noopener">観光庁 公募ページ <span class="ext">↗</span></a></div>
+      </div>
+
+      <!-- B -->
+      <div class="grant gB" data-g="B">
+        <div class="ghead"><span class="pid">B1</span><span class="fit fit-highest">★ 本命 最高</span></div>
+        <h3>アートによる地域振興助成</h3>
+        <div class="org">福武財団</div>
+        <div class="money">50–300<small>万円</small></div>
+        <dl>
+          <dt>資格</dt><dd>個人・非営利団体可。3年未満はスタートアップ枠</dd>
+          <dt>締切</dt><dd>7月要項→<span class="ddl">10月応募</span>→3月末前払い</dd>
+        </dl>
+        <div class="note">香川拠点。鳥取「ちづの町と森の演劇祭」がほぼ同型の採択例。空き家×住民協働が要件ど真ん中。前払い入金でCF面も最重要。☎087-892-2550</div>
+        <div class="srclink"><a href="https://fukutake-foundation.jp/subsidy/art_index" target="_blank" rel="noopener">公式募集要項を見る <span class="ext">↗</span></a></div>
+      </div>
+
+      <div class="grant gB" data-g="B">
+        <div class="ghead"><span class="pid">B2</span><span class="fit fit-high">適合 高</span></div>
+        <h3>芸術文化振興基金</h3>
+        <div class="org">日本芸術文化振興会</div>
+        <div class="money">50–400<small>万円</small></div>
+        <dl>
+          <dt>資格</dt><dd>設立1年以上＋公演実績（中核団体に要求）</dd>
+          <dt>締切</dt><dd><span class="ddl">10月末〜11月中旬</span></dd>
+        </dl>
+        <div class="note">採択率約30%。回遊型複数会場＝1活動で応募可。精算払＝全額立替が必要。</div>
+        <div class="srclink"><a href="https://www.ntj.jac.go.jp/kikin/" target="_blank" rel="noopener">芸術文化振興基金 助成 <span class="ext">↗</span></a></div>
+      </div>
+
+      <div class="grant gB" data-g="B">
+        <div class="ghead"><span class="pid">B3</span><span class="fit fit-high">適合 高</span></div>
+        <h3>地域文化の振興をめざして</h3>
+        <div class="org">全国税理士共栄会文化財団</div>
+        <div class="money">〜50<small>万円</small></div>
+        <dl>
+          <dt>資格</dt><dd>個人・団体可。第三者推薦1名</dd>
+          <dt>締切</dt><dd>受付中 <span class="ddl">〜10/31必着</span></dd>
+        </dl>
+        <div class="note">演劇・人材育成が明記。香川の採択例なし＝競合少。郵送のみ。</div>
+        <div class="srclink"><a href="http://www.zenzeikyo.com/assist/" target="_blank" rel="noopener">助成事業ページ <span class="ext">↗</span></a></div>
+      </div>
+
+      <div class="grant gB" data-g="B">
+        <div class="ghead"><span class="pid">B4</span><span class="fit fit-mid">適合 中</span></div>
+        <h3>三菱UFJ信託地域文化財団</h3>
+        <div class="org">三菱UFJ信託</div>
+        <div class="money">20–70<small>万円</small></div>
+        <dl>
+          <dt>締切</dt><dd>8/1〜11月末（要確認）</dd>
+        </dl>
+        <div class="note">演劇部門はアマ限定が壁→美術部門で展示を切り出す方が現実的。☎03-3272-6993</div>
+        <div class="srclink"><a href="https://www.mut-tiikibunkazaidan.or.jp/" target="_blank" rel="noopener">公式サイト <span class="ext">↗</span></a></div>
+      </div>
+
+      <div class="grant gB" data-g="B">
+        <div class="ghead"><span class="pid">B5</span><span class="fit fit-mid">適合 中</span></div>
+        <h3>中條文化振興財団</h3>
+        <div class="org">中條文化振興財団（香川）</div>
+        <div class="money">〜30<small>万円</small></div>
+        <dl>
+          <dt>締切</dt><dd>2027/1/31</dd>
+        </dl>
+        <div class="note">小口だが地元財団。確度高めの足し算要員。</div>
+        <div class="srclink"><a href="https://chujo-zaidan.or.jp/page/projects/grant/" target="_blank" rel="noopener">助成金ページ <span class="ext">↗</span></a></div>
+      </div>
+
+      <div class="grant gB" data-g="B">
+        <div class="ghead"><span class="pid">B6</span><span class="fit fit-low">低〜中</span></div>
+        <h3>朝日新聞文化財団</h3>
+        <div class="org">朝日新聞文化財団</div>
+        <div class="money">〜100<small>万円（平均13万）</small></div>
+        <dl>
+          <dt>締切</dt><dd>7/1〜10/25</dd>
+        </dl>
+        <div class="note">演劇対象外・展示切り出しのみ。企業が実行委構成員だと不可。</div>
+        <div class="srclink"><a href="https://asahizaidan.or.jp/grant/index.html" target="_blank" rel="noopener">助成ページ <span class="ext">↗</span></a></div>
+      </div>
+
+      <div class="grant gB" data-g="B">
+        <div class="ghead"><span class="pid">B7</span><span class="fit fit-low">低〜中</span></div>
+        <h3>野村財団（美術部門）</h3>
+        <div class="org">野村財団</div>
+        <div class="money">〜100<small>万円（相場20–50）</small></div>
+        <dl>
+          <dt>締切</dt><dd>2026/10/31（要確認）</dd>
+        </dl>
+        <div class="note">演劇部門なし。展示・AIR切り出しのみ。事前照会必須。</div>
+        <div class="srclink"><a href="https://www.nomurafoundation.or.jp/culture/cu_koubo/art.html" target="_blank" rel="noopener">美術部門 募集要項 <span class="ext">↗</span></a></div>
+      </div>
+
+      <div class="grant gB" data-g="B">
+        <div class="ghead"><span class="pid">B8</span><span class="fit fit-low">適合 低</span></div>
+        <h3>セゾン文化財団</h3>
+        <div class="org">セゾン文化財団</div>
+        <div class="money">100–200<small>万円</small></div>
+        <dl>
+          <dt>締切</dt><dd>8/1〜9月中旬</dd>
+        </dl>
+        <div class="note">公演主目的・地域振興イベントは対象外。参加若手個人のフェロー応募は推奨。</div>
+        <div class="srclink"><a href="https://www.saison.or.jp/" target="_blank" rel="noopener">公式サイト <span class="ext">↗</span></a></div>
+      </div>
+
+      <!-- C -->
+      <div class="grant gC" data-g="C">
+        <div class="ghead"><span class="pid">C1</span><span class="fit fit-high">適合 高</span></div>
+        <h3>宝くじ・地域の芸術環境づくり助成</h3>
+        <div class="org">自治総合センター（町経由）</div>
+        <div class="money">〜500<small>万円</small></div>
+        <dl>
+          <dt>仕組み</dt><dd>町→県知事経由。実施主体に実行委明記</dd>
+          <dt>締切</dt><dd>2026年夏〜10月頃に町経由</dd>
+        </dl>
+        <div class="note">2027/4以降開催が条件。旧金毘羅大芝居を会場に組むと趣旨に合致。</div>
+        <div class="srclink"><a href="https://www.jichi-sogo.jp/lottery/comunity" target="_blank" rel="noopener">自治総合センター 助成 <span class="ext">↗</span></a></div>
+      </div>
+
+      <div class="grant gC" data-g="C">
+        <div class="ghead"><span class="pid">C2</span><span class="fit fit-mid">適合 中</span></div>
+        <h3>地域創造・創造プログラム</h3>
+        <div class="org">地域創造（町が申請者）</div>
+        <div class="money">〜1,000<small>万円</small></div>
+        <dl>
+          <dt>補助</dt><dd>(経費−入場料)×1/2・2〜3か年</dd>
+          <dt>締切</dt><dd>2026年9月末見込み</dd>
+        </dl>
+        <div class="note">「会場は原則公立文化施設」要件。金丸座を主会場に据える設計なら可能性。</div>
+        <div class="srclink"><a href="https://www.jafra.or.jp/project/grant/" target="_blank" rel="noopener">地域創造 助成事業 <span class="ext">↗</span></a></div>
+      </div>
+
+      <div class="grant gC" data-g="C">
+        <div class="ghead"><span class="pid">C3</span><span class="fit fit-mid">適合 中</span></div>
+        <h3>文化芸術創造拠点形成事業</h3>
+        <div class="org">文化庁（自治体のみ）</div>
+        <div class="money">数百万〜数千万</div>
+        <dl>
+          <dt>締切</dt><dd>例年1〜2月募集</dd>
+        </dl>
+        <div class="note">町が採択を取り演劇祭を町事業として委託/補助。地域芸術祭の常套スキーム。</div>
+        <div class="srclink"><a href="https://www.bunka.go.jp/shinsei_boshu/kobo/94310801.html" target="_blank" rel="noopener">文化庁 公募ページ <span class="ext">↗</span></a></div>
+      </div>
+
+      <div class="grant gC" data-g="C">
+        <div class="ghead"><span class="pid">C4</span><span class="fit fit-mid">適合 中</span></div>
+        <h3>地域未来交付金</h3>
+        <div class="org">内閣府（町のみ）</div>
+        <div class="money">ソフト1/2・3か年</div>
+        <dl>
+          <dt>締切</dt><dd>計画申請5月/9月/1月目途</dd>
+        </dl>
+        <div class="note">「2026プレ→2027本格」の複数年事業として町に提案。地域再生計画認定が前提。<br><span style="color:var(--amber)">※「地域未来交付金」は通称。正式名は「新しい地方経済・生活環境創生交付金」へ改組。最新要項で要確認。</span></div>
+        <div class="srclink"><a href="https://www.chisou.go.jp/sousei/about/kouhukin/index.html" target="_blank" rel="noopener">内閣府 交付金ページ <span class="ext">↗</span></a></div>
+      </div>
+
+      <!-- D -->
+      <div class="grant gD" data-g="D">
+        <div class="ghead"><span class="pid">D1</span><span class="fit fit-highest">2年目 大本命</span></div>
+        <h3>日本博 地域固有文化コンテンツ創出</h3>
+        <div class="org">文化庁</div>
+        <div class="money">〜3,000<small>万円（インバウンド大5,000万）</small></div>
+        <dl>
+          <dt>資格</dt><dd>任意団体可</dd>
+          <dt>締切</dt><dd>令和9年度＝2027年4〜5月見込み</dd>
+        </dl>
+        <div class="note">「夜間体験×古民家×芸術祭」明記。事前承認で3月開催も許容する唯一の国制度。初回実績ができてからの大本命。</div>
+        <div class="srclink"><a href="https://www.bunka.go.jp/shinsei_boshu/kobo/94155601.html" target="_blank" rel="noopener">文化庁 募集ページ <span class="ext">↗</span></a></div>
+      </div>
+
+      <div class="grant gD" data-g="D">
+        <div class="ghead"><span class="pid">D2</span><span class="fit fit-mid">2年目 中</span></div>
+        <h3>空き家対策モデル事業</h3>
+        <div class="org">国交省</div>
+        <div class="money">ソフト10/10＋改修1/3</div>
+        <dl>
+          <dt>締切</dt><dd>令和9年度＝2027年4〜5月見込み</dd>
+        </dl>
+        <div class="note">公演費（芸文振）と改修費（国交省）の費目切り分けで併用可。</div>
+        <div class="srclink"><a href="https://www.mlit.go.jp/jutakukentiku/house/jutakukentiku_house_tk3_000131.html" target="_blank" rel="noopener">国交省 空き家対策モデル事業 <span class="ext">↗</span></a></div>
+      </div>
+
+      <div class="grant gD" data-g="D">
+        <div class="ghead"><span class="pid">D3</span><span class="fit fit-mid">2年目 中</span></div>
+        <h3>持続可能な観光地域づくり支援</h3>
+        <div class="org">香川県</div>
+        <div class="money">〜200<small>万円・1/2</small></div>
+        <dl>
+          <dt>締切</dt><dd>令和9年度＝2027年2月頃</dd>
+        </dl>
+        <div class="note">「滞在延長・夜間・宿泊」が趣旨ど真ん中。1万人/2週間要件がボーダー。</div>
+        <div class="srclink"><a href="https://www.pref.kagawa.lg.jp/kanko/sonota/zizokukannkou2025.html" target="_blank" rel="noopener">香川県 募集要項 <span class="ext">↗</span></a></div>
+      </div>
+
+      <div class="grant gD" data-g="D">
+        <div class="ghead"><span class="pid">D4</span><span class="fit fit-mid">2年目 中</span></div>
+        <h3>トヨタ財団 国内助成カテゴリー2</h3>
+        <div class="org">トヨタ財団</div>
+        <div class="money">〜600<small>万円・2年</small></div>
+        <dl>
+          <dt>締切</dt><dd>2027年4〜6月公募→11月開始</dd>
+        </dl>
+        <div class="note">「空き家の文化拠点化×住民協働の自治基盤」として。人件費可。初回実績が材料に。</div>
+        <div class="srclink"><a href="https://www.toyotafound.or.jp/grant/community/" target="_blank" rel="noopener">トヨタ財団 国内助成 <span class="ext">↗</span></a></div>
+      </div>
+
+      <div class="grant gD" data-g="D">
+        <div class="ghead"><span class="pid">D5</span><span class="fit fit-low">将来</span></div>
+        <h3>サントリー地域文化賞 等</h3>
+        <div class="org">（顕彰型）</div>
+        <div class="money">—</div>
+        <dl>
+          <dt>締切</dt><dd>—</dd>
+        </dl>
+        <div class="note">実績を積んだ将来の話。ブランド付けとして頭の片隅に。</div>
+        <div class="srclink"><a href="https://www.suntory.co.jp/sfnd/prize_cca/" target="_blank" rel="noopener">サントリー地域文化賞 <span class="ext">↗</span></a></div>
+      </div>
+
+    </div>
+
+    <!-- プラン比較 -->
+    <div class="sectitle">会期プラン比較（本丸の意思決定）</div>
+    <div class="plans">
+      <div class="plan a">
+        <div class="pname">プランA</div>
+        <div class="desc">2027年3月開催を堅持</div>
+        <div class="amt">県財団＋GCF＋協賛<small>（助成の柱は崩れる）</small></div>
+        <p>助成という柱がほぼ崩れ、<b>協賛・クラファン・チケットの3本足</b>に。純利100万の達成は協賛営業の成否に全面依存。学生の春休みで完結させたい場合向け。</p>
+      </div>
+      <div class="plan b">
+        <div class="pname">プランB<span class="rec">推奨</span></div>
+        <div class="desc">本番を2027年4月以降に後ろ倒し（歌舞伎と併走）</div>
+        <div class="amt">期待値 200–500<small>万／全採択1,000万超</small></div>
+        <p>制作・滞在は春休みのまま、<b>本番初日を4月（こんぴら歌舞伎と併走）</b>に。福武・芸文振・税理士共栄会・宝くじ等が一斉に射程。<b>資金調達面で圧倒的に合理的</b>。3月制作費は協賛・自己資金で持つ費目マッピングが必要。</p>
+      </div>
+      <div class="plan c">
+        <div class="pname">プランC</div>
+        <div class="desc">二段構え（3月プレ→後半本格）</div>
+        <div class="amt">3月小規模＋2年目に大型</div>
+        <p>3月に空き家1〜2軒の<b>プレ公演</b>を県財団50万＋GCFで小さく。その実績で福武・芸文振・<b>日本博（〜3,000万）</b>へ一斉申請。「初回は管理可能に」の問題意識と整合。プレで終わるリスクと熱量維持が課題。</p>
+      </div>
+    </div>
+
+    <!-- 要確認TODO -->
+    <div class="sectitle">申請前に潰す要確認事項（電話先付き）</div>
+    <div class="todos">
+      <div class="todo"><div class="num">1</div><div class="tx"><b>県財団</b>：新設実行委員会の応募可否、AIR宿泊費の経費区分、ステップアップ枠の該当性</div><div class="tel">☎087-832-3782</div></div>
+      <div class="todo"><div class="num">2</div><div class="tx"><b>福武</b>：2027年度要項（7月上旬公表）、演劇主体の可否、空き家改修費の適格性、瀬戸内海助成の琴平対象可否</div><div class="tel">☎087-892-2550</div></div>
+      <div class="todo"><div class="num">3</div><div class="tx"><b>芸文振</b>：中核団体の実績要件の充足（セシル氏の空き家劇場実績・参加劇団の実績）、枠の選択</div><div class="tel">10月の応募前相談</div></div>
+      <div class="todo"><div class="num">4</div><div class="tx"><b>三菱UFJ信託</b>：藝大院生中心団体の「アマチュア」該当性、美術部門での芸術祭申請</div><div class="tel">☎03-3272-6993</div></div>
+      <div class="todo"><div class="num">5</div><div class="tx"><b>琴平町</b>：GCFの手数料・実行委への支出スキーム、宝くじ助成の町窓口と締切、旧金毘羅大芝居の「公立文化施設」該当性</div><div class="tel">☎観光商工課 0877-75-6710</div></div>
+      <div class="todo"><div class="num">6</div><div class="tx"><b>各制度</b>：2027年度要項は2026年7〜8月に正式公表が多い。本資料の日程は例年推定を含むため公表後に再確認</div><div class="tel">各公式サイト</div></div>
+    </div>
+
+    <div class="src">
+      出典：本ダッシュボードは「琴平空き家演劇祭(仮) 助成金・補助金 検討資料 v0.1（2026/6/13）」に基づく。各制度とも公式サイト・募集要項PDF等の一次情報を確認済み。「要確認」事項の裏取りと2027年度要項の公表確認を経て更新予定。金額・日程は申請前に必ず原本を再確認すること。
+    </div>
+
+  </div>
+
+<script>
+  // filter
+  var filts = document.querySelectorAll('.filt');
+  var grants = document.querySelectorAll('.grant');
+  filts.forEach(function(b){
+    b.addEventListener('click', function(){
+      filts.forEach(function(x){x.classList.remove('on');});
+      b.classList.add('on');
+      var f = b.dataset.f;
+      grants.forEach(function(g){
+        g.style.display = (f==='all' || g.dataset.g===f) ? '' : 'none';
+      });
+    });
+  });
+</script>
+</body>
+</html>

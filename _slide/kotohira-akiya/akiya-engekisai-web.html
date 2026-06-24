@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>琴平 空き家演劇祭 — 学生募集</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;700;900&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+  :root {
+    --ink:#1c1410; --paper:#f6f1e7; --crimson:#8b2222; --crimson-d:#641515;
+    --gold:#b8860b; --gold-l:#cfa24a; --sumi:#2b241d; --dim:#6b5f50; --line:#d8ccb4;
+  }
+  html { scroll-behavior:smooth; }
+  body {
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"Noto Sans JP",sans-serif;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.7;
+  }
+  .serif { font-family:"Noto Serif JP",serif; }
+
+  /* ── Layout ── */
+  .shell { display:flex; min-height:100vh; align-items:flex-start; }
+
+  /* Fixed sidebar */
+  aside {
+    position:sticky; top:0;
+    width:340px; flex-shrink:0;
+    height:100vh; overflow-y:auto;
+    background:var(--sumi);
+    color:var(--paper);
+    padding:38px 30px;
+    display:flex; flex-direction:column; gap:22px;
+  }
+  aside .eyebrow {
+    display:inline-block; font-size:10px; letter-spacing:.26em; font-weight:700;
+    color:var(--gold-l); border:1px solid rgba(207,162,74,.45); padding:4px 11px; border-radius:2px;
+  }
+  aside h1 {
+    font-size:30px; font-weight:900; line-height:1.14; color:var(--paper);
+  }
+  aside h1 .en { display:block; font-size:11px; font-weight:500; letter-spacing:.16em; color:var(--gold-l); margin-top:8px; font-family:"Noto Sans JP",sans-serif; }
+  aside .tagline { font-size:13px; color:rgba(246,241,231,.82); font-weight:500; border-left:2px solid var(--crimson); padding-left:11px; }
+
+  .fixblock { border-top:1px solid rgba(207,162,74,.3); padding-top:16px; }
+  .fixblock .lbl { display:flex; align-items:baseline; gap:8px; margin-bottom:8px; }
+  .fixblock .w { font-family:"Noto Serif JP",serif; font-weight:900; font-size:16px; color:var(--gold-l); }
+  .fixblock .jp { font-size:12px; font-weight:700; color:rgba(246,241,231,.7); }
+  .fixblock .v { font-size:13px; color:var(--paper); line-height:1.6; }
+  .fixblock .v b { color:var(--gold-l); }
+  .fixblock .sub { font-size:11px; color:rgba(246,241,231,.6); margin-top:3px; }
+
+  .money { display:flex; flex-direction:column; gap:7px; }
+  .money .row { display:flex; justify-content:space-between; align-items:baseline; font-size:12px; }
+  .money .row .k { color:rgba(246,241,231,.72); }
+  .money .row .n { font-family:"Noto Serif JP",serif; font-weight:900; color:var(--gold-l); font-size:15px; }
+
+  aside .cta {
+    margin-top:auto;
+    background:var(--crimson); color:#fff; text-align:center;
+    padding:13px; border-radius:5px; font-weight:700; font-size:14px;
+    text-decoration:none; display:block; letter-spacing:.04em;
+  }
+  aside .cta:hover { background:var(--crimson-d); }
+  aside .disc { font-size:9.5px; color:rgba(246,241,231,.45); line-height:1.5; font-style:italic; }
+
+  /* Main scroll area */
+  main { flex:1; padding:56px 64px 80px; max-width:860px; }
+  section { margin-bottom:54px; scroll-margin-top:24px; }
+  section .head { display:flex; align-items:baseline; gap:14px; margin-bottom:18px; }
+  section .head .w {
+    font-family:"Noto Serif JP",serif; font-weight:900; font-size:40px;
+    color:var(--crimson); line-height:1; letter-spacing:.01em;
+  }
+  section .head .jp { font-size:21px; font-weight:900; color:var(--sumi); }
+  section .head .en { font-size:11px; letter-spacing:.2em; color:var(--gold); font-weight:700; margin-left:auto; }
+  section p { font-size:16px; color:var(--sumi); margin-bottom:14px; }
+  section p b { color:var(--crimson-d); font-weight:700; }
+  section .lede { font-size:20px; font-weight:700; color:var(--crimson-d); line-height:1.6; }
+
+  /* Why stats */
+  .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin:22px 0 26px; }
+  .stat { background:var(--sumi); color:var(--paper); border-radius:6px; padding:16px 15px 15px; border-top:3px solid var(--crimson); }
+  .stat .snum { font-family:"Noto Serif JP",serif; font-weight:900; font-size:34px; color:var(--gold-l); line-height:1; }
+  .stat .snum .su { font-size:14px; font-weight:700; margin-left:2px; }
+  .stat .slabel { font-size:12.5px; font-weight:700; color:var(--paper); margin-top:9px; line-height:1.4; }
+  .stat .ssub { font-size:11px; color:rgba(246,241,231,.6); margin-top:5px; line-height:1.45; }
+  .why-src { font-size:10.5px; color:var(--dim); line-height:1.55; margin-top:16px; }
+
+  /* Why split: text + chart */
+  .why-split { display:grid; grid-template-columns:1fr 300px; gap:30px; align-items:start; }
+  .why-text p { margin-bottom:14px; }
+  .why-chart { background:#fff; border:1px solid var(--line); border-radius:6px; padding:14px; }
+  .why-chart img { width:100%; height:auto; display:block; border-radius:3px; }
+  .why-chart figcaption { font-size:11px; color:var(--dim); line-height:1.5; margin-top:9px; }
+
+  ul.t { list-style:none; }
+  ul.t li { padding-left:22px; position:relative; margin-bottom:13px; font-size:15.5px; color:var(--sumi); line-height:1.65; }
+  ul.t li::before { content:"▪"; color:var(--crimson); position:absolute; left:4px; top:2px; }
+  ul.t b { color:var(--crimson-d); }
+
+  /* Who role cards */
+  .roles { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  .role {
+    background:#fff; border:1px solid var(--line); border-top:3px solid var(--gold);
+    border-radius:5px; padding:16px 16px 18px;
+  }
+  .role h3 { font-size:16px; font-weight:900; color:var(--crimson-d); margin-bottom:8px; }
+  .role p { font-size:13px; color:var(--sumi); margin:0; line-height:1.6; }
+  .role .role-task { font-size:11.5px; font-weight:700; color:var(--gold); letter-spacing:.02em; margin-bottom:8px; }
+  .role ul.t { margin:0 0 10px; }
+  .role ul.t li { font-size:12.5px; margin-bottom:7px; padding-left:18px; line-height:1.55; }
+  .role ul.t li::before { font-size:8px; top:3px; }
+  .role .role-fit { font-size:13px; font-weight:700; color:var(--crimson-d); border-top:1px dashed var(--line); padding-top:9px; }
+  .join-task { display:inline-block; font-size:11.5px; color:var(--gold-l); margin-top:5px; }
+
+  /* photo gallery */
+  .gallery { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:20px; }
+  .gallery.gallery-3 { grid-template-columns:repeat(3,1fr); }
+  .photo {
+    position:relative; aspect-ratio:4/3; border-radius:6px; overflow:hidden;
+    background:#e4dac2; border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .photo.feature { aspect-ratio:16/10; margin-top:20px; }
+  .photo.concept { aspect-ratio:auto; background:#0d0a08; margin:6px 0 24px; border-color:#3a3026; }
+  .photo.concept img { object-fit:contain; }
+  .photo img { width:100%; height:100%; object-fit:cover; display:block; }
+  .photo .ph {
+    text-align:center; color:var(--dim); font-size:13px; padding:12px;
+  }
+  .photo .ph .ico { font-size:30px; display:block; margin-bottom:6px; opacity:.5; }
+  .photo .cap {
+    position:absolute; left:0; right:0; bottom:0;
+    background:linear-gradient(transparent, rgba(28,20,16,.82));
+    color:#fff; font-size:12.5px; font-weight:700; padding:26px 14px 11px; line-height:1.45;
+  }
+
+  /* How steps */
+  .steps { counter-reset:step; }
+  .steps .step { display:flex; gap:16px; margin-bottom:16px; }
+  .steps .step .n {
+    counter-increment:step;
+    flex-shrink:0; width:34px; height:34px; border-radius:50%;
+    background:var(--crimson); color:#fff; font-family:"Noto Serif JP",serif; font-weight:900;
+    display:flex; align-items:center; justify-content:center; font-size:16px;
+  }
+  .steps .step .n::before { content:counter(step); }
+  .steps .step .tx { font-size:15px; color:var(--sumi); padding-top:4px; line-height:1.6; }
+  .steps .step .tx b { color:var(--crimson-d); }
+
+  .divider { height:1px; background:var(--line); border:0; margin:0 0 54px; }
+
+  /* Closing recruitment band */
+  .closing {
+    margin:64px -64px -80px; padding:54px 64px 64px;
+    background:var(--sumi); color:var(--paper);
+    scroll-margin-top:0;
+  }
+  .closing-eyebrow { display:inline-block; font-size:11px; letter-spacing:.26em; font-weight:700; color:var(--gold-l); border:1px solid rgba(207,162,74,.45); padding:5px 12px; border-radius:2px; }
+  .closing h2 { font-family:"Noto Serif JP",serif; font-size:30px; font-weight:900; color:var(--paper); margin:16px 0 26px; line-height:1.3; }
+  .join-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+  .join-item { border-top:2px solid var(--crimson); padding-top:14px; }
+  .join-item .jn { font-family:"Noto Serif JP",serif; font-weight:900; font-size:22px; color:var(--gold-l); }
+  .join-item h3 { font-size:16px; font-weight:900; color:var(--paper); margin:6px 0 8px; }
+  .join-item p { font-size:13.5px; color:rgba(246,241,231,.82); line-height:1.65; margin:0; }
+  .join-item p b { color:var(--gold-l); }
+  .closing-note { font-size:14px; color:rgba(246,241,231,.7); margin:26px 0 22px; }
+  .closing-cta { display:inline-block; background:var(--crimson); color:#fff; text-decoration:none; padding:14px 30px; border-radius:5px; font-weight:700; font-size:15px; letter-spacing:.04em; }
+  .closing-cta:hover { background:var(--crimson-d); }
+
+  /* responsive */
+  @media (max-width:880px) {
+    .shell { flex-direction:column; }
+    aside { position:sticky; width:100%; height:auto; flex-direction:row; flex-wrap:wrap; gap:14px 22px; padding:20px 24px; align-items:center; }
+    aside h1 { font-size:22px; flex-basis:100%; }
+    aside .eyebrow, aside .tagline, aside .disc, aside .cta { display:none; }
+    .fixblock { border-top:0; padding-top:0; }
+    main { padding:34px 24px 60px; }
+    .roles, .gallery, .join-grid { grid-template-columns:1fr; }
+    .stats { grid-template-columns:1fr 1fr; }
+    .stat .snum { font-size:28px; }
+    .closing { margin:48px -24px -60px; padding:40px 24px 48px; }
+    .closing h2 { font-size:23px; }
+    .why-split { grid-template-columns:1fr; gap:18px; }
+    .why-chart { max-width:340px; }
+    section .head .w { font-size:30px; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ───────── FIXED SIDEBAR ───────── -->
+  <aside>
+    <span class="eyebrow">学生募集 ／ DRAFT v0.2</span>
+    <h1 class="serif">琴平<br>空き家演劇祭
+      <span class="en">KOTOHIRA EMPTY-HOUSE THEATER FESTIVAL</span>
+    </h1>
+    <div class="tagline">町まるごとを舞台装置に。<br>空き家 × AiR × 演劇の芸術祭。</div>
+
+    <div class="fixblock">
+      <div class="lbl"><span class="w serif">When</span><span class="jp">いつ</span></div>
+      <div class="v"><b>2027年3月</b>　本番（約2週間）</div>
+      <div class="sub">準備：26年春 計画化 → 夏 現地集中 → 秋 アーティスト確定 → 冬 クラファン → 27/2 制作</div>
+    </div>
+
+    <div class="fixblock">
+      <div class="lbl"><span class="w serif">Where</span><span class="jp">どこで</span></div>
+      <div class="v"><b>香川県・琴平町</b>　金刀比羅宮の門前町</div>
+      <div class="sub">参道・商店街に点在する空き家3〜4軒が会場</div>
+    </div>
+
+    <div class="fixblock">
+      <div class="lbl"><span class="w serif">How much</span><span class="jp">いくらで</span></div>
+      <div class="money">
+        <div class="row"><span class="k">助成（4本・本命:県/福武）</span><span class="n">410万</span></div>
+        <div class="row"><span class="k">目標動員</span><span class="n">3,000人</span></div>
+        <div class="row"><span class="k">純利益レンジ</span><span class="n">100–300万</span></div>
+      </div>
+    </div>
+
+    <div class="disc">※ 本資料は叩き台。規模・財務・連携先・報酬等は協議で変更の可能性。名称を挙げた団体・財団等から正式な承認・参画同意は未取得。</div>
+  </aside>
+
+  <!-- ───────── SCROLLING MAIN ───────── -->
+  <main>
+
+    <!-- WHY -->
+    <section id="why">
+      <div class="head"><span class="w serif">Why</span><span class="jp">なぜやるのか</span><span class="en">THE PROBLEM</span></div>
+      <p class="lede">785段を登って、<b>3時間で帰る</b>。<br>9割が来て、4割しか泊まらない門前町に、空き家は増え続ける。</p>
+
+      <!-- 数字で見る課題 -->
+      <div class="stats">
+        <div class="stat">
+          <div class="snum">3.09<span class="su">時間</span></div>
+          <div class="slabel">日帰り客の平均滞在時間</div>
+          <div class="ssub">最頻値は「2時間」。参拝して、すぐ帰る</div>
+        </div>
+        <div class="stat">
+          <div class="snum">38.9<span class="su">%</span></div>
+          <div class="slabel">町内に宿泊する観光客の割合</div>
+          <div class="ssub">9割が訪れても、4割しか町に泊まらない</div>
+        </div>
+        <div class="stat">
+          <div class="snum">7.1<span class="su">%</span></div>
+          <div class="slabel">琴平町の空き家率（最大9.0%）</div>
+          <div class="ssub">前回5.3%から上昇。空き家は増えている</div>
+        </div>
+        <div class="stat">
+          <div class="snum">40.8<span class="su">%</span></div>
+          <div class="slabel">琴平町の高齢化率</div>
+          <div class="ssub">2.5人に1人が高齢者。担い手も減っていく</div>
+        </div>
+      </div>
+
+      <div class="why-split">
+        <div class="why-text">
+          <p>金刀比羅宮には人が来る。だが参拝後に町を回遊し、飲食・宿泊・鑑賞・体験へつながる仕組みは弱く、<b>日帰り客の滞在は平均3.09時間、最頻値は2時間</b>。観光客の<b>約9割が訪れても、町内に泊まるのは38.9%</b>にとどまる。来訪の量を、滞在の深さに変えられていない。</p>
+          <p>その裏で、<b>町の空き家率は7.1%（地区により最大9.0%）まで上昇</b>し、<b>高齢化率は40.8%</b>。使われない家は増え、担い手は減っていく。これは琴平だけの話ではない——<b>全国の空き家は900万戸・空き家率13.8%で過去最高</b>、<b>香川県は18.6%で全国10位</b>。本企画は、この<b>全国共通のクリティカルな課題</b>に、琴平から答えを出す試みだ。</p>
+        </div>
+        <figure class="why-chart">
+          <img src="photos/kagawa-visitors.png" alt="香川県を訪れた県外観光客数の推移（1987〜2017年）">
+          <figcaption>香川県を訪れた県外観光客数の推移。<br>人は来ている。問題は「滞在しない」こと（出所：香川県）。</figcaption>
+        </figure>
+      </div>
+
+      <p class="why-src">出典：琴平町来訪者調査（平成28年, n=411）／第2期琴平町空家等対策計画（改訂版・令和6年, 町実態調査）／琴平町（高齢化率 2024.1.1）／総務省 令和5年住宅・土地統計調査。※空き家率は町独自調査で総務省統計とは定義が異なる。</p>
+    </section>
+
+    <hr class="divider">
+
+    <!-- WHAT -->
+    <section id="what">
+      <div class="head"><span class="w serif">What</span><span class="jp">何をするのか</span><span class="en">THE FESTIVAL</span></div>
+
+      <figure class="photo feature concept">
+        <img src="photos/concept-slide.png" alt="企画骨子：空き家を小さな劇場に変え、琴平町そのものを舞台化する">
+      </figure>
+
+      <p>町に点在する<b>空き家を、小さな劇場</b>にする。アーティストがそれぞれの空き家に入り込み、その空間と町の文脈に応答した演目・パフォーマンス・インスタレーションを滞在制作する。観客は<b>パックチケットで複数の空き家を巡りながら</b>、作品を体験していく。展示や上演は同時／時間差で行われ、町を歩き、見知らぬ家の戸を開け、別の場所へ移動すること自体が、ひとつの体験になる。</p>
+
+      <p>空き家は、単なる「使われていない物件」ではない。そこには、かつての暮らしの痕跡や、家族の記憶、町の時間が積もっている。本企画ではその空間を作品の<b>背景</b>としてではなく、表現を立ち上げる<b>舞台装置</b>として捉える。化粧の間が楽屋に、浴室が客席に、土間が舞台になる——空間の記憶ごと、作品の一部にしていく。こうして<b>琴平町そのものを舞台化する</b>。</p>
+
+      <p>そして、もうひとつの軸が<b>「残置物のアップサイクル」</b>だ。空き家には、前の住人が遺した家具・食器・建具・古道具・写真などがそのまま残されていることが多い。これらを処分するのではなく、清掃・選別の過程で拾い上げ、<b>舞台美術・小道具・インスタレーションの素材として作品へと作り替える</b>。「捨てられるはずだったもの」が表現に転生することで、その家の記憶が作品の中で生き続ける。片付けそのものが創作の入り口になり、空間づくりが体験の一部になる。</p>
+    </section>
+
+    <hr class="divider">
+
+    <!-- HOW -->
+    <section id="how">
+      <div class="head"><span class="w serif">How</span><span class="jp">どうやるのか</span><span class="en">THE METHOD</span></div>
+
+      <figure class="photo feature concept">
+        <img src="photos/how-experience.png" alt="表現者と観客・観光客の体験。滞在制作と回遊鑑賞が町全体をひとつの体験に変える仕組み図">
+      </figure>
+
+      <p>参加アーティストが<b>約1ヶ月の滞在制作（AiR）</b>を行い、空間と町の文脈に応答した作品をつくる。会期中は同時／時間差で上演し、観客は町を歩いて空き家を巡る。</p>
+      <div class="steps">
+        <div class="step"><div class="n"></div><div class="tx"><b>滞在制作</b>｜アーティストが琴平に1ヶ月入り、空き家ごとに作品を立ち上げる</div></div>
+        <div class="step"><div class="n"></div><div class="tx"><b>巡る上演</b>｜複数の空き家でパックチケット型に上演・展示。移動そのものが体験になる</div></div>
+        <div class="step"><div class="n"></div><div class="tx"><b>送客</b>｜東京からのクラファン×ツアー設計が動員の肝</div></div>
+        <div class="step"><div class="n"></div><div class="tx"><b>展開</b>｜毎年3月の定例化、こんぴら歌舞伎と「演劇月間」化、他地域へ横展開</div></div>
+      </div>
+    </section>
+
+    <hr class="divider">
+
+    <!-- WHERE -->
+    <section id="where">
+      <div class="head"><span class="w serif">Where</span><span class="jp">どこで</span><span class="en">THE SITE</span></div>
+      <p><b>香川県・琴平町</b>、金刀比羅宮の門前町。参道や商店街に点在する<b>空き家3〜4軒</b>を会場にする。すでに現地に入り、物件を見て、手を動かし始めている。</p>
+
+      <figure class="photo feature">
+        <img src="photos/akiya-exterior.png" alt="会場候補の空き家・外観">
+        <figcaption class="cap">会場候補の空き家。学生で現地下見へ。</figcaption>
+      </figure>
+
+      <div class="gallery gallery-3">
+        <figure class="photo">
+          <img src="photos/akiya-visit.png" alt="庭のある空き家を現地下見する学生グループ">
+        </figure>
+        <figure class="photo">
+          <img src="photos/akiya-interior-3d.png" alt="空き家内部の3Dスキャン（化粧の間・脱衣室・浴室）">
+        </figure>
+        <figure class="photo">
+          <img src="photos/akiya-cleanup.png" alt="空き家の片付け・清掃をする学生たち">
+        </figure>
+      </div>
+    </section>
+
+    <hr class="divider">
+
+    <!-- WHO -->
+    <section id="who">
+      <div class="head"><span class="w serif">Who</span><span class="jp">こんな学生、募集</span><span class="en">JOIN US</span></div>
+      <p class="lede">演劇・美術・デザインなど、<b>表現と制作に向き合う芸術系の学生</b>を、町を舞台に募集します。</p>
+      <p>美大・芸大はもちろん、独学でも構わない。空間ごと作品に変える挑戦に、本気で踏み込みたい人へ。</p>
+      <div class="roles">
+        <div class="role">
+          <h3>表現する人</h3>
+          <ul class="t">
+            <li>空き家に約1ヶ月滞在し、その空間に合った作品を構想・制作</li>
+            <li>演劇・ダンス・パフォーマンス・現代美術などで上演／展示</li>
+            <li>会期中、観客の前で自分の表現を立ち上げる（5〜8組）</li>
+          </ul>
+          <p class="role-fit">▶ 自分の表現に本気で挑みたい人</p>
+        </div>
+        <div class="role">
+          <h3>つくる人</h3>
+          <ul class="t">
+            <li>舞台美術・空間設計で、空き家を見せ場に仕立てる</li>
+            <li>照明・音響・映像で、作品と場の体験をつくる</li>
+            <li>チラシ・ポスター・ウェブなどのデザイン・広報</li>
+          </ul>
+          <p class="role-fit">▶ 手を動かして作品と場をかたちにしたい人</p>
+        </div>
+        <div class="role">
+          <h3>素材を活かす人</h3>
+          <ul class="t">
+            <li>空き家の片付け・清掃・残置物の選別</li>
+            <li>遺された家具・建具・古道具を作品素材にアップサイクル</li>
+            <li>空間づくり・設営で、町と作品をつなぐ</li>
+          </ul>
+          <p class="role-fit">▶ 手仕事やものづくりで関わりたい人</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>

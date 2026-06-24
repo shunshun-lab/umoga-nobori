@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>琴平 空き家演劇祭 — 5W2H ワンページ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;700;900&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --ink:      #1c1410;
+    --paper:    #f6f1e7;
+    --crimson:  #8b2222;
+    --crimson-d:#641515;
+    --gold:     #b8860b;
+    --gold-l:   #cfa24a;
+    --sumi:     #2b241d;
+    --dim:      #6b5f50;
+    --line:     #d8ccb4;
+  }
+
+  html, body {
+    background: #2b241d;
+    font-family: "Noto Sans JP", sans-serif;
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    padding: 24px;
+  }
+  .serif { font-family: "Noto Serif JP", serif; }
+
+  .page {
+    width: 1123px; min-height: 794px;
+    margin: 0 auto;
+    background: var(--paper);
+    background-image:
+      radial-gradient(circle at 0% 0%, rgba(184,134,11,0.06), transparent 42%),
+      radial-gradient(circle at 100% 100%, rgba(139,34,34,0.05), transparent 42%);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+    padding: 36px 46px 28px;
+    display: flex; flex-direction: column;
+  }
+
+  /* Header */
+  header { border-bottom: 2px solid var(--crimson); padding-bottom: 14px; }
+  .topline { display:flex; justify-content:space-between; align-items:flex-end; }
+  .eyebrow {
+    display: inline-block; font-size: 11px; letter-spacing:.28em; font-weight:700;
+    color: var(--crimson); background: rgba(139,34,34,.08);
+    padding: 4px 12px; border:1px solid rgba(139,34,34,.3); border-radius:2px;
+  }
+  .stamp { font-size:11px; color:var(--dim); text-align:right; line-height:1.4; }
+  h1.title { font-size: 42px; font-weight:900; line-height:1.08; margin-top:12px; color:var(--sumi); }
+  h1.title .en { display:block; font-size:13px; font-weight:500; letter-spacing:.18em; color:var(--gold); margin-top:8px; font-family:"Noto Sans JP",sans-serif; }
+  .lead { margin-top:10px; font-size:15.5px; color:var(--crimson-d); font-weight:700; }
+
+  /* 5W2H grid */
+  .w2h {
+    flex:1; margin-top:18px;
+    display:grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: auto auto;
+    gap: 13px;
+  }
+  .cell {
+    background: rgba(255,255,255,.55);
+    border:1px solid var(--line);
+    border-top: 3px solid var(--gold);
+    border-radius:4px;
+    padding: 13px 15px 14px;
+    display:flex; flex-direction:column;
+  }
+  .cell.lead-cell { border-top-color: var(--crimson); background: rgba(139,34,34,.05); }
+  .cell .tag {
+    display:flex; align-items:baseline; gap:8px; margin-bottom:9px;
+  }
+  .cell .w {
+    font-family:"Noto Serif JP",serif; font-weight:900; font-size:22px;
+    color: var(--crimson); line-height:1; letter-spacing:.02em;
+  }
+  .cell .jp { font-size:13px; font-weight:900; color:var(--sumi); }
+  .cell .body { font-size:12px; line-height:1.62; color:var(--sumi); }
+  .cell .body b { color: var(--crimson-d); font-weight:700; }
+  .cell .body .big { font-family:"Noto Serif JP",serif; font-weight:900; color:var(--gold); font-size:15px; }
+
+  ul.t { list-style:none; font-size:12px; line-height:1.5; color:var(--sumi); }
+  ul.t li { padding-left:14px; position:relative; margin-bottom:5px; }
+  ul.t li::before { content:"▪"; color:var(--crimson); position:absolute; left:0; top:1px; font-size:9px; }
+  ul.t b { color:var(--crimson-d); }
+
+  /* the two HOW cells span detail */
+  .cell.wide { grid-column: span 2; }
+
+  /* mini money chips inside HOW MUCH */
+  .chips { display:flex; gap:8px; margin-top:auto; padding-top:8px; }
+  .chip { flex:1; background:var(--sumi); color:var(--paper); border-radius:4px; padding:8px 6px; text-align:center; }
+  .chip .v { font-family:"Noto Serif JP",serif; font-weight:900; font-size:17px; color:var(--gold-l); line-height:1; }
+  .chip .k { font-size:9px; color:rgba(246,241,231,.72); margin-top:5px; }
+
+  /* timeline inside WHEN */
+  .tl { font-size:11px; line-height:1.45; }
+  .tl div { margin-bottom:4px; }
+  .tl .w-when { color:var(--crimson-d); font-weight:700; }
+
+  footer {
+    margin-top:14px; padding-top:10px; border-top:1px solid var(--line);
+    display:flex; justify-content:space-between; gap:16px;
+    font-size:9.8px; color:var(--dim); line-height:1.5;
+  }
+  footer b { color:var(--crimson-d); }
+  .disc { font-style:italic; margin-top:4px; }
+
+  @media print {
+    html, body { background:#fff; padding:0; }
+    .page { box-shadow:none; margin:0; width:100%; }
+    @page { size: A4 landscape; margin: 8mm; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="topline">
+      <span class="eyebrow">企画ワンページ ／ 5W2H</span>
+      <div class="stamp">DRAFT v0.2<br>2026 / 6 / 4</div>
+    </div>
+    <h1 class="title serif">琴平 空き家演劇祭
+      <span class="en">KOTOHIRA EMPTY-HOUSE THEATER FESTIVAL</span>
+    </h1>
+    <div class="lead">町まるごとを舞台装置に。空き家 × アーティスト・イン・レジデンス × 演劇の芸術祭。</div>
+  </header>
+
+  <div class="w2h">
+
+    <!-- WHY -->
+    <div class="cell lead-cell">
+      <div class="tag"><span class="w">Why</span><span class="jp">なぜ</span></div>
+      <div class="body">
+        参拝後<b>1〜2時間で帰る</b>町を、回遊・滞在する町へ。
+        <ul class="t" style="margin-top:7px;">
+          <li>滞在時間と回遊性が弱い</li>
+          <li>体験コンテンツが不足</li>
+          <li>空き家が未活用のまま</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- WHAT -->
+    <div class="cell">
+      <div class="tag"><span class="w">What</span><span class="jp">何を</span></div>
+      <div class="body">
+        町の<b>空き家を小さな劇場</b>に。アーティストが滞在制作した演目・展示を、観客が<b>パックチケットで巡る</b>芸術祭。町そのものを舞台化する。
+      </div>
+    </div>
+
+    <!-- WHO -->
+    <div class="cell">
+      <div class="tag"><span class="w">Who</span><span class="jp">こんな学生</span></div>
+      <div class="body">
+        <ul class="t">
+          <li><b>作りたい人</b>｜演劇・パフォーマンス・美術で、町を舞台に滞在制作に挑みたい学生（5〜8組）</li>
+          <li><b>動かしたい人</b>｜制作・広報・運営で芸術祭の現場を回したい学生・サークル</li>
+          <li><b>関わりたい人</b>｜地域づくり・空き家活用・送客企画に踏み込みたい学生</li>
+        </ul>
+        <div style="font-size:10px;color:var(--dim);margin-top:6px;">経験不問。本気で関わる仲間を学生から募集。</div>
+      </div>
+    </div>
+
+    <!-- WHERE -->
+    <div class="cell">
+      <div class="tag"><span class="w">Where</span><span class="jp">どこで</span></div>
+      <div class="body">
+        <b>香川県・琴平町</b>。金刀比羅宮の門前町。参道・商店街・旧金毘羅大芝居（金丸座）に点在する<b>空き家3〜4軒</b>を会場に。
+      </div>
+    </div>
+
+    <!-- WHEN -->
+    <div class="cell">
+      <div class="tag"><span class="w">When</span><span class="jp">いつ</span></div>
+      <div class="body tl">
+        <div><span class="w-when">本番</span>：2027年3月（約2週間）</div>
+        <div style="margin-top:5px;font-size:10px;color:var(--dim);">— 準備の節目 —</div>
+        <div><span class="w-when">26/4–7</span> 計画化・助成申請着手</div>
+        <div><span class="w-when">26夏</span> 現地集中・協賛交渉</div>
+        <div><span class="w-when">26秋</span> アーティスト確定</div>
+        <div><span class="w-when">26冬</span> クラファン・前売</div>
+        <div><span class="w-when">27/2</span> 制作・設営</div>
+      </div>
+    </div>
+
+    <!-- HOW -->
+    <div class="cell wide">
+      <div class="tag"><span class="w">How</span><span class="jp">どうやって</span></div>
+      <div class="body">
+        参加アーティストが<b>約1ヶ月の滞在制作（AiR）</b>で、空間と町の文脈に応答した作品を制作。会期中に同時／時間差で上演し、観客は複数の空き家を歩いて巡る。
+        <ul class="t" style="margin-top:7px;">
+          <li><b>資金</b>：助成金（本命）＋地域協賛（現金＋In-Kind）＋クラファン＋チケット</li>
+          <li><b>送客</b>：東京からのクラファン×ツアー設計が動員の肝</li>
+          <li><b>展開</b>：毎年3月の定例化、こんぴら歌舞伎と「演劇月間」化、他地域へ横展開</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- HOW MUCH -->
+    <div class="cell" style="border-top-color:var(--crimson);">
+      <div class="tag"><span class="w">How&nbsp;much</span><span class="jp">いくらで</span></div>
+      <div class="body">
+        チケット想定<b>18,000円</b>。3シナリオすべてで<b>黒字構造</b>を確保（基本シナリオ）。
+      </div>
+      <div class="chips" style="flex-direction:column;gap:6px;">
+        <div class="chip" style="display:flex;align-items:center;justify-content:space-between;text-align:left;padding:7px 10px;"><span class="k" style="margin:0;">助成4本（県/福武 本命）</span><span class="v">410<span style="font-size:10px">万</span></span></div>
+        <div class="chip" style="display:flex;align-items:center;justify-content:space-between;text-align:left;padding:7px 10px;"><span class="k" style="margin:0;">動員</span><span class="v">3,000<span style="font-size:10px">人</span></span></div>
+        <div class="chip" style="display:flex;align-items:center;justify-content:space-between;text-align:left;padding:7px 10px;"><span class="k" style="margin:0;">純利益レンジ</span><span class="v">100–300<span style="font-size:10px">万</span></span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    <div>
+      <b>狙い</b> 参拝で終わらない琴平へ。空き家を舞台に、町を回遊・滞在させる芸術祭。
+      <div class="disc">※ 本資料は叩き台。規模・財務・スケジュール・連携先・報酬等は協議で変更の可能性。名称を挙げた団体・企業・財団・神社等から正式な承認・参画同意は未取得。</div>
+    </div>
+    <div class="stamp serif" style="font-size:10px;">決定的3要因：①助成申請②協賛内諾③アーティスト確定</div>
+  </footer>
+
+</div>
+</body>
+</html>

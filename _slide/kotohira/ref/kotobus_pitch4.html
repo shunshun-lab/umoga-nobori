@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>琴平 空き家演劇祭 ｜ ことバス御中</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0d0b0a;
+    --ink-2:#141110;
+    --paper:#f4ede1;
+    --paper-dim:#c9bda9;
+    --lantern:#e8893b;
+    --lantern-soft:#f0a85f;
+    --gold:#c9a14a;
+    --crimson:#8c2f24;
+    --line:rgba(244,237,225,0.14);
+    --serif:"Shippori Mincho", serif;
+    --gothic:"Zen Kaku Gothic New", sans-serif;
+    --latin:"Shippori Mincho", serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;overflow:hidden;}
+  body{
+    background:#000;
+    color:var(--paper);
+    font-family:var(--gothic);
+    -webkit-font-smoothing:antialiased;
+    display:flex;align-items:center;justify-content:center;
+  }
+
+  /* ---------- 16:9 stage ---------- */
+  #stage{
+    position:relative;
+    width:1280px;height:720px;
+    flex:none;
+    transform-origin:center center;
+    background:var(--ink);
+    overflow:hidden;
+    box-shadow:0 30px 90px rgba(0,0,0,.6);
+  }
+
+  /* ---------- deck nav ---------- */
+  .deck-nav{
+    position:absolute;top:0;left:0;width:100%;
+    display:flex;justify-content:space-between;align-items:center;
+    padding:18px 34px;z-index:100;
+    background:linear-gradient(180deg,rgba(13,11,10,0.9),rgba(13,11,10,0));
+    pointer-events:none;
+  }
+  .deck-nav .brand{
+    font-family:var(--serif);font-weight:700;letter-spacing:.18em;
+    font-size:14px;color:var(--paper-dim);
+  }
+  .deck-nav .count{
+    font-family:var(--serif);font-size:15px;letter-spacing:.1em;color:var(--paper-dim);
+    pointer-events:auto;
+  }
+
+  /* ---------- slide frame ---------- */
+  .slide{
+    position:absolute;inset:0;
+    width:1280px;height:720px;
+    display:flex;flex-direction:column;justify-content:center;
+    padding:84px 110px 72px;
+    overflow:hidden;
+    opacity:0;visibility:hidden;
+    transition:opacity .6s ease;
+    z-index:1;
+    word-break:keep-all;overflow-wrap:break-word;
+    font-feature-settings:"palt" 1, "chws" 1;
+  }
+  .slide.active{opacity:1;visibility:visible;z-index:2;}
+  .slide-num{
+    position:absolute;bottom:34px;right:110px;
+    font-family:var(--serif);
+    font-size:16px;color:var(--paper-dim);letter-spacing:.08em;
+  }
+  .kicker{
+    font-family:var(--serif);
+    font-size:18px;
+    letter-spacing:.06em;color:var(--lantern-soft);
+    margin-bottom:22px;
+  }
+  .eyebrow{
+    display:inline-block;
+    font-family:var(--gothic);font-weight:700;
+    font-size:13px;letter-spacing:.4em;
+    color:var(--gold);
+    margin-bottom:26px;
+    padding-left:2px;
+  }
+  h1,h2{font-family:var(--serif);font-weight:800;line-height:1.45;letter-spacing:.02em;word-break:keep-all;overflow-wrap:break-word;}
+  .body{font-family:var(--gothic);font-weight:400;line-height:2.1;color:var(--paper-dim);word-break:keep-all;overflow-wrap:break-word;}
+  .em{color:var(--paper);}
+  .lantern{color:var(--lantern-soft);}
+
+  /* grain + vignette overlay shared */
+  .slide::after{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(120% 100% at 50% 0%,transparent 55%,rgba(0,0,0,0.55) 100%);
+    z-index:3;
+  }
+  .grain{
+    position:absolute;inset:0;z-index:2;pointer-events:none;opacity:0.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .content{position:relative;z-index:5;width:100%;}
+
+  /* ---------- reveal animation ---------- */
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity 1s cubic-bezier(.2,.7,.2,1),transform 1s cubic-bezier(.2,.7,.2,1);}
+  .slide.active .reveal{opacity:1;transform:none;}
+  .slide.active .reveal.d1{transition-delay:.12s;}
+  .slide.active .reveal.d2{transition-delay:.26s;}
+  .slide.active .reveal.d3{transition-delay:.4s;}
+  .slide.active .reveal.d4{transition-delay:.54s;}
+  .slide.active .reveal.d5{transition-delay:.68s;}
+  .slide.active .reveal.d6{transition-delay:.82s;}
+
+  /* =========================================================
+     SLIDE 1 — COVER
+  ========================================================= */
+  #s1{
+    background:
+      radial-gradient(140% 120% at 78% 18%,rgba(232,137,59,0.22),transparent 48%),
+      radial-gradient(100% 90% at 12% 88%,rgba(140,47,36,0.34),transparent 55%),
+      linear-gradient(180deg,#17120e 0%,#0b0908 100%);
+    justify-content:flex-end;
+  }
+  /* layered "rooftops / town" silhouette */
+  #s1 .townscape{
+    position:absolute;left:0;bottom:0;width:100%;height:46%;z-index:1;
+    background:
+      linear-gradient(180deg,transparent,rgba(0,0,0,0.5));
+  }
+  #s1 .ridge{position:absolute;left:0;width:100%;z-index:1;}
+  #s1 .ridge svg{display:block;width:100%;height:100%;}
+  #s1 .lanterns{position:absolute;inset:0;z-index:1;}
+  #s1 .lant{
+    position:absolute;width:7px;height:10px;border-radius:50%;
+    background:var(--lantern-soft);
+    box-shadow:0 0 14px 4px rgba(240,168,95,0.7);
+    animation:flicker 4s infinite ease-in-out;
+  }
+  @keyframes flicker{0%,100%{opacity:.55;}50%{opacity:1;}}
+  #s1 .cover-mark{
+    font-family:var(--serif);font-weight:800;
+    font-size:150px;line-height:.98;letter-spacing:.04em;
+    text-shadow:0 4px 40px rgba(0,0,0,.6);
+  }
+  #s1 .cover-mark .row{display:block;}
+  #s1 .sub{
+    font-family:var(--serif);font-weight:500;
+    font-size:28px;letter-spacing:.14em;
+    color:var(--paper);margin-top:30px;
+  }
+  #s1 .sub small{display:block;font-size:.62em;color:var(--paper-dim);letter-spacing:.1em;margin-top:14px;font-weight:400;}
+  #s1 .meta{
+    margin-top:46px;display:flex;gap:38px;flex-wrap:wrap;align-items:baseline;
+    border-top:1px solid var(--line);padding-top:24px;
+  }
+  #s1 .meta .to{font-family:var(--serif);font-weight:700;font-size:25.6px;letter-spacing:.1em;}
+  #s1 .meta .by{font-size:14px;color:var(--paper-dim);letter-spacing:.08em;line-height:1.9;}
+  #s1 .drafttag{
+    position:absolute;top:96px;left:89.6px;z-index:5;
+    font-family:var(--latin);font-size:15px;letter-spacing:.18em;
+    color:var(--lantern-soft);
+  }
+
+  /* =========================================================
+     SLIDE 2 — THE ASK (conclusion-first)
+  ========================================================= */
+  #s2{background:linear-gradient(160deg,#120f0d,#0b0908);}
+  #s2 h1{font-size:52px;margin-bottom:38px;max-width:none;line-height:1.5;}
+  #s2 h1 .hl{color:var(--lantern-soft);}
+  #s2 .goalbox{
+    border-left:3px solid var(--lantern);
+    padding:24px 32px;margin-top:10px;
+    background:linear-gradient(90deg,rgba(232,137,59,0.1),transparent);
+    max-width:none;display:inline-block;
+  }
+  #s2 .goalbox .lab{font-size:13px;letter-spacing:.32em;color:var(--gold);font-weight:700;margin-bottom:14px;}
+  #s2 .goalbox p{font-family:var(--serif);font-size:23px;font-weight:600;line-height:1.7;word-break:keep-all;}
+
+  /* =========================================================
+     SLIDE 3 — WHY KOTOHIRA NOW (problem)
+  ========================================================= */
+  #s3{background:linear-gradient(200deg,#13100d,#0a0807);}
+  #s3 h2{font-size:50px;margin-bottom:54px;max-width:none;line-height:1.5;}
+  #s3 .stats{display:flex;gap:64px;flex-wrap:wrap;}
+  #s3 .stat .fig{font-family:var(--serif);font-weight:700;font-size:83.2px;line-height:1;color:var(--lantern-soft);letter-spacing:.01em;}
+  #s3 .stat .fig .u{font-size:.3em;color:var(--paper-dim);margin-left:8px;letter-spacing:.04em;font-weight:500;}
+  #s3 .stat .cap{margin-top:18px;font-size:15.5px;color:var(--paper-dim);line-height:1.9;letter-spacing:.02em;max-width:28ch;}
+  #s3 .punch{margin-top:58px;font-family:var(--serif);font-weight:700;font-size:33.3px;letter-spacing:.04em;}
+  #s3 .punch .u{border-bottom:2px solid var(--lantern);padding-bottom:3px;}
+
+  /* =========================================================
+     SLIDE 4 — WHAT IT IS (concept)
+  ========================================================= */
+  #s4{
+    background:
+      radial-gradient(120% 100% at 80% 30%,rgba(140,47,36,0.28),transparent 50%),
+      linear-gradient(180deg,#100d0b,#0b0908);
+    text-align:center;align-items:center;
+  }
+  #s4 .content{display:flex;flex-direction:column;align-items:center;}
+  #s4 .lead{font-family:var(--serif);font-weight:800;font-size:83.2px;line-height:1.2;letter-spacing:.05em;}
+  #s4 .lead .lantern{position:relative;}
+  #s4 .desc{margin-top:36px;max-width:none;font-size:19px;color:var(--paper-dim);line-height:2.2;letter-spacing:.02em;word-break:keep-all;}
+  #s4 .trio{display:flex;gap:0;margin-top:64px;align-items:stretch;}
+  #s4 .trio .t{padding:0 43.5px;position:relative;}
+  #s4 .trio .t:not(:last-child)::after{content:"";position:absolute;right:0;top:14%;height:72%;width:1px;background:var(--line);}
+  #s4 .trio .jp{font-family:var(--serif);font-weight:700;font-size:28px;letter-spacing:.06em;}
+  #s4 .trio .en{font-family:var(--gothic);font-size:14px;color:var(--paper-dim);margin-top:12px;letter-spacing:.1em;}
+
+  /* =========================================================
+     SLIDE 5 — ACTIVATING THEIR AKIYA (their problem → our answer)
+  ========================================================= */
+  #s5{background:linear-gradient(160deg,#14100c,#0a0807);}
+  #s5 .grid{display:grid;grid-template-columns:1.05fr 1fr;gap:64px;align-items:center;}
+  #s5 h2{font-size:44px;margin-bottom:30px;line-height:1.5;max-width:none;}
+  #s5 h2 .hl{color:var(--lantern-soft);}
+  #s5 .body{font-size:17px;max-width:42ch;line-height:1.95;}
+  #s5 .body strong{color:var(--paper);font-weight:700;}
+  /* dots-to-network diagram */
+  #s5 .diagram{position:relative;height:440px;}
+  #s5 .diagram svg{width:100%;height:100%;overflow:visible;}
+  #s5 .dlabel{position:absolute;bottom:-4px;left:0;width:100%;text-align:center;font-size:14px;letter-spacing:.18em;color:var(--paper-dim);}
+  .house{transform-origin:center;}
+  .net-line{stroke:var(--lantern);stroke-width:1.4;stroke-dasharray:5 6;opacity:0;animation:drawline .9s forwards;}
+  .slide.active #s5 .net-line{animation-play-state:running;}
+  @keyframes drawline{to{opacity:.8;}}
+
+  /* =========================================================
+     SLIDE 6 — WHY THEATRE (peak / benefit)
+  ========================================================= */
+  #s6{
+    background:
+      radial-gradient(120% 120% at 18% 12%,rgba(232,137,59,0.2),transparent 46%),
+      radial-gradient(110% 100% at 90% 95%,rgba(140,47,36,0.32),transparent 52%),
+      linear-gradient(180deg,#15110d,#0b0908);
+  }
+  #s6 .eyebrow{color:var(--gold);}
+  #s6 h2{font-size:40px;margin-bottom:8px;line-height:1.4;max-width:none;}
+  #s6 h2 .hl{color:var(--lantern-soft);}
+  #s6 .three{display:grid;grid-template-columns:repeat(3,1fr);gap:33.3px;margin-top:40px;}
+  #s6 .card{border-top:2px solid var(--lantern);padding-top:20px;}
+  #s6 .card .no{font-family:var(--serif);font-weight:700;font-size:21px;color:var(--lantern-soft);}
+  #s6 .card h3{font-family:var(--serif);font-weight:700;font-size:22px;margin:10px 0 12px;letter-spacing:.04em;line-height:1.4;}
+  #s6 .card p{font-size:14.5px;color:var(--paper-dim);line-height:1.95;word-break:keep-all;}
+  #s6 .card p .k{color:var(--gold);font-weight:700;}
+  #s6 .closing{margin-top:34px;font-family:var(--serif);font-weight:700;font-size:21px;letter-spacing:.03em;line-height:1.7;border-left:3px solid var(--gold);padding-left:24px;max-width:none;word-break:keep-all;}
+
+  /* =========================================================
+     SLIDE 7 — SCALE
+  ========================================================= */
+  #s7{background:linear-gradient(200deg,#120f0d,#0a0807);}
+  #s7 .eyebrow{margin-bottom:36px;}
+  #s7 h2{font-size:52px;font-weight:800;margin-bottom:60px;color:var(--paper);font-family:var(--serif);letter-spacing:.04em;}
+  #s7 .nums{display:grid;grid-template-columns:repeat(4,1fr);gap:30.7px;}
+  #s7 .n .v{font-family:var(--serif);font-weight:700;font-size:64px;line-height:1;color:var(--paper);letter-spacing:.01em;}
+  #s7 .n .v .s{font-size:.4em;color:var(--lantern-soft);margin-left:5px;letter-spacing:.02em;font-weight:500;}
+  #s7 .n .l{margin-top:18px;font-size:14.5px;letter-spacing:.12em;color:var(--paper-dim);}
+  #s7 .n{border-left:1px solid var(--line);padding-left:22px;}
+  #s7 .foot{margin-top:56px;font-size:15px;color:var(--paper-dim);letter-spacing:.04em;font-family:var(--gothic);}
+
+  /* =========================================================
+     SLIDE 8 — MONEY (light + the "consult later" note)
+  ========================================================= */
+  #s8{background:linear-gradient(160deg,#13100d,#0a0807);}
+  #s8 h2{font-size:43.5px;margin-bottom:14px;}
+  #s8 .lead{color:var(--paper-dim);font-size:17px;letter-spacing:.04em;margin-bottom:46px;}
+  #s8 .pillars{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:48px;}
+  #s8 .pillar{
+    border:1px solid var(--line);border-radius:3px;
+    padding:26px 20px;text-align:center;
+    background:linear-gradient(180deg,rgba(244,237,225,0.03),transparent);
+    position:relative;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;min-height:88px;
+  }
+  #s8 .pillar::before{content:"";position:absolute;top:0;left:0;width:100%;height:2px;background:var(--lantern);opacity:.55;}
+  #s8 .pillar .jp{font-family:var(--serif);font-weight:700;font-size:20px;letter-spacing:.04em;line-height:1.5;}
+  #s8 .stance{font-family:var(--serif);font-weight:700;font-size:24px;letter-spacing:.04em;margin-bottom:36px;}
+  #s8 .note{
+    border-left:3px solid var(--crimson);
+    background:linear-gradient(90deg,rgba(140,47,36,0.16),transparent);
+    padding:22px 28px;max-width:680px;
+  }
+  #s8 .note .lab{font-size:13px;letter-spacing:.3em;color:var(--lantern-soft);font-weight:700;margin-bottom:12px;}
+  #s8 .note p{font-size:18px;line-height:1.95;color:var(--paper);word-break:keep-all;}
+
+  /* =========================================================
+     SLIDE 9 — FUTURE
+  ========================================================= */
+  #s9{
+    background:
+      radial-gradient(120% 100% at 50% 110%,rgba(232,137,59,0.2),transparent 55%),
+      linear-gradient(180deg,#100d0b,#0b0908);
+  }
+  #s9 h2{font-size:42px;margin-bottom:40px;line-height:1.5;max-width:none;}
+  #s9 .steps{display:flex;flex-direction:column;gap:0;}
+  #s9 .step{
+    display:grid;grid-template-columns:130px 1fr;gap:30px;align-items:baseline;
+    padding:20px 0;border-top:1px solid var(--line);
+  }
+  #s9 .step:last-child{border-bottom:1px solid var(--line);}
+  #s9 .step .yr{
+    font-family:var(--gothic);font-weight:700;font-size:15px;color:var(--ink);
+    background:var(--lantern-soft);border-radius:2px;padding:6px 0;text-align:center;
+    letter-spacing:.16em;white-space:nowrap;align-self:center;
+  }
+  #s9 .step .txt{font-family:var(--serif);font-weight:600;font-size:23px;letter-spacing:.03em;line-height:1.45;}
+  #s9 .step .txt small{display:block;font-family:var(--gothic);font-weight:400;font-size:14.5px;color:var(--paper-dim);margin-top:8px;letter-spacing:.02em;line-height:1.75;}
+  #s9 .future-note{
+    margin-top:34px;font-family:var(--serif);font-weight:700;font-size:22px;
+    letter-spacing:.04em;color:var(--lantern-soft);
+  }
+
+  /* =========================================================
+     SLIDE 10 — ASK / NEXT
+  ========================================================= */
+  #s10{
+    background:
+      radial-gradient(130% 120% at 50% 0%,rgba(140,47,36,0.3),transparent 50%),
+      linear-gradient(180deg,#15110d,#0a0807);
+    text-align:center;align-items:center;
+  }
+  #s10 .content{display:flex;flex-direction:column;align-items:center;max-width:900px;margin:0 auto;}
+  #s10 .eyebrow{color:var(--gold);}
+  #s10 h2{font-size:60px;line-height:1.5;margin-bottom:0;max-width:none;}
+  #s10 h2 .hl{color:var(--lantern-soft);}
+  #s10 .sign{font-family:var(--serif);font-weight:800;font-size:38.4px;letter-spacing:.1em;color:var(--paper-dim);}
+
+  /* responsive */
+  /* fixed 16:9 stage — layout is scaled uniformly, no responsive reflow needed */
+</style>
+</head>
+<body>
+
+<div id="stage">
+
+<div class="deck-nav">
+  <span class="brand">琴平 空き家演劇祭</span>
+  <span class="count" id="counter">01 / 10</span>
+</div>
+
+<!-- ============ 1. COVER ============ -->
+<section class="slide" id="s1">
+  <div class="ridge" style="bottom:30%;opacity:.5;">
+    <svg viewBox="0 0 1440 120" preserveAspectRatio="none" style="height:120px;">
+      <path d="M0,120 L0,70 L80,70 L100,50 L160,50 L180,68 L260,68 L290,40 L360,40 L380,66 L480,66 L510,46 L590,46 L610,70 L720,70 L750,44 L820,44 L840,68 L960,68 L1000,48 L1080,48 L1100,70 L1220,70 L1260,46 L1340,46 L1360,68 L1440,68 L1440,120 Z" fill="#0d0a08"/>
+    </svg>
+  </div>
+  <div class="ridge" style="bottom:0;">
+    <svg viewBox="0 0 1440 180" preserveAspectRatio="none" style="height:180px;">
+      <path d="M0,180 L0,90 L120,90 L150,60 L240,60 L270,92 L400,92 L440,56 L540,56 L580,94 L720,94 L760,52 L880,52 L920,96 L1080,96 L1130,58 L1260,58 L1300,94 L1440,94 L1440,180 Z" fill="#080606"/>
+    </svg>
+  </div>
+  <div class="lanterns">
+    <span class="lant" style="left:18%;top:64%;animation-delay:.2s;"></span>
+    <span class="lant" style="left:31%;top:70%;animation-delay:1.1s;"></span>
+    <span class="lant" style="left:46%;top:62%;animation-delay:.6s;"></span>
+    <span class="lant" style="left:58%;top:72%;animation-delay:1.6s;"></span>
+    <span class="lant" style="left:69%;top:66%;animation-delay:.9s;"></span>
+    <span class="lant" style="left:82%;top:71%;animation-delay:2.0s;"></span>
+  </div>
+  <div class="grain"></div>
+  <div class="content">
+    <div class="cover-mark reveal d1">
+      <span class="row">琴平</span>
+      <span class="row"><span class="lantern">空き家</span>演劇祭</span>
+    </div>
+    <div class="sub reveal d2">町まるごとを舞台装置に。
+      <small>空き家 × アーティスト・イン・レジデンス × 演劇の芸術祭</small>
+    </div>
+    <div class="meta reveal d3">
+      <span class="to">琴平バス株式会社 御中</span>
+      <span class="by">2027年3月開催（構想）／ 香川県仲多度郡琴平町<br>セシル芸術祭委員会（仮）</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. THE ASK ============ -->
+<section class="slide" id="s2">
+  <div class="grain"></div>
+  <div class="content">
+    <div class="eyebrow reveal">今日、お話ししたいこと</div>
+    <h1 class="reveal d1">琴平の<span class="hl">空き家</span>を、町ぐるみの<span class="hl">劇場</span>に。<br>そんな芸術祭を、<br>ことバスさんとご一緒できたら、<br>と思っています。</h1>
+    <div class="goalbox reveal d3">
+      <div class="lab">今日のゴール</div>
+      <p>具体を一緒に詰める段階へ進めるかどうか、<br>お話しできればと思います。</p>
+    </div>
+  </div>
+  <span class="slide-num">02</span>
+</section>
+
+<!-- ============ 3. WHY NOW ============ -->
+<section class="slide" id="s3">
+  <div class="grain"></div>
+  <div class="content">
+    <div class="eyebrow reveal">なぜ、いま琴平か</div>
+    <h2 class="reveal d1">参拝のあと、<br>町に留まる理由が、足りない。</h2>
+    <div class="stats">
+      <div class="stat reveal d2">
+        <div class="fig">200<span class="u">万人 / 年</span></div>
+        <div class="cap">かつて約300万人。近年は200万人弱まで緩やかに減少。</div>
+      </div>
+      <div class="stat reveal d3">
+        <div class="fig">1–2<span class="u">時間</span></div>
+        <div class="cap">多くの参拝客は、参拝を終えると短時間で町を離れていく。</div>
+      </div>
+    </div>
+    <div class="punch reveal d4">町を歩き、<span class="u">滞在する理由</span>を、創りたい。</div>
+  </div>
+  <span class="slide-num">03</span>
+</section>
+
+<!-- ============ 4. WHAT IT IS ============ -->
+<section class="slide" id="s4">
+  <div class="grain"></div>
+  <div class="content">
+    <div class="lead reveal d1">町を歩いて巡る、<br><span class="lantern">演劇祭。</span></div>
+    <p class="desc reveal d2">大きな会場に集めない。<br>町に点在する空き家の一軒一軒を、<br>独立した小さな劇場に変える。<br>観客は町を歩き、家に入り、作品に出会う。</p>
+    <div class="trio">
+      <div class="t reveal d3"><div class="jp">空き家</div><div class="en">点在する空き家</div></div>
+      <div class="t reveal d4"><div class="jp">滞在制作</div><div class="en">アーティストが住み込む</div></div>
+      <div class="t reveal d5"><div class="jp">演劇</div><div class="en">作品をつくり、見せる</div></div>
+    </div>
+  </div>
+  <span class="slide-num">04</span>
+</section>
+
+<!-- ============ 5. ACTIVATE AKIYA ============ -->
+<section class="slide" id="s5">
+  <div class="grain"></div>
+  <div class="content">
+    <div class="grid">
+      <div>
+        <div class="eyebrow reveal">空き家を、こう活かす</div>
+        <h2 class="reveal d1">点在する空き家を、<br><span class="hl">ひとつの体験</span>として束ねる。</h2>
+        <p class="body reveal d2">一棟ずつの貸し出しや物販とは違う、<strong>町ぐるみの活用</strong>です。<span style="white-space:nowrap">3〜5軒</span>の空き家をそれぞれ独立した劇場にして、家から家へ歩く道のりごと、体験にしてしまう。</p>
+        <p class="body reveal d2" style="margin-top:1.4em;">一軒では「点」でしかない物件も、束ねれば町を回遊させる「面」の資源になります。</p>
+      </div>
+      <div class="diagram reveal d3">
+        <svg viewBox="0 0 400 380">
+          <!-- network lines -->
+          <line class="net-line" x1="90" y1="80"  x2="300" y2="120" style="animation-delay:.5s"/>
+          <line class="net-line" x1="300" y1="120" x2="200" y2="220" style="animation-delay:.7s"/>
+          <line class="net-line" x1="200" y1="220" x2="80"  y2="250" style="animation-delay:.9s"/>
+          <line class="net-line" x1="80"  y1="250" x2="90"  y2="80"  style="animation-delay:1.1s"/>
+          <line class="net-line" x1="300" y1="120" x2="320" y2="280" style="animation-delay:1.3s"/>
+          <line class="net-line" x1="200" y1="220" x2="320" y2="280" style="animation-delay:1.5s"/>
+          <!-- houses -->
+          <g class="house" transform="translate(90,80)">
+            <path d="M-16,4 L0,-12 L16,4 L16,20 L-16,20 Z" fill="none" stroke="#f0a85f" stroke-width="2"/>
+            <circle cx="0" cy="-12" r="3" fill="#f0a85f"/>
+          </g>
+          <g class="house" transform="translate(300,120)">
+            <path d="M-16,4 L0,-12 L16,4 L16,20 L-16,20 Z" fill="none" stroke="#f0a85f" stroke-width="2"/>
+            <circle cx="0" cy="-12" r="3" fill="#f0a85f"/>
+          </g>
+          <g class="house" transform="translate(200,220)">
+            <path d="M-16,4 L0,-12 L16,4 L16,20 L-16,20 Z" fill="none" stroke="#f0a85f" stroke-width="2"/>
+            <circle cx="0" cy="-12" r="3" fill="#f0a85f"/>
+          </g>
+          <g class="house" transform="translate(80,250)">
+            <path d="M-16,4 L0,-12 L16,4 L16,20 L-16,20 Z" fill="none" stroke="#f0a85f" stroke-width="2"/>
+            <circle cx="0" cy="-12" r="3" fill="#f0a85f"/>
+          </g>
+          <g class="house" transform="translate(320,280)">
+            <path d="M-16,4 L0,-12 L16,4 L16,20 L-16,20 Z" fill="none" stroke="#f0a85f" stroke-width="2"/>
+            <circle cx="0" cy="-12" r="3" fill="#f0a85f"/>
+          </g>
+        </svg>
+        <div class="dlabel">町全体が、ひとつの劇場になる</div>
+      </div>
+    </div>
+  </div>
+  <span class="slide-num">05</span>
+</section>
+
+<!-- ============ 6. WHY THEATRE (peak) ============ -->
+<section class="slide" id="s6">
+  <div class="grain"></div>
+  <div class="content">
+    <div class="eyebrow reveal">なぜ「演劇祭」という形なのか</div>
+    <h2 class="reveal d1">空き家を“使う”だけでなく、<br><span class="hl">人の流れ</span>まで生み出せる形だと思っています。</h2>
+    <div class="three">
+      <div class="card reveal d2">
+        <div class="no">i.</div>
+        <h3>ここにしかない文脈</h3>
+        <p>現存最古の芝居小屋<span class="k">金丸座</span>を擁し、<span class="k">こんぴら歌舞伎</span>直前の3月。「演劇をやる町」という物語は、琴平にしか語れません。</p>
+      </div>
+      <div class="card reveal d3">
+        <div class="no">ii.</div>
+        <h3>新しい客層を呼べる</h3>
+        <p>参拝とは別の<span class="k" style="white-space:nowrap">演劇・アートのファン層</span>を町へ。これまで琴平と接点のなかった人の流れをつくれます。</p>
+      </div>
+      <div class="card reveal d4">
+        <div class="no">iii.</div>
+        <h3>一度で終わらせない</h3>
+        <p>訪れた人を<span class="k" style="white-space:nowrap">ファン・リピーター</span>に育てていける。ことバスさんの「創客」の発想とも相性がいいはずです。</p>
+      </div>
+    </div>
+    <div class="closing reveal d5">空き家を活かすやり方の中でも、<br>町に人を呼べる形なのではと考えています。</div>
+  </div>
+  <span class="slide-num">06</span>
+</section>
+
+<!-- ============ 7. SCALE ============ -->
+<section class="slide" id="s7">
+  <div class="grain"></div>
+  <div class="content">
+    <div class="eyebrow reveal">考えている規模感</div>
+    <h2 class="reveal d1">座組。</h2>
+    <div class="nums">
+      <div class="n reveal d2"><div class="v">3–5<span class="s">軒</span></div><div class="l">空き家</div></div>
+      <div class="n reveal d3"><div class="v">6–10<span class="s">組</span></div><div class="l">参加アーティスト</div></div>
+      <div class="n reveal d4"><div class="v">数千<span class="s">人</span></div><div class="l">想定動員</div></div>
+      <div class="n reveal d5"><div class="v">2<span class="s">週間</span></div><div class="l">会期（制作 約1ヶ月）</div></div>
+    </div>
+    <div class="foot reveal d6">あくまでイメージ・大枠です。</div>
+  </div>
+  <span class="slide-num">07</span>
+</section>
+
+<!-- ============ 8. MONEY ============ -->
+<section class="slide" id="s8">
+  <div class="grain"></div>
+  <div class="content">
+    <div class="eyebrow reveal">お金の組み立て</div>
+    <h2 class="reveal d1">収入源は、分散させる。</h2>
+    <p class="lead reveal d1">4つの柱で組んで、ひとつが欠けても崩れないようにします。</p>
+    <div class="pillars">
+      <div class="pillar reveal d2"><div class="jp">助成金</div></div>
+      <div class="pillar reveal d3"><div class="jp">地域協賛</div></div>
+      <div class="pillar reveal d4"><div class="jp">クラウド<br>ファンディング</div></div>
+      <div class="pillar reveal d5"><div class="jp">チケット<br>・グッズ</div></div>
+    </div>
+    <div class="stance reveal d5">続けていける収支を前提に組んでいます。</div>
+    <div class="note reveal d6">
+      <div class="lab">ご相談したいこと</div>
+      <p>初期のキャッシュフローについては、<br>進めるとなれば改めてご相談させてください。</p>
+    </div>
+  </div>
+  <span class="slide-num">08</span>
+</section>
+
+<!-- ============ 9. FUTURE ============ -->
+<section class="slide" id="s9">
+  <div class="grain"></div>
+  <div class="content">
+    <div class="eyebrow reveal">今後の展望</div>
+    <h2 class="reveal d1">初回を、<span class="hl">一度きり</span>にしない。</h2>
+    <div class="steps">
+      <div class="step reveal d2">
+        <div class="yr">年次化</div>
+        <div class="txt">毎年3月の恒例へ<small>初回の実績が、翌年の助成金や協賛を動かす土台になる。回を重ねるほど通しやすくなる。</small></div>
+      </div>
+      <div class="step reveal d3">
+        <div class="yr">月間化</div>
+        <div class="txt">こんぴら歌舞伎と地続きに<small>3月の演劇祭から4月の歌舞伎へ。春の琴平を“演劇の町”としてひと続きに打ち出す。</small></div>
+      </div>
+      <div class="step reveal d4">
+        <div class="yr">展開</div>
+        <div class="txt">琴平から、他の地域へ<small>「空き家 × 滞在制作」のやり方は、ことバスさんが関わる他の地域にも持ち出せる型になる。</small></div>
+      </div>
+    </div>
+    <div class="future-note reveal d5">町から香川へ、そして四国へ。回を重ねるごとに、広がっていける。</div>
+  </div>
+  <span class="slide-num">09</span>
+</section>
+
+<!-- ============ 10. ASK / NEXT ============ -->
+<section class="slide" id="s10">
+  <div class="grain"></div>
+  <div class="content">
+    <div class="eyebrow reveal">最後に</div>
+    <h2 class="reveal d1">琴平のために、<br><span class="hl">一緒にやりませんか。</span></h2>
+  </div>
+  <span class="slide-num">10</span>
+</section>
+
+</div><!-- /#stage -->
+
+<script>
+  const stage  = document.getElementById('stage');
+  const slides = [...document.querySelectorAll('.slide')];
+  const counter= document.getElementById('counter');
+  const pad = n => String(n).padStart(2,'0');
+  let cur = 0;
+
+  // scale the 1280x720 stage to fit the viewport (letterboxed), keeping 16:9
+  function fit(){
+    const sw = window.innerWidth / 1280;
+    const sh = window.innerHeight / 720;
+    const s = Math.min(sw, sh);
+    stage.style.transform = `scale(${s})`;
+  }
+  window.addEventListener('resize', fit);
+  fit();
+
+  function show(i){
+    cur = Math.max(0, Math.min(slides.length-1, i));
+    slides.forEach((s,idx)=> s.classList.toggle('active', idx===cur));
+    counter.textContent = pad(cur+1)+' / '+pad(slides.length);
+  }
+  show(0);
+
+  // keyboard navigation
+  window.addEventListener('keydown',(ev)=>{
+    if(ev.key==='ArrowRight'||ev.key==='ArrowDown'||ev.key===' '||ev.key==='PageDown'){ev.preventDefault();show(cur+1);}
+    if(ev.key==='ArrowLeft'||ev.key==='ArrowUp'||ev.key==='PageUp'){ev.preventDefault();show(cur-1);}
+    if(ev.key==='Home'){ev.preventDefault();show(0);}
+    if(ev.key==='End'){ev.preventDefault();show(slides.length-1);}
+  });
+
+  // click to advance (click left third = back), ignore clicks on the counter
+  stage.addEventListener('click',(ev)=>{
+    if(ev.target.closest('.count')) return;
+    const x = ev.clientX;
+    if(x < window.innerWidth*0.18) show(cur-1); else show(cur+1);
+  });
+
+  // counter click jumps to first
+  counter.style.pointerEvents='auto';
+  counter.style.cursor='pointer';
+  counter.addEventListener('click',()=>show(0));
+</script>
+</body>
+</html>
