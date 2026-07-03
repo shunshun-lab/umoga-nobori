@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UMOGA様 のぼりオンライン見積もりシステム — 見積書・要件定義・検収条件</title>
+  <style>
+    :root {
+      --ink: #1a1a2e;
+      --muted: #5c5c7a;
+      --accent: #2563eb;
+      --accent-light: #dbeafe;
+      --border: #e2e8f0;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --success: #059669;
+      --warn: #d97706;
+      --danger: #dc2626;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      line-height: 1.75;
+      font-size: 15px;
+    }
+
+    .doc {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    /* Cover */
+    .cover {
+      background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+      color: #fff;
+      border-radius: 16px;
+      padding: 3rem 2.5rem;
+      margin-bottom: 2.5rem;
+      box-shadow: 0 8px 32px rgba(37, 99, 235, 0.25);
+    }
+    .cover .label {
+      display: inline-block;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 999px;
+      padding: 0.25rem 0.9rem;
+      font-size: 0.8rem;
+      letter-spacing: 0.05em;
+      margin-bottom: 1.2rem;
+    }
+    .cover h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      line-height: 1.4;
+      margin-bottom: 0.75rem;
+    }
+    .cover .subtitle { opacity: 0.85; font-size: 1rem; margin-bottom: 2rem; }
+    .cover-meta {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      border-top: 1px solid rgba(255,255,255,0.2);
+      padding-top: 1.5rem;
+      font-size: 0.875rem;
+    }
+    .cover-meta dt { opacity: 0.7; margin-bottom: 0.15rem; }
+    .cover-meta dd { font-weight: 600; }
+
+    /* Sections */
+    section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+    section h2 {
+      font-size: 1.25rem;
+      color: var(--accent);
+      border-left: 4px solid var(--accent);
+      padding-left: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+    section h3 {
+      font-size: 1rem;
+      margin: 1.5rem 0 0.75rem;
+      color: var(--ink);
+    }
+    section h4 {
+      font-size: 0.9rem;
+      margin: 1rem 0 0.5rem;
+      color: var(--muted);
+    }
+    p { margin-bottom: 0.75rem; }
+    ul, ol { margin: 0.5rem 0 0.75rem 1.5rem; }
+    li { margin-bottom: 0.35rem; }
+
+    /* Status badges */
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.15rem 0.55rem;
+      border-radius: 4px;
+      vertical-align: middle;
+    }
+    .badge-done { background: #d1fae5; color: #065f46; }
+    .badge-partial { background: #fef3c7; color: #92400e; }
+    .badge-todo { background: #fee2e2; color: #991b1b; }
+    .badge-opt { background: #e0e7ff; color: #3730a3; }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+      margin: 1rem 0;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 0.6rem 0.75rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #f1f5f9;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    tr:nth-child(even) td { background: #fafbfc; }
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .total-row td { font-weight: 700; background: var(--accent-light) !important; }
+
+    /* Callout */
+    .callout {
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+    }
+    .callout-info { background: var(--accent-light); border-left: 4px solid var(--accent); }
+    .callout-warn { background: #fffbeb; border-left: 4px solid var(--warn); }
+    .callout-note { background: #f0fdf4; border-left: 4px solid var(--success); }
+
+    /* TOC */
+    .toc ol { list-style: decimal; }
+    .toc a { color: var(--accent); text-decoration: none; }
+    .toc a:hover { text-decoration: underline; }
+
+    /* Checklist */
+    .checklist { list-style: none; margin-left: 0; }
+    .checklist li {
+      padding: 0.4rem 0 0.4rem 1.75rem;
+      position: relative;
+      border-bottom: 1px dashed var(--border);
+    }
+    .checklist li:last-child { border-bottom: none; }
+    .checklist li::before {
+      content: "☐";
+      position: absolute;
+      left: 0;
+      color: var(--muted);
+    }
+
+    /* Summary cards */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+    .summary-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.25rem;
+      text-align: center;
+    }
+    .summary-card .value {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1.2;
+    }
+    .summary-card .label { font-size: 0.8rem; color: var(--muted); margin-top: 0.25rem; }
+
+    /* Print */
+    @media print {
+      body { background: #fff; font-size: 12px; }
+      .doc { padding: 0; max-width: 100%; }
+      section { box-shadow: none; break-inside: avoid; page-break-inside: avoid; }
+      .cover { break-after: page; }
+      a { color: inherit; }
+    }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin-top: 2rem;
+    }
+  </style>
+</head>
+<body>
+<div class="doc">
+
+  <!-- 表紙 -->
+  <header class="cover">
+    <div class="label">CONFIDENTIAL — 見積・要件定義書</div>
+    <h1>UMOGA様<br>のぼりオンライン見積もりシステム</h1>
+    <p class="subtitle">納品物要件定義・検収条件・開発見積もり（残作業ベース）</p>
+    <dl class="cover-meta">
+      <div><dt>文書番号</dt><dd>UMOGA-NOBORI-2026-001</dd></div>
+      <div><dt>作成日</dt><dd>2026年7月3日</dd></div>
+      <div><dt>対象リポジトリ</dt><dd>shunshun-lab/umoga-nobori</dd></div>
+      <div><dt>デモ環境</dt><dd>app-shopify-inky.vercel.app</dd></div>
+      <div><dt>本番ストア</dt><dd>tkyhct-fe.myshopify.com</dd></div>
+      <div><dt>見積有効期限</dt><dd>2026年8月31日</dd></div>
+    </dl>
+  </header>
+
+  <!-- 目次 -->
+  <section class="toc">
+    <h2>目次</h2>
+    <ol>
+      <li><a href="#summary">エグゼクティブサマリー</a></li>
+      <li><a href="#current">現状整理（実装済み / 未完了）</a></li>
+      <li><a href="#deliverables">納品物要件定義</a></li>
+      <li><a href="#functional">機能要件一覧</a></li>
+      <li><a href="#acceptance">検収条件</a></li>
+      <li><a href="#estimate">見積もり</a></li>
+      <li><a href="#assumptions">前提条件・除外事項</a></li>
+      <li><a href="#schedule">スケジュール案</a></li>
+      <li><a href="#appendix">付録（技術構成・環境変数）</a></li>
+    </ol>
+  </section>
+
+  <!-- 1. サマリー -->
+  <section id="summary">
+    <h2>1. エグゼクティブサマリー</h2>
+    <p>
+      本書は、UMOGA様向け「のぼり専門店 オンライン見積もりシステム」の<strong>納品物定義</strong>、<strong>検収条件</strong>、および<strong>残作業に基づく開発見積もり</strong>をまとめたものです。
+      コア機能（見積もりエンジン・Shopify Draft Order 決済・管理画面・Google Sheets 連携）は概ね実装済みですが、本番環境での最終検証、Firebase/UI設定基盤、画像ストレージ、一部 UI 改善が未完了です。
+    </p>
+
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="value">約85%</div>
+        <div class="label">機能実装進捗（概算）</div>
+      </div>
+      <div class="summary-card">
+        <div class="value">14〜18人日</div>
+        <div class="label">残作業工数（フェーズA）</div>
+      </div>
+      <div class="summary-card">
+        <div class="value">¥1,120,000〜¥1,440,000</div>
+        <div class="label">フェーズA 見積（税抜）</div>
+      </div>
+      <div class="summary-card">
+        <div class="value">6〜8人日</div>
+        <div class="label">オプション工数（フェーズB）</div>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <strong>重要：</strong> 現在のデモ環境（Vercel / Google Cloud）の髙木様による管理は <strong>2026年1月末</strong> で終了予定です。
+      本見積のフェーズAには、クライアント環境への権限移譲・本番稼働までを含みます。
+    </div>
+  </section>
+
+  <!-- 2. 現状 -->
+  <section id="current">
+    <h2>2. 現状整理（実装済み / 未完了）</h2>
+
+    <h3>2.1 実装済み <span class="badge badge-done">DONE</span></h3>
+    <table>
+      <thead>
+        <tr><th>カテゴリ</th><th>内容</th><th>主要ファイル</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>見積もり UI</td>
+          <td>サイズ・生地・仕立て・枚数・デザイン区分・オプション・付属品・納期の入力ステップ（①〜⑨）</td>
+          <td><code>src/components/NoboriEstimator.tsx</code> 他</td>
+        </tr>
+        <tr>
+          <td>価格計算</td>
+          <td>リアルタイム見積もり、カスタムサイズ（10cm切上げ）、数量割引、付属品加算</td>
+          <td><code>src/utils/priceCalculator.ts</code></td>
+        </tr>
+        <tr>
+          <td>カート・決済</td>
+          <td>カート永続化（localStorage）、Draft Order 作成、Shopify 請求書リダイレクト</td>
+          <td><code>api/checkout.ts</code>, <code>DeliveryEntry.tsx</code></td>
+        </tr>
+        <tr>
+          <td>管理画面</td>
+          <td>在庫・価格・オプション・割引・納期・Google Sheets 同期・UI設定タブ</td>
+          <td><code>src/components/AdminDashboard.tsx</code></td>
+        </tr>
+        <tr>
+          <td>外部連携</td>
+          <td>Google Sheets 割引ルール同期、注文 Webhook → Sheets 記録</td>
+          <td><code>api/sync-sheet.ts</code>, <code>api/webhooks/order-paid.ts</code></td>
+        </tr>
+        <tr>
+          <td>Shopify テーマ</td>
+          <td>見積もりページ埋め込み用 Liquid / JS / CSS</td>
+          <td><code>shopify-theme/</code></td>
+        </tr>
+        <tr>
+          <td>ドキュメント</td>
+          <td>構築マニュアル、決済フロー、権限移譲ガイド</td>
+          <td><code>docs/</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>2.2 未完了・要対応 <span class="badge badge-todo">TODO</span></h3>
+    <table>
+      <thead>
+        <tr><th>優先度</th><th>項目</th><th>現状・リスク</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>高</strong></td>
+          <td>本番ストアでの E2E 検証</td>
+          <td>テスト注文未実施。line item properties の完全性未確認</td>
+        </tr>
+        <tr>
+          <td><strong>高</strong></td>
+          <td>Firebase / UI設定 API</td>
+          <td><code>firebase-admin</code> 未追加のため Vercel 上で 500 エラー。フォールバックで動作中</td>
+        </tr>
+        <tr>
+          <td><strong>高</strong></td>
+          <td>画像・テンプレート本番ストレージ</td>
+          <td>実ファイル置き場・公開 URL 設計が未決定</td>
+        </tr>
+        <tr>
+          <td><strong>高</strong></td>
+          <td>環境権限移譲</td>
+          <td>Vercel / GCP / Shopify をクライアント環境へ移行する作業が必要</td>
+        </tr>
+        <tr>
+          <td><strong>中</strong></td>
+          <td>出荷日カレンダー UI</td>
+          <td>日数表示のみ。実カレンダーでの日付選択は未実装</td>
+        </tr>
+        <tr>
+          <td><strong>中</strong></td>
+          <td>Shopify テーマ一体感</td>
+          <td>ヘッダー/ヒーロー画像の微調整が未完了</td>
+        </tr>
+        <tr>
+          <td><strong>低</strong></td>
+          <td>縫製方法専用 UI</td>
+          <td>棒通し以外の縫製が増えた段階で検討（現時点は任意）</td>
+        </tr>
+        <tr>
+          <td><strong>低</strong></td>
+          <td>お客様の声の外部連携</td>
+          <td>固定テキスト表示のみ。Shopify レビュー連携は未検討</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 3. 納品物 -->
+  <section id="deliverables">
+    <h2>3. 納品物要件定義</h2>
+    <p>本プロジェクトの正式納品物は以下とします。各納品物には形式・内容・受け渡し方法を明記します。</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>納品物名</th>
+          <th>形式</th>
+          <th>内容要件</th>
+          <th>受け渡し先</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>D-01</td>
+          <td>フロントエンドアプリケーション</td>
+          <td>Git リポジトリ + Vercel デプロイ</td>
+          <td>
+            React + Vite + TypeScript による見積もり SPA。
+            商品一覧 → 見積もり → カート → 顧客情報入力 → Shopify 決済の一連フローが動作すること。
+            レスポンシブ対応（スマホ・PC）。
+          </td>
+          <td>GitHub リポジトリ<br>クライアント Vercel プロジェクト</td>
+        </tr>
+        <tr>
+          <td>D-02</td>
+          <td>サーバーレス API</td>
+          <td>Vercel Functions（<code>api/</code>）</td>
+          <td>
+            <ul>
+              <li><code>/api/checkout</code> — Draft Order 作成・請求書 URL 返却</li>
+              <li><code>/api/sync-sheet</code> — Google Sheets 割引ルール同期</li>
+              <li><code>/api/ui-config</code> — UI 設定（バナー・テンプレート等）の CRUD</li>
+              <li><code>/api/admin-orders</code> — 管理画面用注文一覧</li>
+              <li><code>/api/webhooks/order-paid</code> — 決済完了 Webhook</li>
+            </ul>
+          </td>
+          <td>同一 Vercel プロジェクト</td>
+        </tr>
+        <tr>
+          <td>D-03</td>
+          <td>Shopify テーマ連携ファイル</td>
+          <td>Liquid / JS / CSS</td>
+          <td>
+            Shopify ストア TOP のヘッダー/フッターを維持した見積もりページ埋め込み。
+            <code>shopify-theme/templates/page.nobori-estimator.liquid</code> 等を納品。
+          </td>
+          <td>Shopify テーマエディタ</td>
+        </tr>
+        <tr>
+          <td>D-04</td>
+          <td>価格マスタ・割引ルール</td>
+          <td>Google スプレッドシート</td>
+          <td>
+            数量割引ルールをシートで管理可能。
+            管理画面から同期ボタンでアプリに反映。
+            シートの編集権限をクライアントに付与済みであること。
+          </td>
+          <td>Google Drive（共有）</td>
+        </tr>
+        <tr>
+          <td>D-05</td>
+          <td>UI 設定データ基盤</td>
+          <td>Firestore + 画像ストレージ</td>
+          <td>
+            バナー画像（最大3種スライド）、サイズ/生地/オプション画像、テンプレート PDF（最大10件）を
+            管理画面から差し替え可能。本番ストレージに実ファイルが配置されていること。
+          </td>
+          <td>Firebase / Cloudinary 等</td>
+        </tr>
+        <tr>
+          <td>D-06</td>
+          <td>環境変数一覧・設定値</td>
+          <td><code>.env.example</code> + 設定シート</td>
+          <td>
+            Shopify / Google / Firebase の全環境変数を文書化し、
+            クライアント管理の Vercel プロジェクトに設定完了していること。
+          </td>
+          <td>セキュアな共有（1Password 等）</td>
+        </tr>
+        <tr>
+          <td>D-07</td>
+          <td>運用・構築ドキュメント</td>
+          <td>Markdown + 本 HTML</td>
+          <td>
+            <ul>
+              <li>ゼロからの構築マニュアル（<code>docs/manual_setup.md</code>）</li>
+              <li>決済フローマニュアル（<code>docs/checkout_flow_manual.md</code>）</li>
+              <li>権限移譲ガイド（<code>docs/handover.md</code>）</li>
+              <li>本見積・要件定義・検収条件書（本書）</li>
+            </ul>
+          </td>
+          <td>リポジトリ <code>docs/</code></td>
+        </tr>
+        <tr>
+          <td>D-08</td>
+          <td>検収完了報告書</td>
+          <td>PDF / Markdown</td>
+          <td>
+            検収条件（第5章）の全必須項目をクリアしたことを証明するチェックリスト付き報告書。
+            本番テスト注文のスクリーンショット・Shopify 注文 ID を添付。
+          </td>
+          <td>メール / Google Drive</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 4. 機能要件 -->
+  <section id="functional">
+    <h2>4. 機能要件一覧</h2>
+    <p>MoSCoW 方式で優先度を分類します。</p>
+
+    <h3>4.1 Must（必須 — 検収に含む）</h3>
+    <table>
+      <thead>
+        <tr><th>ID</th><th>要件</th><th>状態</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>FR-01</td><td>サイズ（定型・カスタム）・生地・オプション・数量を選択しリアルタイム見積もりが表示される</td><td><span class="badge badge-done">完了</span></td></tr>
+        <tr><td>FR-02</td><td>数量割引が Google Sheets のルールに従い自動適用される</td><td><span class="badge badge-done">完了</span></td></tr>
+        <tr><td>FR-03</td><td>見積もり内容をカートに追加し、複数仕様の同時注文が可能</td><td><span class="badge badge-done">完了</span></td></tr>
+        <tr><td>FR-04</td><td>通常便 / お急ぎ便の選択と surcharge 計算</td><td><span class="badge badge-done">完了</span></td></tr>
+        <tr><td>FR-05</td><td>顧客情報（氏名・電話・メール）入力後、Shopify Draft Order 経由で決済できる</td><td><span class="badge badge-partial">要本番検証</span></td></tr>
+        <tr><td>FR-06</td><td>Shopify 管理画面の line item properties に製造仕様が全て記録される</td><td><span class="badge badge-partial">要本番検証</span></td></tr>
+        <tr><td>FR-07</td><td>ZIP 形式のデザインデータ入稿（フロント受付）</td><td><span class="badge badge-done">完了</span></td></tr>
+        <tr><td>FR-08</td><td>管理画面から Google Sheets 同期が実行できる</td><td><span class="badge badge-done">完了</span></td></tr>
+        <tr><td>FR-09</td><td>UI 設定（バナー・テンプレート）が本番 API 経由で読み書きできる</td><td><span class="badge badge-todo">未完了</span></td></tr>
+        <tr><td>FR-10</td><td>クライアント環境（Vercel / GCP / Shopify）で独立稼働できる</td><td><span class="badge badge-todo">未完了</span></td></tr>
+      </tbody>
+    </table>
+
+    <h3>4.2 Should（推奨 — フェーズA に含む）</h3>
+    <table>
+      <thead>
+        <tr><th>ID</th><th>要件</th><th>状態</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>FR-11</td><td>出荷予定日のカレンダー表示（営業日ベース）</td><td><span class="badge badge-partial">日数表示のみ</span></td></tr>
+        <tr><td>FR-12</td><td>規定外サイズ時の「見積もり依頼」フロー（メール送信）</td><td><span class="badge badge-done">完了</span></td></tr>
+        <tr><td>FR-13</td><td>見積書 PDF 出力（ブラウザ印刷）</td><td><span class="badge badge-done">完了</span></td></tr>
+        <tr><td>FR-14</td><td>Shopify テーマとのヘッダー/フッター一体表示</td><td><span class="badge badge-partial">微調整残</span></td></tr>
+        <tr><td>FR-15</td><td>決済完了 Webhook による Google Sheets 注文記録</td><td><span class="badge badge-partial">要本番検証</span></td></tr>
+      </tbody>
+    </table>
+
+    <h3>4.3 Could（任意 — フェーズB オプション）</h3>
+    <table>
+      <thead>
+        <tr><th>ID</th><th>要件</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>FR-16</td><td>実カレンダーでの出荷日 / お届け希望日の日付選択（土日祝考慮）</td></tr>
+        <tr><td>FR-17</td><td>縫製方法専用 UI（棒通し以外の縫製追加時）</td></tr>
+        <tr><td>FR-18</td><td>付属品の Shopify 登録商品一覧表示</td></tr>
+        <tr><td>FR-19</td><td>お客様の声セクションの Shopify レビュー連携</td></tr>
+        <tr><td>FR-20</td><td>管理画面「注文管理（Shopify）」タブの本番安定化</td></tr>
+        <tr><td>FR-21</td><td>レイアウトを「幕メーカー」参考に微調整（余白・フォント・色）</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 5. 検収条件 -->
+  <section id="acceptance">
+    <h2>5. 検収条件</h2>
+    <p>
+      検収は<strong>本番環境（クライアント管理の Vercel + Shopify ストア）</strong>を対象に実施します。
+      以下の全「必須」項目をクリアした時点で検収完了とします。検収期間は納品報告から <strong>10営業日</strong> とし、
+      指摘事項は <strong>2営業日以内</strong> に修正対応します。
+    </p>
+
+    <h3>5.1 見積もり機能</h3>
+    <ul class="checklist">
+      <li><strong>AC-01</strong> 定型サイズ（レギュラー等）を選択し、単価・合計・内訳が 1 秒以内に更新される</li>
+      <li><strong>AC-02</strong> カスタムサイズ入力時、10cm 単位の切上げ計算が価格に反映される</li>
+      <li><strong>AC-03</strong> 枚数を変更すると数量割引が正しい率で適用される（Sheets 同期後のルールと一致）</li>
+      <li><strong>AC-04</strong> 付属品の個数変更が見積もり内訳に明示的に反映される</li>
+      <li><strong>AC-05</strong> 規定外サイズ（150cm×3000cm 超等）で「見積もり依頼」フローに切り替わる</li>
+    </ul>
+
+    <h3>5.2 カート・決済フロー</h3>
+    <ul class="checklist">
+      <li><strong>AC-06</strong> 異なる仕様の商品を 2 件以上カートに追加し、ページリロード後もカートが保持される</li>
+      <li><strong>AC-07</strong> お急ぎ便選択時、商品合計の surcharge（デフォルト 20%）が別 line item として請求書に表示される</li>
+      <li><strong>AC-08</strong> 氏名・電話・メール入力後、「Shopify 決済へ進む」で請求書ページにリダイレクトされる</li>
+      <li><strong>AC-09</strong> Shopify 請求書に <code>priceOverride</code> による正しい金額が表示される（フロント計算と一致）</li>
+      <li><strong>AC-10</strong> 決済完了後、Shopify 管理画面「注文」にレコードが作成される</li>
+      <li><strong>AC-11</strong> 決済完了後、アプリ側カートがクリアされる</li>
+    </ul>
+
+    <h3>5.3 Shopify 注文データの完全性</h3>
+    <p>テスト注文 1 件について、以下の line item properties が全て記録されていること：</p>
+    <table>
+      <thead>
+        <tr><th>property key</th><th>必須</th><th>検証内容</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>サイズ</td><td>○</td><td>選択値と一致（例: 60×180cm（レギュラー））</td></tr>
+        <tr><td>生地</td><td>○</td><td>選択値と一致</td></tr>
+        <tr><td>印刷方法</td><td>○</td><td>選択値と一致</td></tr>
+        <tr><td>数量</td><td>○</td><td>枚数と一致</td></tr>
+        <tr><td>オプション</td><td>○</td><td>選択したオプションがカンマ区切りで記録</td></tr>
+        <tr><td>デザイン区分</td><td>○</td><td>完全データ入稿 / デザイン制作依頼</td></tr>
+        <tr><td>出荷日 / 納期</td><td>○</td><td>選択した納期情報が記録</td></tr>
+        <tr><td>_商品番号</td><td>○</td><td>複数商品時に n/m 形式で記録</td></tr>
+        <tr><td>注文メモ（note）</td><td>○</td><td>氏名・電話・メールが記録</td></tr>
+        <tr><td>タグ</td><td>○</td><td><code>nobori-app</code> および <code>standard</code> or <code>rush</code></td></tr>
+      </tbody>
+    </table>
+
+    <h3>5.4 管理・運用機能</h3>
+    <ul class="checklist">
+      <li><strong>AC-12</strong> 管理画面で Google Sheets 同期を実行し、「同期成功」メッセージが表示される</li>
+      <li><strong>AC-13</strong> 同期後、変更した割引ルールが見積もりに即時反映される</li>
+      <li><strong>AC-14</strong> 管理画面 UI 設定タブでバナー画像 URL を変更・保存し、フロントに反映される</li>
+      <li><strong>AC-15</strong> テンプレート PDF が最大 10 件までダウンロード表示される（実ファイルから配信）</li>
+      <li><strong>AC-16</strong> 決済 Webhook により注文が Google Sheets に自動追記される</li>
+    </ul>
+
+    <h3>5.5 非機能要件</h3>
+    <ul class="checklist">
+      <li><strong>AC-17</strong> Chrome / Safari / Edge 最新版で主要フローが動作する（スマホ・PC）</li>
+      <li><strong>AC-18</strong> <code>pnpm build</code> がエラーなく完了する</li>
+      <li><strong>AC-19</strong> 環境変数・認証情報がクライアント管理下にあり、開発者個人アカウントに依存しない</li>
+      <li><strong>AC-20</strong> 構築マニュアルに従い、第三者がゼロから環境を再構築できる</li>
+    </ul>
+
+    <div class="callout callout-note">
+      <strong>検収不合格の定義：</strong> 必須項目（AC-01〜AC-20）のいずれか 1 つでも本番環境で再現できない場合、
+      または金額・仕様データに不一致がある場合は不合格とし、修正後に再検収を行います。
+    </div>
+  </section>
+
+  <!-- 6. 見積もり -->
+  <section id="estimate">
+    <h2>6. 見積もり</h2>
+
+    <h3>6.1 単価前提</h3>
+    <table>
+      <thead>
+        <tr><th>項目</th><th>単価</th><th>備考</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>開発工数</td><td class="num">¥80,000 / 人日</td><td>税抜。シニアエンジニア 1 名想定</td></tr>
+        <tr><td>プロジェクト管理</td><td class="num">工数の 10%</td><td>進捗報告・検収対応含む</td></tr>
+        <tr><td>インフラ初期費用</td><td class="num">¥0</td><td>Vercel Hobby / Firebase Spark / Cloudinary Free 想定</td></tr>
+      </tbody>
+    </table>
+
+    <h3>6.2 フェーズA — 本番稼働・検収完了（必須）</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>作業項目</th>
+          <th>工数（人日）</th>
+          <th>金額（税抜）</th>
+          <th>成果物</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>A-01</td>
+          <td>Firebase 基盤構築（Firestore + 環境変数 + <code>firebase-admin</code> 追加）</td>
+          <td class="num">2.0</td>
+          <td class="num">¥160,000</td>
+          <td>D-05, D-06</td>
+        </tr>
+        <tr>
+          <td>A-02</td>
+          <td>画像・テンプレート本番ストレージ設計・実装（Cloudinary 等）</td>
+          <td class="num">2.0</td>
+          <td class="num">¥160,000</td>
+          <td>D-05</td>
+        </tr>
+        <tr>
+          <td>A-03</td>
+          <td>本番 E2E テスト実施・不具合修正（Shopify Draft Order / properties）</td>
+          <td class="num">3.0</td>
+          <td class="num">¥240,000</td>
+          <td>D-08（検収報告）</td>
+        </tr>
+        <tr>
+          <td>A-04</td>
+          <td>環境権限移譲（Vercel / GCP / Shopify をクライアント環境へ）</td>
+          <td class="num">2.0</td>
+          <td class="num">¥160,000</td>
+          <td>D-06, D-07</td>
+        </tr>
+        <tr>
+          <td>A-05</td>
+          <td>Shopify テーマ統合・ヘッダー/フッター一体感の調整</td>
+          <td class="num">1.5</td>
+          <td class="num">¥120,000</td>
+          <td>D-03</td>
+        </tr>
+        <tr>
+          <td>A-06</td>
+          <td>出荷予定日カレンダー表示の改善（営業日計算・UI）</td>
+          <td class="num">2.0</td>
+          <td class="num">¥160,000</td>
+          <td>FR-11</td>
+        </tr>
+        <tr>
+          <td>A-07</td>
+          <td>Webhook 本番設定・注文 Sheets 追記の動作確認</td>
+          <td class="num">1.0</td>
+          <td class="num">¥80,000</td>
+          <td>FR-15</td>
+        </tr>
+        <tr>
+          <td>A-08</td>
+          <td>ドキュメント整備・検収報告書作成・引き渡し</td>
+          <td class="num">1.5</td>
+          <td class="num">¥120,000</td>
+          <td>D-07, D-08</td>
+        </tr>
+        <tr>
+          <td>A-09</td>
+          <td>バッファ（想定外の不具合・Shopify API 変更対応）</td>
+          <td class="num">2.0</td>
+          <td class="num">¥160,000</td>
+          <td>—</td>
+        </tr>
+        <tr class="total-row">
+          <td colspan="2"><strong>フェーズA 小計</strong></td>
+          <td class="num"><strong>17.0人日</strong></td>
+          <td class="num"><strong>¥1,360,000</strong></td>
+          <td></td>
+        </tr>
+        <tr class="total-row">
+          <td colspan="2"><strong>プロジェクト管理費（10%）</strong></td>
+          <td class="num">—</td>
+          <td class="num"><strong>¥136,000</strong></td>
+          <td></td>
+        </tr>
+        <tr class="total-row">
+          <td colspan="2"><strong>フェーズA 合計（税抜）</strong></td>
+          <td class="num"><strong>17.0人日</strong></td>
+          <td class="num"><strong>¥1,496,000</strong></td>
+          <td></td>
+        </tr>
+        <tr class="total-row">
+          <td colspan="2"><strong>フェーズA 合計（税込 10%）</strong></td>
+          <td class="num">—</td>
+          <td class="num"><strong>¥1,645,600</strong></td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-info">
+      <strong>コンパクトプラン（最小構成）：</strong> A-06（カレンダー改善）を除外し、A-09 バッファを 1.0 人日に縮小した場合 →
+      <strong>14.0 人日 / ¥1,120,000（税抜）/ ¥1,232,000（税込）</strong>
+    </div>
+
+    <h3>6.3 フェーズB — 拡張・改善（オプション）</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>作業項目</th>
+          <th>工数（人日）</th>
+          <th>金額（税抜）</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>B-01</td>
+          <td>実カレンダーでの出荷日 / お届け希望日選択（土日祝・範囲制御）</td>
+          <td class="num">3.0</td>
+          <td class="num">¥240,000</td>
+        </tr>
+        <tr>
+          <td>B-02</td>
+          <td>管理画面「注文管理（Shopify）」タブ本番安定化</td>
+          <td class="num">1.5</td>
+          <td class="num">¥120,000</td>
+        </tr>
+        <tr>
+          <td>B-03</td>
+          <td>レイアウト微調整（幕メーカー参考・デザインレビュー 2 回込み）</td>
+          <td class="num">2.5</td>
+          <td class="num">¥200,000</td>
+        </tr>
+        <tr>
+          <td>B-04</td>
+          <td>お客様の声 — Shopify レビュー or 外部ウィジェット連携</td>
+          <td class="num">1.5</td>
+          <td class="num">¥120,000</td>
+        </tr>
+        <tr class="total-row">
+          <td colspan="2"><strong>フェーズB 合計（税抜）</strong></td>
+          <td class="num"><strong>8.5人日</strong></td>
+          <td class="num"><strong>¥680,000</strong></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>6.4 支払条件（案）</h3>
+    <table>
+      <thead>
+        <tr><th>タイミング</th><th>割合</th><th>条件</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>着手金</td><td class="num">30%</td><td>契約締結後 5 営業日以内</td></tr>
+        <tr><td>中間金</td><td class="num">40%</td><td>本番環境デプロイ完了・中間デモ承認時</td></tr>
+        <tr><td>検収完了金</td><td class="num">30%</td><td>検収条件（第5章）全必須項目クリア後</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 7. 前提・除外 -->
+  <section id="assumptions">
+    <h2>7. 前提条件・除外事項</h2>
+
+    <h3>7.1 前提条件</h3>
+    <ul>
+      <li>クライアントより Shopify ストアの管理者権限、Google アカウント、ドメイン（必要な場合）を提供いただく</li>
+      <li>本番テスト注文の決済はテストモード or 少額実決済で実施（決済手数料はクライアント負担）</li>
+      <li>価格マスタ・割引ルールのビジネスロジックは現行 Sheets の内容を正とする</li>
+      <li>デザイン素材（バナー画像・テンプレート PDF）はクライアント提供 or 既存デモ素材を流用</li>
+      <li>Shopify API バージョンは <code>2025-01</code> 以上を使用（<code>priceOverride</code> 必須）</li>
+    </ul>
+
+    <h3>7.2 除外事項（本見積に含まない）</h3>
+    <ul>
+      <li>Shopify 月額プラン・決済手数料・ドメイン費用</li>
+      <li>新規デザイン制作（ロゴ・バナーの撮影・イラスト制作）</li>
+      <li>のぼり製造・物流オペレーションの設計</li>
+      <li>SEO / 広告運用 / コンテンツマーケティング</li>
+      <li>Firebase Blaze プラン等、無料枠を超えるインフラ従量課金</li>
+      <li>24時間365日の運用監視・SLA 付き保守（別途保守契約）</li>
+    </ul>
+  </section>
+
+  <!-- 8. スケジュール -->
+  <section id="schedule">
+    <h2>8. スケジュール案（フェーズA）</h2>
+    <table>
+      <thead>
+        <tr><th>週</th><th>作業内容</th><th>マイルストーン</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Week 1</td>
+          <td>Firebase 構築、画像ストレージ設計、環境変数整備</td>
+          <td>UI 設定 API が本番で 200 応答</td>
+        </tr>
+        <tr>
+          <td>Week 2</td>
+          <td>権限移譲、Shopify テーマ統合、Webhook 設定</td>
+          <td>クライアント Vercel でデプロイ完了</td>
+        </tr>
+        <tr>
+          <td>Week 3</td>
+          <td>本番 E2E テスト、不具合修正、カレンダー UI 改善</td>
+          <td>テスト注文成功・properties 確認</td>
+        </tr>
+        <tr>
+          <td>Week 4</td>
+          <td>検収対応、ドキュメント整備、引き渡し</td>
+          <td>検収完了報告書提出</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>※ クライアント側のレビュー・承認待ちは上記に含みません。</p>
+  </section>
+
+  <!-- 9. 付録 -->
+  <section id="appendix">
+    <h2>9. 付録</h2>
+
+    <h3>9.1 技術構成</h3>
+    <table>
+      <thead>
+        <tr><th>レイヤー</th><th>技術</th><th>役割</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>フロントエンド</td><td>React 19 + Vite 7 + TypeScript + Tailwind CSS 4</td><td>見積もり UI / 管理画面</td></tr>
+        <tr><td>状態管理</td><td>Zustand</td><td>カート・マスタデータ</td></tr>
+        <tr><td>API</td><td>Vercel Serverless Functions</td><td>Checkout / Sheets / UI Config / Webhook</td></tr>
+        <tr><td>決済・注文</td><td>Shopify Admin API（Draft Order）</td><td>動的単価・決済・注文管理</td></tr>
+        <tr><td>割引マスタ</td><td>Google Sheets API</td><td>数量割引ルール管理</td></tr>
+        <tr><td>UI 設定</td><td>Firestore（予定）</td><td>バナー・テンプレート・画像 URL</td></tr>
+        <tr><td>画像配信</td><td>Cloudinary / Firebase Storage（要決定）</td><td>バナー・テンプレート PDF</td></tr>
+      </tbody>
+    </table>
+
+    <h3>9.2 主要環境変数</h3>
+    <table>
+      <thead>
+        <tr><th>変数名</th><th>用途</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>SHOPIFY_SHOP_DOMAIN</code></td><td>Shopify ストアドメイン</td></tr>
+        <tr><td><code>SHOPIFY_ADMIN_ACCESS_TOKEN</code></td><td>Admin API トークン（<code>write_draft_orders</code> 必須）</td></tr>
+        <tr><td><code>SHOPIFY_API_VERSION</code></td><td>2025-01 以上</td></tr>
+        <tr><td><code>VITE_SHOPIFY_NOBORI_VARIANT_ID</code></td><td>のぼり旗バリアント GID</td></tr>
+        <tr><td><code>GOOGLE_SERVICE_ACCOUNT_EMAIL</code></td><td>Sheets 同期用</td></tr>
+        <tr><td><code>GOOGLE_PRIVATE_KEY</code></td><td>Sheets 同期用秘密鍵</td></tr>
+        <tr><td><code>FIREBASE_PROJECT_ID</code></td><td>UI 設定用（未設定）</td></tr>
+        <tr><td><code>FIREBASE_CLIENT_EMAIL</code></td><td>UI 設定用（未設定）</td></tr>
+        <tr><td><code>FIREBASE_PRIVATE_KEY</code></td><td>UI 設定用（未設定）</td></tr>
+        <tr><td><code>SHOPIFY_WEBHOOK_SECRET</code></td><td>Webhook HMAC 検証</td></tr>
+      </tbody>
+    </table>
+
+    <h3>9.3 関連ドキュメント</h3>
+    <ul>
+      <li><code>README.md</code> — プロジェクト概要・機能一覧</li>
+      <li><code>docs/manual_setup.md</code> — ゼロからの構築手順</li>
+      <li><code>docs/checkout_flow_manual.md</code> — 決済フロー詳細</li>
+      <li><code>docs/handover.md</code> — 権限移譲ガイド</li>
+      <li><code>@soil/overview/nobori_todo.md</code> — 機能 TODO 一覧</li>
+      <li><code>@soil/overview/firebase_todo.md</code> — Firebase 関連 TODO</li>
+    </ul>
+  </section>
+
+  <footer>
+    <p>UMOGA-NOBORI-2026-001 &nbsp;|&nbsp; 作成: 2026年7月3日 &nbsp;|&nbsp; Confidential</p>
+    <p>本書の金額・条件は見積有効期限（2026年8月31日）まで有効です。内容は双方協議により変更可能です。</p>
+  </footer>
+
+</div>
+</body>
+</html>
