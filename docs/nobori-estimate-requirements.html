@@ -114,6 +114,51 @@
     .badge-partial { background: #fef3c7; color: #92400e; }
     .badge-todo { background: #fee2e2; color: #991b1b; }
     .badge-opt { background: #e0e7ff; color: #3730a3; }
+    .badge-ume { background: #fce7f3; color: #9d174d; }
+    .badge-take { background: #d1fae5; color: #065f46; }
+    .badge-matsu { background: #fef3c7; color: #92400e; }
+
+    /* Tier cards */
+    .tier-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.25rem;
+      margin: 1.25rem 0;
+    }
+    .tier-card {
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 1.5rem;
+      position: relative;
+    }
+    .tier-card.recommended {
+      border-color: var(--accent);
+      box-shadow: 0 4px 20px rgba(37, 99, 235, 0.12);
+    }
+    .tier-card .tier-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+    .tier-card .tier-price {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--accent);
+      margin: 0.5rem 0;
+    }
+    .tier-card .tier-days { font-size: 0.85rem; color: var(--muted); margin-bottom: 1rem; }
+    .tier-card ul { margin-left: 1rem; font-size: 0.875rem; }
+    .tier-card .rec-label {
+      position: absolute;
+      top: -10px;
+      right: 12px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+    }
 
     /* Tables */
     table {
@@ -233,7 +278,8 @@
       <li><a href="#deliverables">納品物要件定義</a></li>
       <li><a href="#functional">機能要件一覧</a></li>
       <li><a href="#acceptance">検収条件</a></li>
-      <li><a href="#estimate">見積もり</a></li>
+      <li><a href="#estimate">見積もり（松竹梅プラン）</a></li>
+      <li><a href="#rate">単価の根拠（¥50,000 vs ¥80,000）</a></li>
       <li><a href="#assumptions">前提条件・除外事項</a></li>
       <li><a href="#schedule">スケジュール案</a></li>
       <li><a href="#appendix">付録（技術構成・環境変数）</a></li>
@@ -254,22 +300,27 @@
         <div class="label">機能実装進捗（概算）</div>
       </div>
       <div class="summary-card">
-        <div class="value">14〜18人日</div>
-        <div class="label">残作業工数（フェーズA）</div>
+        <div class="value">¥700,000〜</div>
+        <div class="label">梅プラン（税抜・最小）</div>
       </div>
       <div class="summary-card">
-        <div class="value">¥1,120,000〜¥1,440,000</div>
-        <div class="label">フェーズA 見積（税抜）</div>
+        <div class="value">¥1,100,000</div>
+        <div class="label">竹プラン（税抜・推奨）</div>
       </div>
       <div class="summary-card">
-        <div class="value">6〜8人日</div>
-        <div class="label">オプション工数（フェーズB）</div>
+        <div class="value">¥1,500,000</div>
+        <div class="label">松プラン（税抜・フル）</div>
       </div>
     </div>
 
+    <p>
+      本見積は<strong>松竹梅の3プラン</strong>で提示します。単価は<strong>¥50,000 / 人日（税抜）</strong>を本案件の適用単価とし、
+      市場参考単価である ¥80,000 / 人日との差異は <a href="#rate">第6.1章</a> で根拠を説明します。
+    </p>
+
     <div class="callout callout-warn">
       <strong>重要：</strong> 現在のデモ環境（Vercel / Google Cloud）の髙木様による管理は <strong>2026年1月末</strong> で終了予定です。
-      本見積のフェーズAには、クライアント環境への権限移譲・本番稼働までを含みます。
+      梅プラン以上には、クライアント環境への権限移譲・本番稼働までを含みます。
     </div>
   </section>
 
@@ -506,7 +557,7 @@
       </tbody>
     </table>
 
-    <h3>4.2 Should（推奨 — フェーズA に含む）</h3>
+    <h3>4.2 Should（推奨 — 竹プラン以上に含む）</h3>
     <table>
       <thead>
         <tr><th>ID</th><th>要件</th><th>状態</th></tr>
@@ -520,7 +571,7 @@
       </tbody>
     </table>
 
-    <h3>4.3 Could（任意 — フェーズB オプション）</h3>
+    <h3>4.3 Could（任意 — 松プランに含む / 梅・竹は除外）</h3>
     <table>
       <thead>
         <tr><th>ID</th><th>要件</th></tr>
@@ -602,188 +653,275 @@
     </ul>
 
     <div class="callout callout-note">
-      <strong>検収不合格の定義：</strong> 必須項目（AC-01〜AC-20）のいずれか 1 つでも本番環境で再現できない場合、
+      <strong>検収不合格の定義：</strong> 選択プランに含まれる必須項目のいずれか 1 つでも本番環境で再現できない場合、
       または金額・仕様データに不一致がある場合は不合格とし、修正後に再検収を行います。
+      プラン別の検収範囲は <a href="#acceptance-tiers">5.6章</a> を参照してください。
     </div>
+
+    <h3 id="acceptance-tiers">5.6 プラン別検収範囲</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>検収項目</th>
+          <th><span class="badge badge-ume">梅</span></th>
+          <th><span class="badge badge-take">竹</span></th>
+          <th><span class="badge badge-matsu">松</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>AC-01〜AC-11（見積もり・決済コア）</td><td>○</td><td>○</td><td>○</td></tr>
+        <tr><td>AC-12〜AC-13（Sheets 同期）</td><td>○</td><td>○</td><td>○</td></tr>
+        <tr><td>AC-14〜AC-15（UI設定・テンプレート本番配信）</td><td>△ 最小構成</td><td>○</td><td>○</td></tr>
+        <tr><td>AC-16（Webhook → Sheets 追記）</td><td>○</td><td>○</td><td>○</td></tr>
+        <tr><td>AC-17〜AC-20（非機能・権限移譲）</td><td>○</td><td>○</td><td>○</td></tr>
+        <tr><td>出荷予定日カレンダー UI 改善（FR-11）</td><td>—</td><td>○</td><td>○</td></tr>
+        <tr><td>Shopify テーマ一体感の調整（FR-14）</td><td>△ 埋め込み確認のみ</td><td>○</td><td>○</td></tr>
+        <tr><td>実カレンダー日付選択（FR-16）</td><td>—</td><td>—</td><td>○</td></tr>
+        <tr><td>管理画面注文一覧安定化（FR-20）</td><td>—</td><td>—</td><td>○</td></tr>
+        <tr><td>レイアウト微調整（FR-21）</td><td>—</td><td>—</td><td>○</td></tr>
+        <tr><td>お客様の声連携（FR-19）</td><td>—</td><td>—</td><td>△ 方針確定後</td></tr>
+      </tbody>
+    </table>
+    <p>△ = 最低限の動作確認レベル。フォールバック表示で代替可能な箇所は本番ストレージ未整備でも可とする。</p>
   </section>
 
   <!-- 6. 見積もり -->
   <section id="estimate">
-    <h2>6. 見積もり</h2>
+    <h2>6. 見積もり（松竹梅プラン）</h2>
 
-    <h3>6.1 単価前提</h3>
+    <h3 id="rate">6.1 単価の考え方と根拠</h3>
+    <p>
+      本案件では、金額の透明性のため<strong>工数（人日）を先に積み上げ</strong>、単価を掛けてプラン総額を算出します。
+      単価には <strong>¥50,000 / 人日</strong>（本見積の適用単価）と、市場参考の <strong>¥80,000 / 人日</strong> の2段階を併記し、
+      なぜ本案件では ¥50,000 が妥当かを以下に整理します。
+    </p>
+
+    <h4>¥80,000 / 人日が妥当とされる場合（市場参考単価）</h4>
     <table>
       <thead>
-        <tr><th>項目</th><th>単価</th><th>備考</th></tr>
+        <tr><th>根拠</th><th>説明</th></tr>
       </thead>
       <tbody>
-        <tr><td>開発工数</td><td class="num">¥80,000 / 人日</td><td>税抜。シニアエンジニア 1 名想定</td></tr>
-        <tr><td>プロジェクト管理</td><td class="num">工数の 10%</td><td>進捗報告・検収対応含む</td></tr>
-        <tr><td>インフラ初期費用</td><td class="num">¥0</td><td>Vercel Hobby / Firebase Spark / Cloudinary Free 想定</td></tr>
+        <tr>
+          <td>フルスタック + Shopify 専門性</td>
+          <td>React フロント、Vercel Functions、Shopify Admin API（Draft Order / priceOverride）、Google Sheets / Firebase 連携を一人で担う場合、一般的なフリーランス相場は <strong>¥70,000〜¥100,000 / 人日</strong>（税抜）に収まる。</td>
+        </tr>
+        <tr>
+          <td>本番障害リスク</td>
+          <td>決済・注文データの不整合は売上直結のため、本番検証・切り戻し設計に上乗せコストが発生する。未知のコードベースであれば探索工数（1〜3人日）が別途必要。</td>
+        </tr>
+        <tr>
+          <td>ゼロからの新規開発</td>
+          <td>要件定義・設計・実装・テストを一気通貫で請け負う場合、PM・レビュー・ドキュメント作成を含め <strong>¥80,000</strong> は妥当な基準単価。</td>
+        </tr>
+        <tr>
+          <td>法人・エージェンシー経由</td>
+          <td>社内マージン・保険・契約事務を含む場合、エンジニア単価が <strong>¥80,000〜¥120,000</strong> に相当することが多い。</td>
+        </tr>
       </tbody>
     </table>
 
-    <h3>6.2 フェーズA — 本番稼働・検収完了（必須）</h3>
+    <h4>¥50,000 / 人日を本案件に適用する理由（本見積の採用単価）</h4>
     <table>
       <thead>
-        <tr>
-          <th>#</th>
-          <th>作業項目</th>
-          <th>工数（人日）</th>
-          <th>金額（税抜）</th>
-          <th>成果物</th>
-        </tr>
+        <tr><th>根拠</th><th>本案件への当てはめ</th></tr>
       </thead>
       <tbody>
         <tr>
-          <td>A-01</td>
-          <td>Firebase 基盤構築（Firestore + 環境変数 + <code>firebase-admin</code> 追加）</td>
-          <td class="num">2.0</td>
-          <td class="num">¥160,000</td>
-          <td>D-05, D-06</td>
+          <td><strong>実装進捗 約85%</strong></td>
+          <td>見積もり UI・価格計算・Draft Order 決済・管理画面のコアは実装済み。残作業は「仕上げ・本番化・移譲」が中心で、新規設計工数が小さい。</td>
         </tr>
         <tr>
-          <td>A-02</td>
-          <td>画像・テンプレート本番ストレージ設計・実装（Cloudinary 等）</td>
-          <td class="num">2.0</td>
-          <td class="num">¥160,000</td>
-          <td>D-05</td>
+          <td><strong>コードベースの継続性</strong></td>
+          <td>同一開発者・同一リポジトリでの継続開発のため、キャッチアップ・仕様把握コスト（通常 1〜3人日）が不要。これを単価に反映するのが合理的。</td>
         </tr>
         <tr>
-          <td>A-03</td>
-          <td>本番 E2E テスト実施・不具合修正（Shopify Draft Order / properties）</td>
-          <td class="num">3.0</td>
-          <td class="num">¥240,000</td>
-          <td>D-08（検収報告）</td>
+          <td><strong>スコープの明確さ</strong></td>
+          <td>未完了項目（Firebase、E2E、権限移譲等）は TODO として列挙済み。不確実性プレミアムを抑えられる。</td>
         </tr>
         <tr>
-          <td>A-04</td>
-          <td>環境権限移譲（Vercel / GCP / Shopify をクライアント環境へ）</td>
-          <td class="num">2.0</td>
-          <td class="num">¥160,000</td>
-          <td>D-06, D-07</td>
+          <td><strong>作業内容の性質</strong></td>
+          <td>残作業の多くは設定・検証・ドキュメント整備であり、ゼロからのアプリ設計より単価感が下がる領域。</td>
         </tr>
         <tr>
-          <td>A-05</td>
-          <td>Shopify テーマ統合・ヘッダー/フッター一体感の調整</td>
-          <td class="num">1.5</td>
-          <td class="num">¥120,000</td>
-          <td>D-03</td>
-        </tr>
-        <tr>
-          <td>A-06</td>
-          <td>出荷予定日カレンダー表示の改善（営業日計算・UI）</td>
-          <td class="num">2.0</td>
-          <td class="num">¥160,000</td>
-          <td>FR-11</td>
-        </tr>
-        <tr>
-          <td>A-07</td>
-          <td>Webhook 本番設定・注文 Sheets 追記の動作確認</td>
-          <td class="num">1.0</td>
-          <td class="num">¥80,000</td>
-          <td>FR-15</td>
-        </tr>
-        <tr>
-          <td>A-08</td>
-          <td>ドキュメント整備・検収報告書作成・引き渡し</td>
-          <td class="num">1.5</td>
-          <td class="num">¥120,000</td>
-          <td>D-07, D-08</td>
-        </tr>
-        <tr>
-          <td>A-09</td>
-          <td>バッファ（想定外の不具合・Shopify API 変更対応）</td>
-          <td class="num">2.0</td>
-          <td class="num">¥160,000</td>
-          <td>—</td>
-        </tr>
-        <tr class="total-row">
-          <td colspan="2"><strong>フェーズA 小計</strong></td>
-          <td class="num"><strong>17.0人日</strong></td>
-          <td class="num"><strong>¥1,360,000</strong></td>
-          <td></td>
-        </tr>
-        <tr class="total-row">
-          <td colspan="2"><strong>プロジェクト管理費（10%）</strong></td>
-          <td class="num">—</td>
-          <td class="num"><strong>¥136,000</strong></td>
-          <td></td>
-        </tr>
-        <tr class="total-row">
-          <td colspan="2"><strong>フェーズA 合計（税抜）</strong></td>
-          <td class="num"><strong>17.0人日</strong></td>
-          <td class="num"><strong>¥1,496,000</strong></td>
-          <td></td>
-        </tr>
-        <tr class="total-row">
-          <td colspan="2"><strong>フェーズA 合計（税込 10%）</strong></td>
-          <td class="num">—</td>
-          <td class="num"><strong>¥1,645,600</strong></td>
-          <td></td>
+          <td><strong>継続案件としての調整</strong></td>
+          <td>UMOGA様との既存関係・デモ環境の引き継ぎを前提とした<strong>継続開発単価</strong>として ¥50,000 を提示。新規受託の初回案件であれば ¥80,000 相当が妥当。</td>
         </tr>
       </tbody>
     </table>
 
     <div class="callout callout-info">
-      <strong>コンパクトプラン（最小構成）：</strong> A-06（カレンダー改善）を除外し、A-09 バッファを 1.0 人日に縮小した場合 →
-      <strong>14.0 人日 / ¥1,120,000（税抜）/ ¥1,232,000（税込）</strong>
+      <strong>結論（推奨）：</strong> 本案件は <strong>¥50,000 / 人日</strong> を適用単価とするのが妥当です。
+      ¥80,000 は「新規受託・未知のコードベース・PM込み」の参考単価として併記します。
+      梅プラン ¥700,000 = 14人日 × ¥50,000 は、残作業の最小スコープと整合します。
+      同一内容を ¥80,000 で積むと 8.75人日相当となり、本番 E2E・権限移譲・Firebase 修復を品質担保した場合の現実工数を下回ります。
     </div>
 
-    <h3>6.3 フェーズB — 拡張・改善（オプション）</h3>
+    <h4>単価比較（参考）</h4>
     <table>
       <thead>
-        <tr>
-          <th>#</th>
-          <th>作業項目</th>
-          <th>工数（人日）</th>
-          <th>金額（税抜）</th>
-        </tr>
+        <tr><th>単価</th><th>梅（14人日）</th><th>竹（22人日）</th><th>松（30人日）</th><th>位置づけ</th></tr>
       </thead>
       <tbody>
         <tr>
-          <td>B-01</td>
-          <td>実カレンダーでの出荷日 / お届け希望日選択（土日祝・範囲制御）</td>
-          <td class="num">3.0</td>
-          <td class="num">¥240,000</td>
+          <td><strong>¥50,000</strong>（本見積採用）</td>
+          <td class="num">¥700,000</td>
+          <td class="num">¥1,100,000</td>
+          <td class="num">¥1,500,000</td>
+          <td>継続開発・仕上げ案件向け</td>
         </tr>
         <tr>
-          <td>B-02</td>
-          <td>管理画面「注文管理（Shopify）」タブ本番安定化</td>
-          <td class="num">1.5</td>
-          <td class="num">¥120,000</td>
-        </tr>
-        <tr>
-          <td>B-03</td>
-          <td>レイアウト微調整（幕メーカー参考・デザインレビュー 2 回込み）</td>
-          <td class="num">2.5</td>
-          <td class="num">¥200,000</td>
-        </tr>
-        <tr>
-          <td>B-04</td>
-          <td>お客様の声 — Shopify レビュー or 外部ウィジェット連携</td>
-          <td class="num">1.5</td>
-          <td class="num">¥120,000</td>
-        </tr>
-        <tr class="total-row">
-          <td colspan="2"><strong>フェーズB 合計（税抜）</strong></td>
-          <td class="num"><strong>8.5人日</strong></td>
-          <td class="num"><strong>¥680,000</strong></td>
+          <td>¥80,000（市場参考）</td>
+          <td class="num">¥1,120,000</td>
+          <td class="num">¥1,760,000</td>
+          <td class="num">¥2,400,000</td>
+          <td>新規受託・不確実性込みの参考</td>
         </tr>
       </tbody>
     </table>
 
-    <h3>6.4 支払条件（案）</h3>
+    <h3>6.2 松竹梅プラン一覧</h3>
+    <p>適用単価: <strong>¥50,000 / 人日（税抜）</strong>　|　PM費: 各プランに含む（別途10%加算なし）</p>
+
+    <div class="tier-grid">
+      <div class="tier-card">
+        <div class="tier-name">🌸 梅プラン <span class="badge badge-ume">MINIMUM</span></div>
+        <div class="tier-price">¥700,000</div>
+        <div class="tier-days">14.0 人日 ｜ 税込 ¥770,000</div>
+        <p><strong>本番稼働の最小ライン。</strong>決済・注文・権限移譲まで完了し、営業開始可能な状態にする。</p>
+        <ul>
+          <li>Firebase / UI設定 API 修復（最小）</li>
+          <li>本番 E2E テスト・不具合修正</li>
+          <li>環境権限移譲（Vercel / GCP / Shopify）</li>
+          <li>Webhook 設定・動作確認</li>
+          <li>検収報告書・引き渡し</li>
+        </ul>
+        <p style="margin-top:0.75rem;font-size:0.85rem;color:var(--muted);">除外: カレンダーUI改善、テーマ微調整、レイアウトブラッシュアップ</p>
+      </div>
+
+      <div class="tier-card recommended">
+        <span class="rec-label">推奨</span>
+        <div class="tier-name">🎋 竹プラン <span class="badge badge-take">STANDARD</span></div>
+        <div class="tier-price">¥1,100,000</div>
+        <div class="tier-days">22.0 人日 ｜ 税込 ¥1,210,000</div>
+        <p><strong>梅 + 運用品質の底上げ。</strong>テーマ一体感・納期UI・画像ストレージまで整え、日常運用に耐える。</p>
+        <ul>
+          <li>梅プランの全内容</li>
+          <li>出荷予定日カレンダー表示の改善</li>
+          <li>Shopify テーマ統合・ヘッダー/フッター調整</li>
+          <li>画像・テンプレート本番ストレージ（フル）</li>
+          <li>拡張 E2E（付属品・複数商品 properties 検証）</li>
+        </ul>
+      </div>
+
+      <div class="tier-card">
+        <div class="tier-name">🌲 松プラン <span class="badge badge-matsu">PREMIUM</span></div>
+        <div class="tier-price">¥1,500,000</div>
+        <div class="tier-days">30.0 人日 ｜ 税込 ¥1,650,000</div>
+        <p><strong>竹 + UX・管理機能の完成形。</strong>顧客体験と社内オペレーションまで含めたフル仕上げ。</p>
+        <ul>
+          <li>竹プランの全内容</li>
+          <li>実カレンダーでの出荷日 / お届け希望日選択</li>
+          <li>管理画面「注文管理（Shopify）」安定化</li>
+          <li>レイアウト微調整（幕メーカー参考）</li>
+          <li>お客様の声連携（方針確定後）</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>6.3 🌸 梅プラン詳細 — ¥700,000（14.0人日）</h3>
     <table>
       <thead>
-        <tr><th>タイミング</th><th>割合</th><th>条件</th></tr>
+        <tr><th>#</th><th>作業項目</th><th>人日</th><th>金額</th><th>備考</th></tr>
       </thead>
       <tbody>
-        <tr><td>着手金</td><td class="num">30%</td><td>契約締結後 5 営業日以内</td></tr>
-        <tr><td>中間金</td><td class="num">40%</td><td>本番環境デプロイ完了・中間デモ承認時</td></tr>
-        <tr><td>検収完了金</td><td class="num">30%</td><td>検収条件（第5章）全必須項目クリア後</td></tr>
+        <tr><td>M-01</td><td>Firebase 基盤修復（<code>firebase-admin</code> 追加・環境変数・Firestore 初期データ）</td><td class="num">1.5</td><td class="num">¥75,000</td><td>UI設定 API の 500 解消</td></tr>
+        <tr><td>M-02</td><td>画像ストレージ最小構成（既存 URL + テンプレート 2〜3 件の実ファイル配置）</td><td class="num">1.0</td><td class="num">¥50,000</td><td>Cloudinary Free 想定</td></tr>
+        <tr><td>M-03</td><td>本番 E2E テスト・不具合修正（Draft Order / properties / 金額一致）</td><td class="num">3.0</td><td class="num">¥150,000</td><td>テスト注文 1 件以上</td></tr>
+        <tr><td>M-04</td><td>環境権限移譲（Vercel / GCP / Shopify → クライアント管理）</td><td class="num">2.0</td><td class="num">¥100,000</td><td>AC-19 対応</td></tr>
+        <tr><td>M-05</td><td>Webhook 本番設定・Sheets 追記確認</td><td class="num">1.0</td><td class="num">¥50,000</td><td>AC-16</td></tr>
+        <tr><td>M-06</td><td>Shopify テーマ埋め込み動作確認（既存 Liquid の接続テスト）</td><td class="num">1.0</td><td class="num">¥50,000</td><td>デザイン微調整は含まない</td></tr>
+        <tr><td>M-07</td><td>Google Sheets 引き継ぎ・同期フロー確認</td><td class="num">1.0</td><td class="num">¥50,000</td><td>AC-12〜13</td></tr>
+        <tr><td>M-08</td><td>ドキュメント整備・検収報告書・オンライン引き渡し（1回）</td><td class="num">1.5</td><td class="num">¥75,000</td><td>D-07, D-08</td></tr>
+        <tr><td>M-09</td><td>バッファ（Shopify API / 環境差分の想定外対応）</td><td class="num">1.0</td><td class="num">¥50,000</td><td>梅は最小バッファ</td></tr>
+        <tr><td>M-10</td><td>進捗報告・検収対応（PM）</td><td class="num">1.0</td><td class="num">¥50,000</td><td>週次報告 2〜3 回</td></tr>
+        <tr class="total-row"><td colspan="2"><strong>梅プラン合計</strong></td><td class="num"><strong>14.0</strong></td><td class="num"><strong>¥700,000</strong></td><td>税込 ¥770,000</td></tr>
       </tbody>
     </table>
+
+    <h3>6.4 🎋 竹プラン詳細 — ¥1,100,000（22.0人日 = 梅 + 8.0人日）</h3>
+    <table>
+      <thead>
+        <tr><th>#</th><th>追加作業（梅に加算）</th><th>人日</th><th>金額</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>T-01</td><td>出荷予定日カレンダー表示の改善（営業日計算・視覚的 UI）</td><td class="num">2.0</td><td class="num">¥100,000</td></tr>
+        <tr><td>T-02</td><td>Shopify テーマ統合・ヘッダー/フッター/ヒーロー微調整</td><td class="num">1.5</td><td class="num">¥75,000</td></tr>
+        <tr><td>T-03</td><td>画像・テンプレート本番ストレージ（最大 10 件・管理画面から差替可）</td><td class="num">1.5</td><td class="num">¥75,000</td></tr>
+        <tr><td>T-04</td><td>拡張 E2E（複数商品・付属品・お急ぎ便の properties 網羅テスト）</td><td class="num">1.5</td><td class="num">¥75,000</td></tr>
+        <tr><td>T-05</td><td>追加バッファ + 引き渡しミーティング（2 回目）</td><td class="num">1.5</td><td class="num">¥75,000</td></tr>
+        <tr class="total-row"><td colspan="2"><strong>竹プラン合計（梅 14.0 + 追加 8.0）</strong></td><td class="num"><strong>22.0</strong></td><td class="num"><strong>¥1,100,000</strong></td></tr>
+      </tbody>
+    </table>
+
+    <h3>6.5 🌲 松プラン詳細 — ¥1,500,000（30.0人日 = 竹 + 8.0人日）</h3>
+    <table>
+      <thead>
+        <tr><th>#</th><th>追加作業（竹に加算）</th><th>人日</th><th>金額</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>S-01</td><td>実カレンダーでの出荷日 / お届け希望日選択（土日祝・範囲制御）</td><td class="num">3.0</td><td class="num">¥150,000</td></tr>
+        <tr><td>S-02</td><td>管理画面「注文管理（Shopify）」タブ本番安定化</td><td class="num">1.5</td><td class="num">¥75,000</td></tr>
+        <tr><td>S-03</td><td>レイアウト微調整（幕メーカー参考・デザインレビュー 2 回）</td><td class="num">2.0</td><td class="num">¥100,000</td></tr>
+        <tr><td>S-04</td><td>お客様の声 — Shopify レビュー or 外部ウィジェット連携</td><td class="num">1.0</td><td class="num">¥50,000</td></tr>
+        <tr><td>S-05</td><td>追加バッファ（UX 改善・追加要望 1 回分）</td><td class="num">0.5</td><td class="num">¥25,000</td></tr>
+        <tr class="total-row"><td colspan="2"><strong>松プラン合計（竹 22.0 + 追加 8.0）</strong></td><td class="num"><strong>30.0</strong></td><td class="num"><strong>¥1,500,000</strong></td></tr>
+      </tbody>
+    </table>
+
+    <h3>6.6 プラン選定の目安</h3>
+    <table>
+      <thead>
+        <tr><th>ご状況</th><th>推奨プラン</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>まず本番で注文を受けたい。コスト最優先。</td><td><span class="badge badge-ume">梅</span></td></tr>
+        <tr><td>デモ品質から本番品質へ。テーマ一体感・納期 UI も整えたい。</td><td><span class="badge badge-take">竹</span>（推奨）</td></tr>
+        <tr><td>顧客体験・社内管理まで含めた完成形が欲しい。</td><td><span class="badge badge-matsu">松</span></td></tr>
+        <tr><td>梅で着手後、竹・松へ段階アップグレード</td><td>差額のみ追加契約（梅→竹: +¥400,000 / 竹→松: +¥400,000）</td></tr>
+      </tbody>
+    </table>
+
+    <h3>6.7 支払条件（案）</h3>
+    <table>
+      <thead>
+        <tr><th>タイミング</th><th>梅</th><th>竹</th><th>松</th><th>条件</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>着手金（30%）</td>
+          <td class="num">¥210,000</td>
+          <td class="num">¥330,000</td>
+          <td class="num">¥450,000</td>
+          <td>契約後 5 営業日以内</td>
+        </tr>
+        <tr>
+          <td>中間金（40%）</td>
+          <td class="num">¥280,000</td>
+          <td class="num">¥440,000</td>
+          <td class="num">¥600,000</td>
+          <td>本番デプロイ完了・中間デモ承認時</td>
+        </tr>
+        <tr>
+          <td>検収完了金（30%）</td>
+          <td class="num">¥210,000</td>
+          <td class="num">¥330,000</td>
+          <td class="num">¥450,000</td>
+          <td>プラン別検収条件クリア後</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>※ いずれも税抜金額。梅プランの最小総額 <strong>¥700,000（税抜）/ ¥770,000（税込）</strong> を下限とする。</p>
   </section>
 
   <!-- 7. 前提・除外 -->
@@ -812,35 +950,38 @@
 
   <!-- 8. スケジュール -->
   <section id="schedule">
-    <h2>8. スケジュール案（フェーズA）</h2>
+    <h2>8. スケジュール案</h2>
     <table>
       <thead>
-        <tr><th>週</th><th>作業内容</th><th>マイルストーン</th></tr>
+        <tr><th>週</th><th>梅（14人日）</th><th>竹（+8人日）</th><th>松（+8人日）</th></tr>
       </thead>
       <tbody>
         <tr>
           <td>Week 1</td>
-          <td>Firebase 構築、画像ストレージ設計、環境変数整備</td>
-          <td>UI 設定 API が本番で 200 応答</td>
+          <td>Firebase 修復、環境変数、E2E 着手</td>
+          <td colspan="2">（梅と並行）</td>
         </tr>
         <tr>
           <td>Week 2</td>
-          <td>権限移譲、Shopify テーマ統合、Webhook 設定</td>
-          <td>クライアント Vercel でデプロイ完了</td>
+          <td>権限移譲、Webhook、テーマ接続確認</td>
+          <td>画像ストレージ、カレンダー UI 着手</td>
+          <td>—</td>
         </tr>
         <tr>
           <td>Week 3</td>
-          <td>本番 E2E テスト、不具合修正、カレンダー UI 改善</td>
-          <td>テスト注文成功・properties 確認</td>
+          <td>検収・引き渡し</td>
+          <td>テーマ微調整、拡張 E2E</td>
+          <td>実カレンダー、注文管理タブ</td>
         </tr>
         <tr>
           <td>Week 4</td>
-          <td>検収対応、ドキュメント整備、引き渡し</td>
-          <td>検収完了報告書提出</td>
+          <td>—</td>
+          <td>検収・引き渡し</td>
+          <td>レイアウト調整、検収・引き渡し</td>
         </tr>
       </tbody>
     </table>
-    <p>※ クライアント側のレビュー・承認待ちは上記に含みません。</p>
+    <p>※ クライアント側のレビュー・承認待ち、Shopify / GCP アカウント発行は上記に含みません。</p>
   </section>
 
   <!-- 9. 付録 -->
