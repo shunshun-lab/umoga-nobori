@@ -2986,5 +2986,18 @@
   "https://dev.to/bokuwalily/14-pitfalls-of-letting-a-claude-code-environment-rot-and-the-70-line-weekly-audit-that-catches-5hme",
   "https://dev.to/hassekf/do-ai-coding-agents-close-the-gap-between-junior-and-senior-developers-2ho",
   "https://dev.to/abhishek_sharma_a9792aee8/i-built-two-small-claude-code-plugins-this-week-heres-what-i-learned-about-hooks-2f29",
-  "https://dev.to/rulestack/your-mcp-server-is-configured-but-claude-cant-see-it-reading-claude-mcp-list-status-3fm1"
+  "https://dev.to/rulestack/your-mcp-server-is-configured-but-claude-cant-see-it-reading-claude-mcp-list-status-3fm1",
+  "https://dev.to/yansen_zhu_9b0dae1c4cc0da/pointing-claude-code-at-an-ai-gateway-what-actually-breaks-and-the-4-env-vars-that-fix-it-2knp",
+  "https://www.reddit.com/r/ClaudeAI/comments/1vs7yfp/chat_vs_code/",
+  "https://www.reddit.com/r/ClaudeAI/comments/1vs65di/does_it_make_sense_to_run_certain_non_code_tasks/",
+  "https://dev.to/raxxostudios/the-kill-switch-every-raxxo-tool-ships-with-4kof",
+  "https://dev.to/hassekf/does-claude-code-read-your-env-file-3e4h",
+  "https://github.com/anthropics/claude-code/releases/tag/v2.1.235",
+  "https://dev.to/yureki_lab/how-i-built-my-first-mcp-server-for-claude-code-5-lessons-learned-2ffo",
+  "https://dev.to/rentierdigital/i-stopped-patching-wordpress-my-site-got-faster-safer-and-free-2l7f",
+  "https://dev.to/fancy39_9841cbc02f99f729c/i-built-a-coding-agent-skill-that-writes-you-a-course-and-quizzes-you-on-it-5b24",
+  "https://dev.to/thomas_casali/i-gave-claude-code-a-memory-ive-been-running-it-on-15-projects-since-april-13ck",
+  "https://dev.to/jasondevlab/githubs-most-starred-repo-this-week-is-a-design-system-not-an-app-46ll",
+  "https://dev.to/rulestack/we-cut-our-claudemd-from-548kb-to-34kb-what-loads-when-measured-and-the-commit-gate-that-keeps-1kpk",
+  "https://dev.to/max_quimby/stop-chasing-models-fix-your-harness-3pec"
 ]
